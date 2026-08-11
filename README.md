@@ -17,6 +17,9 @@ autocontenido (three.js incluido), sin dependencias externas.
   `Cubierta` superpone el plano de faldones con 0,72 m de vuelo de alero.
 - **Rótulos** — nombre y superficie útil de cada estancia (las del cuadro de a04).
 - **Estructura** — tiñe pilares y patinillos para localizarlos de un vistazo.
+- **Medir** — marca puntos con un clic en el suelo y copia sus coordenadas; dos
+  clics definen un rectángulo. Sirve para situar falsos techos y cualquier otro
+  añadido sin tener que describirlo con palabras.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría

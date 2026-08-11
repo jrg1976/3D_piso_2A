@@ -2,6 +2,7 @@
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
+let measuring = false, marks = [], markGroup = null;
 let mode = 'walk';
 const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
 const orb = { tx: 13.4, ty: -8.6, tz: 1.4, dist: 21, az: -0.62, el: 0.42 };
@@ -56,6 +57,7 @@ function init() {
     s.visible = false; labels.push(s); scene.add(s);
   });
 
+  markGroup = new THREE.Group(); scene.add(markGroup);
   buildPortals();
   buildViewButtons();
   applyView(VIEWS[0]);
@@ -124,11 +126,16 @@ function bindControls() {
   const c = document.getElementById('view');
   let drag = false, lx = 0, ly = 0, btn = 0;
 
+  let downX = 0, downY = 0;
   c.addEventListener('pointerdown', e => {
     drag = true; btn = e.button; lx = e.clientX; ly = e.clientY;
+    downX = e.clientX; downY = e.clientY;
     c.setPointerCapture(e.pointerId); c.classList.add('grabbing');
   });
-  c.addEventListener('pointerup', e => { drag = false; c.classList.remove('grabbing'); });
+  c.addEventListener('pointerup', e => {
+    drag = false; c.classList.remove('grabbing');
+    if (measuring && e.button === 0 && Math.hypot(e.clientX - downX, e.clientY - downY) < 5) pick(e);
+  });
   c.addEventListener('pointercancel', () => { drag = false; c.classList.remove('grabbing'); });
   c.addEventListener('pointermove', e => {
     if (!drag) return;
@@ -165,6 +172,19 @@ function bindControls() {
   document.getElementById('t-furn').onclick = e => toggle(e.currentTarget, v => {
     apt.furn.visible = v; apt.figs.visible = v;
   });
+  document.getElementById('t-measure').onclick = e => toggle(e.currentTarget, v => {
+    measuring = v;
+    document.getElementById('measure').hidden = !v;
+    document.querySelector('.hint').hidden = v;
+    if (v) renderMarks();
+  });
+  document.getElementById('m-clear').onclick = () => { marks = []; renderMarks(); };
+  document.getElementById('m-copy').onclick = () => {
+    navigator.clipboard.writeText(marksText()).then(() => {
+      const b = document.getElementById('m-copy'); const t = b.textContent;
+      b.textContent = 'Copiado'; setTimeout(() => { b.textContent = t; }, 1200);
+    });
+  };
   document.getElementById('t-struct').onclick = e => toggle(e.currentTarget, v => {
     apt.pillars.material.color.set(v ? 0xd08a2a : 0xdcd4c6);
     apt.shafts.material.color.set(v ? 0x9c6a2e : 0xb9ab97);
@@ -283,6 +303,75 @@ function onResize() {
   camera.aspect = w / h; camera.updateProjectionMatrix();
 }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* -------------------------- medición --------------------------------- */
+const _ray = new THREE.Raycaster();
+const _plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);   // suelo, z = 0
+const _hit = new THREE.Vector3();
+
+function pick(e) {
+  const c = document.getElementById('view'), r = c.getBoundingClientRect();
+  const nd = new THREE.Vector2(
+    ((e.clientX - r.left) / r.width) * 2 - 1,
+    -((e.clientY - r.top) / r.height) * 2 + 1);
+  _ray.setFromCamera(nd, camera);
+  if (!_ray.ray.intersectPlane(_plane, _hit)) return;
+  const x = +_hit.x.toFixed(2), y = +(-_hit.z).toFixed(2);
+  const room = roomAt(x, y);
+  marks.push({ x, y, room: room ? room.name : '—', h: +ceilAt(x, y).toFixed(2) });
+  renderMarks();
+}
+
+const n2 = v => v.toFixed(2).replace('.', ',');
+
+function renderMarks() {
+  const ul = document.getElementById('m-list');
+  ul.innerHTML = marks.length ? '' : '<li class="m-empty">Sin puntos todavía.</li>';
+  marks.forEach((m, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<b>' + (i + 1) + '</b><span>' + m.room + '</span>' +
+                   n2(m.x) + ' / ' + n2(m.y);
+    ul.appendChild(li);
+  });
+  ul.scrollTop = ul.scrollHeight;
+
+  const box = document.getElementById('m-rect');
+  if (marks.length >= 2) {
+    const a = marks[marks.length - 2], b = marks[marks.length - 1];
+    const x0 = Math.min(a.x, b.x), x1 = Math.max(a.x, b.x);
+    const y0 = Math.min(a.y, b.y), y1 = Math.max(a.y, b.y);
+    box.hidden = false;
+    box.innerHTML = '<em>▭</em> ' + n2(x0) + ' ' + n2(y0) + ' → ' + n2(x1) + ' ' + n2(y1) +
+                    '<br><em>&nbsp;&nbsp;</em> ' + n2(x1 - x0) + ' × ' + n2(y1 - y0) + ' m';
+  } else box.hidden = true;
+
+  // marcadores en la escena
+  while (markGroup.children.length) markGroup.remove(markGroup.children[0]);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xd08a2a, depthTest: false });
+  marks.forEach(m => {
+    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 10), mat);
+    pin.position.set(m.x, 0.6, -m.y); pin.renderOrder = 5; markGroup.add(pin);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.10, 10, 8), mat);
+    cap.position.set(m.x, 1.25, -m.y); cap.renderOrder = 5; markGroup.add(cap);
+  });
+}
+
+function marksText() {
+  const L = ['Puntos marcados (x / y en metros, sistema del plano a04;',
+             'z = 0 en el pavimento acabado, +118,00):'];
+  marks.forEach((m, i) => L.push(
+    (i + 1) + '. ' + m.room + '  x=' + n2(m.x) + '  y=' + n2(m.y) +
+    '  (techo actual ' + n2(m.h) + ' m)'));
+  for (let i = 0; i + 1 < marks.length; i += 2) {
+    const a = marks[i], b = marks[i + 1];
+    const x0 = Math.min(a.x, b.x), x1 = Math.max(a.x, b.x);
+    const y0 = Math.min(a.y, b.y), y1 = Math.max(a.y, b.y);
+    L.push('rect ' + (i / 2 + 1) + ': [' + n2(x0) + ', ' + n2(y0) + ', ' +
+           n2(x1) + ', ' + n2(y1) + ']   ' + n2(x1 - x0) + ' × ' + n2(y1 - y0) + ' m' +
+           '   falso techo a ___ m');
+  }
+  return L.join('\n');
+}
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
