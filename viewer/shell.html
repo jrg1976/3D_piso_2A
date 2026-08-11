@@ -1,0 +1,290 @@
+<title>Piso B · Bajocubierta — recorrido 3D</title>
+<style>
+:root{
+  --ink:#15181c; --ink-2:#20252b; --ink-3:#2c333a;
+  --paper:#f3efe7; --paper-2:#e7e1d4;
+  --line:#c9c2b3; --muted:#6d7178; --text:#1b1e22; --text-2:#4a4f56;
+  --amber:#c07a12; --amber-soft:#f0e0c2; --slate:#3f5568;
+  --chrome:rgba(247,244,238,0.94); --chrome-line:rgba(21,24,28,0.13);
+  --btn:rgba(21,24,28,0.05); --btn-on:#15181c; --btn-on-fg:#f6f2ea;
+  --shadow:0 10px 34px rgba(21,24,28,0.16), 0 2px 6px rgba(21,24,28,0.10);
+  --r:9px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14171a; --paper-2:#1c2126; --line:#333b43;
+    --muted:#8b939c; --text:#eceae5; --text-2:#b0b6bd;
+    --amber:#e8a33d; --amber-soft:#3a2e1a; --slate:#7fa3c0;
+    --chrome:rgba(20,23,26,0.92); --chrome-line:rgba(236,234,229,0.14);
+    --btn:rgba(236,234,229,0.07); --btn-on:#e8a33d; --btn-on-fg:#14171a;
+    --shadow:0 10px 34px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14171a; --paper-2:#1c2126; --line:#333b43;
+  --muted:#8b939c; --text:#eceae5; --text-2:#b0b6bd;
+  --amber:#e8a33d; --amber-soft:#3a2e1a; --slate:#7fa3c0;
+  --chrome:rgba(20,23,26,0.92); --chrome-line:rgba(236,234,229,0.14);
+  --btn:rgba(236,234,229,0.07); --btn-on:#e8a33d; --btn-on-fg:#14171a;
+  --shadow:0 10px 34px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--paper); color:var(--text);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:14px; line-height:1.5; overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- escena ---------- */
+#stage{position:fixed;inset:0}
+#view{width:100%;height:100%;display:block;cursor:grab;touch-action:none;background:#1a1d21}
+#view.grabbing{cursor:grabbing}
+
+/* ---------- cartela superior ---------- */
+.title-block{
+  position:fixed;top:0;left:0;right:0;z-index:5;
+  display:flex;align-items:stretch;gap:0;flex-wrap:wrap;
+  background:var(--chrome);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--chrome-line);
+}
+.tb-cell{padding:8px 13px;border-right:1px solid var(--chrome-line);display:flex;flex-direction:column;justify-content:center;gap:2px}
+.tb-cell:last-child{border-right:0}
+.tb-k{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.tb-v{font-size:13px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+.tb-id{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.tb-id b{color:var(--amber)}
+.tb-grow{flex:1;border-right:0}
+.tb-actions{display:flex;align-items:center;gap:5px;padding:7px 10px;flex:none}
+
+/* ---------- botones ---------- */
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{
+  background:var(--btn);border:1px solid var(--chrome-line);border-radius:var(--r);
+  padding:5px 9px;font-size:11.5px;white-space:nowrap;font-weight:600;letter-spacing:.01em;
+  transition:background .14s ease,border-color .14s ease,color .14s ease;
+}
+.btn:hover{background:color-mix(in srgb,var(--btn) 60%,var(--text) 8%)}
+.btn[aria-pressed="true"]{background:var(--btn-on);border-color:var(--btn-on);color:var(--btn-on-fg)}
+.btn:focus-visible,.view-btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.seg{display:flex;gap:0;border:1px solid var(--chrome-line);border-radius:var(--r);overflow:hidden}
+.seg .btn{border:0;border-radius:0}
+.seg .btn+.btn{border-left:1px solid var(--chrome-line)}
+
+/* ---------- índice de estancias ---------- */
+.index{
+  position:fixed;left:14px;top:auto;bottom:118px;z-index:5;
+  display:flex;flex-direction:column;gap:3px;
+  max-height:min(56vh,420px);overflow-y:auto;padding:8px;
+  background:var(--chrome);backdrop-filter:blur(14px);
+  border:1px solid var(--chrome-line);border-radius:12px;box-shadow:var(--shadow);
+}
+.views{display:flex;flex-direction:column;gap:3px}
+.index-h{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:2px 8px 6px}
+.view-btn{
+  background:none;border:0;border-radius:7px;text-align:left;
+  padding:5px 9px;font-size:12.5px;color:var(--text-2);
+  display:flex;align-items:center;gap:8px;transition:background .12s,color .12s;
+}
+.view-btn::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--line);flex:none;transition:background .12s,transform .12s}
+.view-btn:hover{background:var(--btn);color:var(--text)}
+.view-btn[aria-current="true"]{color:var(--text);font-weight:650;background:var(--btn)}
+.view-btn[aria-current="true"]::before{background:var(--amber);transform:scale(1.5)}
+
+/* ---------- lectura en vivo ---------- */
+.readout{
+  position:fixed;left:14px;bottom:14px;z-index:5;
+  background:var(--chrome);backdrop-filter:blur(14px);
+  border:1px solid var(--chrome-line);border-radius:12px;box-shadow:var(--shadow);
+  padding:10px 14px;min-width:236px;
+}
+.ro-room{font-size:15px;font-weight:650;letter-spacing:-.01em;margin-bottom:6px}
+.ro-grid{display:grid;grid-template-columns:1fr auto;gap:2px 14px;align-items:baseline}
+.ro-k{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.ro-v{font-size:14px;font-weight:600}
+.ro-v.big{color:var(--amber);font-size:16px}
+.ro-warn[hidden]{display:none}
+.ro-warn{
+  margin-top:7px;font-size:11px;font-weight:600;color:var(--amber);
+  display:flex;align-items:center;gap:6px;
+}
+.ro-warn::before{content:"";width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid var(--amber)}
+
+/* ---------- pad táctil ---------- */
+.touchpad{display:none;position:fixed;right:12px;bottom:150px;z-index:6;flex-direction:column;gap:8px}
+.tp{
+  width:54px;height:54px;border-radius:50%;font-size:18px;line-height:1;
+  background:var(--chrome);border:1px solid var(--chrome-line);color:var(--text);
+  box-shadow:var(--shadow);touch-action:none;
+}
+.tp:active{background:var(--btn-on);color:var(--btn-on-fg)}
+@media (hover:none) and (pointer:coarse){ .touchpad{display:flex} }
+
+/* ---------- ayuda ---------- */
+.hint{
+  position:fixed;right:14px;bottom:14px;z-index:5;max-width:280px;
+  background:var(--chrome);backdrop-filter:blur(14px);
+  border:1px solid var(--chrome-line);border-radius:12px;box-shadow:var(--shadow);
+  padding:10px 13px;font-size:11.5px;color:var(--text-2);line-height:1.65;
+}
+.hint kbd{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;
+  background:var(--btn);border:1px solid var(--chrome-line);border-radius:5px;
+  padding:1px 5px;color:var(--text);
+}
+
+/* ---------- notas ---------- */
+.notes{
+  position:fixed;right:14px;top:64px;z-index:6;width:min(400px,calc(100vw - 28px));
+  max-height:calc(100vh - 160px);overflow-y:auto;
+  background:var(--chrome);backdrop-filter:blur(14px);
+  border:1px solid var(--chrome-line);border-radius:12px;box-shadow:var(--shadow);
+  padding:16px 18px 18px;
+  opacity:0;visibility:hidden;transform:translateY(-6px);
+  transition:opacity .18s ease,transform .18s ease,visibility .18s;
+}
+.notes.open{opacity:1;visibility:visible;transform:none}
+.notes h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin:0 0 10px}
+.notes h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+.notes p{margin:0 0 8px;font-size:12.5px;color:var(--text-2);line-height:1.62}
+.notes table{border-collapse:collapse;width:100%;font-size:12px}
+.notes td{padding:3px 0;border-bottom:1px solid var(--chrome-line);color:var(--text-2)}
+.notes td:last-child{text-align:right;font-weight:600;color:var(--text)}
+.notes ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--text-2);line-height:1.62}
+.notes li{margin-bottom:4px}
+
+@media (max-width:1320px){ .tb-cell.opt2{display:none} }
+@media (max-width:1120px){ .tb-cell.opt{display:none} }
+@media (max-width:760px){
+  .title-block{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .title-block::-webkit-scrollbar{display:none}
+  .tb-grow{display:none}
+  .tb-actions{padding:7px 8px}
+  .index{left:8px;right:8px;bottom:8px;top:auto;padding:6px;
+         max-height:none;overflow-x:auto;overflow-y:hidden}
+  .views{flex-direction:row;gap:4px}
+  .index-h{display:none}
+  .view-btn{white-space:nowrap;padding:7px 11px}
+  .readout{left:8px;right:8px;bottom:66px;min-width:0;padding:8px 12px}
+  .ro-room{margin-bottom:3px}
+  .hint{display:none}
+  .touchpad{bottom:160px;right:10px}
+  .notes{top:auto;bottom:8px;right:8px;left:8px;width:auto;max-height:62vh}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="stage"><canvas id="view"></canvas></div>
+
+<header class="title-block">
+  <div class="tb-cell"><span class="tb-id">a<b>04</b></span></div>
+  <div class="tb-cell">
+    <span class="tb-k">Vivienda</span>
+    <span class="tb-v">Piso B · planta bajocubierta</span>
+  </div>
+  <div class="tb-cell opt">
+    <span class="tb-k">Superficie útil</span>
+    <span class="tb-v mono">144,76 m²</span>
+  </div>
+  <div class="tb-cell opt2">
+    <span class="tb-k">Cota de pavimento</span>
+    <span class="tb-v mono">+118,00</span>
+  </div>
+  <div class="tb-cell opt2">
+    <span class="tb-k">Cumbrera interior</span>
+    <span class="tb-v mono">5,00 m · 65 %</span>
+  </div>
+  <div class="tb-cell tb-grow"></div>
+  <div class="tb-actions">
+    <div class="seg">
+      <button class="btn" id="mode-walk" type="button" aria-pressed="true">Recorrer</button>
+      <button class="btn" id="mode-orbit" type="button" aria-pressed="false">Maqueta</button>
+    </div>
+    <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
+    <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
+    <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
+    <button class="btn" id="t-furn" type="button" aria-pressed="true">Mobiliario</button>
+    <button class="btn" id="notes-btn" type="button" aria-expanded="false" aria-controls="notes">Cotas y fuentes</button>
+  </div>
+</header>
+
+<nav class="index" id="index-panel" aria-label="Estancias">
+  <div class="index-h">Estancias</div>
+  <div id="views" class="views"></div>
+</nav>
+
+<div class="readout" role="status" aria-live="polite">
+  <div class="ro-room" id="hud-room">Salón–comedor</div>
+  <div class="ro-grid">
+    <span class="ro-k">Altura libre</span><span class="ro-v big mono" id="hud-h">—</span>
+    <span class="ro-k">Posición x / y</span><span class="ro-v mono" id="hud-xy">—</span>
+  </div>
+  <div class="ro-warn" id="hud-low" hidden>Bajo faldón — hay que agacharse</div>
+</div>
+
+<div class="touchpad" id="touchpad" aria-hidden="true">
+  <button class="tp" id="tp-fwd" type="button" aria-label="Avanzar">▲</button>
+  <button class="tp" id="tp-back" type="button" aria-label="Retroceder">▼</button>
+</div>
+
+<div class="hint">
+  <span id="hint-walk"><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> andar · <kbd>⇧</kbd> correr ·
+  arrastrar para mirar · rueda = campo visual</span>
+  <span id="hint-orbit" hidden>Arrastrar para girar · rueda para acercar ·
+  <kbd>⇧</kbd>+arrastrar o botón derecho para desplazar</span>
+</div>
+
+<section class="notes" id="notes" aria-label="Cotas y fuentes">
+  <h2>Cómo se ha levantado el modelo</h2>
+  <p>Geometría medida directamente sobre los vectores de los PDF (escala 1:50 en A1,
+     1 pt = 17,64 mm). Sin datos inventados: todo lo que ves procede de los planos.</p>
+
+  <h3>Cotas de partida</h3>
+  <table>
+    <tr><td>Pavimento bajocubierta</td><td class="mono">+118,00</td></tr>
+    <tr><td>Forjado estructural</td><td class="mono">+117,92</td></tr>
+    <tr><td>Planta primera</td><td class="mono">+115,10</td></tr>
+    <tr><td>Altura total sobre +112,20</td><td class="mono">11,03 m</td></tr>
+    <tr><td>Altura libre en cumbrera</td><td class="mono">5,00 m</td></tr>
+    <tr><td>Altura libre en fachada N/S</td><td class="mono">0,40–0,65 m</td></tr>
+    <tr><td>Pendiente de faldón</td><td class="mono">65 %</td></tr>
+  </table>
+
+  <h3>Cubierta</h3>
+  <ul>
+    <li>Cumbrera principal E–O en <span class="mono">y = −8,27</span>, faldones al 65 % (a05).</li>
+    <li>Hastial transversal Norte sobre el estudio: cumbrera N–S en
+        <span class="mono">x = 14,60</span>, faldones al 61 %.</li>
+    <li>Hastial transversal Sur sobre el salón: cumbrera N–S en
+        <span class="mono">x = 13,36</span>, faldones al 91 % — es el frontón
+        del alzado principal, con el balcón bajo el vértice.</li>
+    <li>Comprobación: las limahoyas dibujadas en a05 pasan exactamente por los
+        puntos donde estos tres planos se cortan (error &lt; 2 cm), y la cumbrera
+        exterior resultante cae en <span class="mono">+123,23</span> = 11,03 m,
+        la cota acotada en el alzado a07.</li>
+    <li>Tres buhardillas/miradores: habitación 1 (Norte), cocina y habitación 2 (Sur).</li>
+  </ul>
+
+  <h3>Planos utilizados</h3>
+  <ul>
+    <li><b>a04</b> planta bajocubierta — trazado de muros, huecos y superficies.</li>
+    <li><b>a05</b> planta de cubierta — cumbreras, limatesas y limahoyas.</li>
+    <li><b>a10–a14</b> secciones — cota de forjados (0,30 + 0,08) y altura de aleros.</li>
+    <li><b>a06–a09</b> alzados — 11,03 / 10,51 / 7,95 y posición de buhardillas.</li>
+    <li><b>a01–a03</b> plantas inferiores — comprobación de ejes y espesores.</li>
+  </ul>
+
+  <h3>Simplificaciones</h3>
+  <ul>
+    <li>Los planos dibujan además una cumbrera secundaria 0,52 m más baja
+        (<span class="mono">y = −7,47</span>) sobre los dos vuelos extremos
+        (<span class="mono">x &lt; 4,33</span> y <span class="mono">x &gt; 22,38</span>).
+        No se ha modelado para no fragmentar la lectura del volumen; afectaría
+        sólo a las esquinas de cocina y habitación 1.</li>
+    <li>Tabiquería secundaria, armarios y aparatos sanitarios están resueltos
+        como volúmenes simples, a modo de referencia de escala.</li>
+    <li>Las figuras humanas miden 1,75 m.</li>
+  </ul>
+</section>
