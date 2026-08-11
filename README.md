@@ -38,24 +38,40 @@ decir **1 pt = 17,639 mm**; contrastada con la cota de 29,06 m de `a01`.
 | Canto de forjado | 0,30 + 0,08 de pavimento |
 | Altura libre entre plantas | 2,52 m |
 
-### Cubierta
+### Cubierta: dos aguas a distinta altura
 
-Tres planos, todos con el vértice a **5,00 m** sobre el pavimento
-(cara exterior +123,23 = los 11,03 m acotados en el alzado `a07`):
+No hay una cubierta sino **dos**, superpuestas y desfasadas. Se ven de frente en
+`a08` y en la sección `a13`, donde las dos cumbreras aparecen una detrás de otra,
+separadas 0,80 m en planta y 0,52 m en altura:
+
+| | Cumbrera | Vértice interior | Cota exterior |
+|---|---|---|---|
+| Cuerpo principal, `4,33 < x < 22,38` | `y = −8,27` | 5,00 m | 11,03 m |
+| Vuelos extremos, `x < 4,33` y `x > 22,38` | `y = −7,47` | 4,48 m | 10,51 m |
+
+El faldón **Norte es común** a las dos: el plano que pasa por el vértice alto
+pasa exactamente por el bajo, y por eso en `a04` no hay línea de quiebro al
+norte de la cumbrera. Lo que se duplica es el faldón **Sur**, y entre ambos
+queda un **peldaño vertical** en `x = 4,33` y `x = 22,38` —dibujado en `a04`
+justo desde la cumbrera (`y = −7,47`) hasta el muro Sur de los vuelos
+(`y = −11,16`)— que llega a **1,04 m** de salto. Parte en dos el techo de la
+**cocina** y el de la **habitación 1 (E)**.
+
+Sobre el cuerpo central montan además dos hastiales transversales, ambos con el
+vértice a 5,00 m:
 
 | Plano | Cumbrera | Pendiente |
 |---|---|---|
-| Faldón principal E–O | `y = −8,27` | 65 % |
 | Hastial transversal Norte (estudio) | `x = 14,60` | 61 % |
 | Hastial transversal Sur (salón, frontón del alzado principal) | `x = 13,36` | 91 % |
 
-La comprobación clave: las **limahoyas** dibujadas en `a05` son la intersección
-de esos planos. Los puntos medidos sobre el plano —(9,62; −3,57), (14,59; −8,27)
-para la del Norte y (10,07; −12,90), (13,29; −8,37) para la del Sur— caen sobre
-la intersección calculada con menos de 2 cm de error, y la altura de alero que
-se deduce (0,40 m al Sur, 0,65 m al Norte) coincide con la medida directamente
-en la sección `a11`. La altura de cumbrera resultante reproduce las dos cotas
-del alzado `a07`: 11,03 m (cumbrera) y 10,51 m.
+**Comprobaciones.** Las limahoyas dibujadas en `a05` son la intersección de estos
+planos: los puntos medidos —(9,62; −3,57) y (14,59; −8,27) para la del Norte,
+(10,07; −12,90) y (13,29; −8,37) para la del Sur— caen sobre la intersección
+calculada con menos de 2 cm de error. La altura de alero que se deduce (0,40 m
+al Sur, 0,65 m al Norte) coincide con la medida directamente en la sección `a11`.
+Y las dos cumbreras exteriores reproducen las dos cotas acotadas en los alzados
+`a07` y `a08`: 11,03 y 10,51 m sobre +112,20.
 
 Tres buhardillas/miradores: habitación 1 (Norte) y cocina y habitación 2 (Sur),
 con faldón al 80 % y alero enrasado con el faldón general.
@@ -97,13 +113,6 @@ chimeneas dibujadas en los alzados.
 Según los rótulos de `a05` llevan la extracción de campana y la ventilación de
 cocina y baños de 1ºB, 2ºD, 1ºE, 2ºB y de este mismo 3ºB, más las bajantes y
 los montantes de calefacción y AFS/ACS.
-
-### Simplificación asumida
-
-Los planos dibujan además una **cumbrera secundaria 0,52 m más baja**
-(`y = −7,47`, 10,51 m en el alzado) sobre los dos vuelos extremos
-(`x < 4,33` y `x > 22,38`). No se ha modelado, para no fragmentar la lectura del
-volumen; afectaría sólo a las esquinas de cocina y habitación 1.
 
 ## Estructura
 

@@ -114,6 +114,14 @@ function roomCovers(x, y) {
         y > q[1] - CEIL_PAD && y < q[3] + CEIL_PAD) return true;
   return false;
 }
+/** líneas de corte: aristas de cumbrera y peldaños entre las dos cubiertas */
+function gridEdges(a, b, hard) {
+  const e = [];
+  for (let v = a; v < b - 1e-6; v += CEIL_STEP) e.push(v);
+  e.push(b);
+  hard.forEach(h => { if (h > a + 1e-3 && h < b - 1e-3) e.push(h); });
+  return [...new Set(e.map(v => +v.toFixed(4)))].sort((p, q) => p - q);
+}
 function buildCeiling(M) {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   ROOMS.forEach(r => r.rects.forEach(q => {
@@ -121,17 +129,33 @@ function buildCeiling(M) {
     x1 = Math.max(x1, q[2]); y1 = Math.max(y1, q[3]);
   }));
   x0 -= CEIL_PAD; y0 -= CEIL_PAD; x1 += CEIL_PAD; y1 += CEIL_PAD;
-  const nx = Math.ceil((x1 - x0) / CEIL_STEP), ny = Math.ceil((y1 - y0) / CEIL_STEP);
-  const p = (X, Y) => V(X, Y, roofH(X, Y));
-  for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
-    const xa = x0 + i * CEIL_STEP, xb = Math.min(x1, xa + CEIL_STEP);
-    const ya = y0 + j * CEIL_STEP, yb = Math.min(y1, ya + CEIL_STEP);
+  const XS = gridEdges(x0, x1, [ROOF.endW, ROOF.endE, ROOF.gableNx, ROOF.gableSx]);
+  const YS = gridEdges(y0, y1, [ROOF.ridgeY, ROOF.ridgeY2]);
+  for (let i = 0; i < XS.length - 1; i++) for (let j = 0; j < YS.length - 1; j++) {
+    const xa = XS[i], xb = XS[i + 1], ya = YS[j], yb = YS[j + 1];
     const cx = (xa + xb) / 2, cy = (ya + yb) / 2;
-    if (!roomCovers(cx, cy)) continue;
-    if (dormerAt(cx, cy)) continue;                     // la buhardilla lleva su propio paño
+    if (!roomCovers(cx, cy) || dormerAt(cx, cy)) continue;
+    const p = (X, Y) => V(X, Y, roofH(X, Y, cx));   // cx fija el lado del peldaño
     M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));
   }
 }
+/** Peldaño vertical entre la cubierta alta y la baja (x = 4,33 y 22,38). */
+function buildRoofSteps(M, lift) {
+  const L = lift || 0, dy = 0.15;
+  [ROOF.endW, ROOF.endE].forEach(xs => {
+    for (let y = ROOF.ridgeY2; y > -16; y -= dy) {
+      const ya = y, yb = y - dy;
+      if (!roomCovers(xs, (ya + yb) / 2)) continue;
+      const lo = [roofH(xs, ya, xs - 0.05) + L, roofH(xs, yb, xs - 0.05) + L];
+      const hi = [roofH(xs, ya, xs + 0.05) + L, roofH(xs, yb, xs + 0.05) + L];
+      const a0 = Math.min(lo[0], hi[0]), a1 = Math.max(lo[0], hi[0]);
+      const b0 = Math.min(lo[1], hi[1]), b1 = Math.max(lo[1], hi[1]);
+      if (a1 - a0 < 0.01 && b1 - b0 < 0.01) continue;
+      M.quad(V(xs, ya, a0), V(xs, yb, b0), V(xs, yb, b1), V(xs, ya, a1));
+    }
+  });
+}
+
 /* Paño de buhardilla: usa su propia cubierta, sin solape. */
 function buildCeilingPatch(r, M, fn, pad) {
   const [x0, y0, x1, y1] = r;
@@ -175,6 +199,7 @@ function buildApartment() {
   // --- suelos, techos
   const Mf = new Mesher(), Mc = new Mesher();
   buildCeiling(Mc);
+  buildRoofSteps(Mc, 0);
   ROOMS.forEach(room => {
     room.rects.forEach(r => buildSlab(r, 0, Mf, true));
     (room.dormers || []).forEach(id => {
@@ -307,6 +332,7 @@ function buildShell() {
     }
   };
   ROOMS.forEach(r => r.rects.forEach(q => patch(q, EAVE, roofH)));
+  buildRoofSteps(M, T);
   DORMERS.forEach(d => patch([d.x0, d.y0, d.x1, d.y1], 0.22,
     (X, Y) => d.eave + DORMER_SLOPE * ((d.x1 - d.x0) / 2 + 0.22 - Math.abs(X - d.xc))));
   const mat = new THREE.MeshLambertMaterial({ color: 0x8a8478, transparent: true, opacity: 0.5,

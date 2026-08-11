@@ -9,21 +9,54 @@
    ===================================================================== */
 
 /* ---------- geometría de cubierta (cara interior = techo) ------------
-   Derivada de las líneas de limahoya del plano de cubierta a05 y de las
-   cotas de las secciones a11/a13 y del alzado principal a07:
-     · Cumbrera principal E-O en y = −8,27 ; faldones al 65 %
-     · Hastial transversal Norte, cumbrera N-S en x = 14,60, faldones 61 %
-     · Hastial transversal Sur  (salón), cumbrera N-S en x = 13,36, 91 %
-     · Altura interior de cumbrera 5,00 m  (cara exterior +123,23 =
-       11,03 m sobre +112,20, cota del alzado a07)
+   Derivada de las limahoyas del plano de cubierta a05 y contrastada con las
+   secciones a11/a13 y los alzados a07/a08.
+
+   Hay DOS cubiertas a distinta altura, superpuestas:
+
+     · Cuerpo principal (4,33 < x < 22,38): cumbrera E-O en y = −8,27,
+       vértice interior 5,00 m  (cara exterior 11,03 m sobre +112,20).
+     · Vuelos extremos (x < 4,33 y x > 22,38), menos profundos en planta:
+       cumbrera E-O en y = −7,47, vértice interior 4,48 m  (10,51 m).
+
+   El faldón NORTE es común a las dos: el plano que pasa por el vértice alto
+   pasa exactamente por el vértice bajo (0,80 m de separación en planta,
+   0,52 m en altura → 65 %), tal como se ve en a08 y a13, donde las dos
+   cumbreras aparecen una detrás de otra. Lo que se duplica es el faldón SUR,
+   y entre ambos queda un peldaño vertical en x = 4,33 y x = 22,38 que en a04
+   está dibujado justo desde la cumbrera (y = −7,47) hasta el muro Sur de los
+   vuelos (y = −11,16).
+
+   Sobre el cuerpo central montan además dos hastiales transversales:
+     · Norte  (estudio): cumbrera N-S en x = 14,60, faldones al 61 %
+     · Sur    (salón):   cumbrera N-S en x = 13,36, faldones al 91 %
    -------------------------------------------------------------------- */
 const ROOF = {
-  H: 5.00,          // altura libre en cumbrera
-  ridgeY: -8.27,    // cumbrera principal
-  sMain: 0.647,     // 65 %
-  gableNx: 14.60, sN: 0.61,   // hastial norte 61 %
-  gableSx: 13.36, sS: 0.91    // hastial sur 91 %
+  H: 5.00,   ridgeY: -8.27,     // cuerpo principal
+  H2: 4.48,  ridgeY2: -7.47,    // vuelos extremos
+  endW: 4.33, endE: 22.38,      // límites del cuerpo principal
+  sMain: 0.647,                 // 65 %
+  gableNx: 14.60, sN: 0.61,     // hastial norte 61 %
+  gableSx: 13.36, sS: 0.91      // hastial sur 91 %
 };
+
+const isEndBay = x => x < ROOF.endW || x > ROOF.endE;
+
+/** Cara inferior del faldón.  `sideX` permite forzar de qué lado del
+    peldaño se evalúa un punto que cae justo sobre x = 4,33 ó 22,38.      */
+function roofH(x, y, sideX) {
+  const end = isEndBay(sideX === undefined ? x : sideX);
+  const ry = end ? ROOF.ridgeY2 : ROOF.ridgeY;
+  const H  = end ? ROOF.H2 : ROOF.H;
+  let h = (y > ry)
+    ? ROOF.H - ROOF.sMain * (y - ROOF.ridgeY)      // faldón Norte, común
+    : H + ROOF.sMain * (y - ry);                   // faldón Sur, desdoblado
+  if (!end) {                                      // hastiales transversales
+    if (y > ROOF.ridgeY) h = Math.max(h, ROOF.H - ROOF.sN * Math.abs(x - ROOF.gableNx));
+    else                 h = Math.max(h, ROOF.H - ROOF.sS * Math.abs(x - ROOF.gableSx));
+  }
+  return h;
+}
 
 const DORMERS = [
   { id:'d-hab1',  x0: 3.62, x1: 4.85, y0: -3.57,  y1: -2.25,  jy: -3.57,  dir: +1 },
@@ -31,13 +64,6 @@ const DORMERS = [
   { id:'d-hab2',  x0:19.20, x1:20.40, y0: -14.10, y1: -12.40, jy: -12.40, dir: -1 }
 ];
 const DORMER_SLOPE = 0.80;
-
-function roofH(x, y) {
-  let h = ROOF.H - ROOF.sMain * Math.abs(y - ROOF.ridgeY);
-  if (y > ROOF.ridgeY) h = Math.max(h, ROOF.H - ROOF.sN * Math.abs(x - ROOF.gableNx));
-  else                 h = Math.max(h, ROOF.H - ROOF.sS * Math.abs(x - ROOF.gableSx));
-  return h;
-}
 DORMERS.forEach(d => { d.xc = (d.x0 + d.x1) / 2; d.eave = roofH(d.xc, d.jy); });
 
 function dormerAt(x, y) {
@@ -206,17 +232,17 @@ const FURNITURE = [
 ];
 
 /* --------------------- posiciones de cámara sugeridas ---------------- */
-const FIGURES = [[3.55,-4.40],[6.60,-9.90],[11.30,-13.30],[15.90,-12.30],[17.55,-10.90],[11.40,-3.20],[22.60,-10.85]];
+const FIGURES = [[3.55,-4.40],[3.30,-9.10],[11.30,-13.30],[15.90,-12.30],[17.55,-10.90],[11.40,-3.20],[22.60,-10.85]];
 
 const VIEWS = [
   { id:'sal',  name:'Salón–comedor',  pos:[11.15,-10.05], look:[14.60,-13.60, 2.55] },
-  { id:'coc',  name:'Cocina',         pos:[ 8.90,-11.60], look:[ 3.20, -9.60, 1.90] },
+  { id:'coc',  name:'Cocina',         pos:[ 7.40,-10.75], look:[ 2.90,-10.20, 3.20] },
   { id:'est',  name:'Estudio',        pos:[10.30, -6.60], look:[10.70, -1.70, 2.30] },
   { id:'hab1', name:'Habitación 1',   pos:[ 5.20, -7.60], look:[ 4.24, -2.40, 2.20] },
   { id:'vest', name:'Vestidor',       pos:[ 9.00, -4.90], look:[ 5.70, -4.70, 1.70] },
   { id:'rec',  name:'Recibidor',      pos:[11.20, -8.70], look:[16.40, -8.60, 2.00] },
   { id:'hab2', name:'Habitación 2',   pos:[19.90,-10.20], look:[19.80,-13.90, 2.00] },
   { id:'dis',  name:'Distribuidor',   pos:[17.20, -8.45], look:[21.30, -8.45, 1.90] },
-  { id:'hab3', name:'Habitación 1 E', pos:[22.10, -8.20], look:[24.20,-10.40, 1.90] },
+  { id:'hab3', name:'Habitación 1 E', pos:[23.85, -9.40], look:[21.60, -9.90, 2.70] },
   { id:'ban2', name:'Baño 2',         pos:[19.60, -8.15], look:[21.30, -7.10, 1.80] }
 ];
