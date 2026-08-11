@@ -65,8 +65,14 @@ vértice a 5,00 m:
 | Hastial transversal Norte (estudio) | `x = 14,60` | 61 % |
 | Hastial transversal Sur (salón, frontón del alzado principal) | `x = 13,36` | 91 % |
 
-**Comprobaciones.** Las limahoyas dibujadas en `a05` son la intersección de estos
-planos: los puntos medidos —(9,62; −3,57) y (14,59; −8,27) para la del Norte,
+**Comprobaciones.** Los cuatro planos que ven las cumbreras de frente —alzados
+`a06` y `a08`, secciones `a11` y `a13`— dan el mismo par medido sobre los
+vectores: 5,00 y 4,48 m, con 0,80 m de desfase en planta y 0,52 m en altura. Que
+0,52/0,80 = 65 % es justamente lo que obliga a que el faldón Norte sea común a
+las dos cubiertas. En `a05` la cumbrera baja está dibujada **sólo** sobre
+`x = 1,53–4,33` y `x = 22,39–25,19`, que son exactamente los dos vuelos extremos.
+
+Las limahoyas dibujadas en `a05` son la intersección de estos planos: los puntos medidos —(9,62; −3,57) y (14,59; −8,27) para la del Norte,
 (10,07; −12,90) y (13,29; −8,37) para la del Sur— caen sobre la intersección
 calculada con menos de 2 cm de error. La altura de alero que se deduce (0,40 m
 al Sur, 0,65 m al Norte) coincide con la medida directamente en la sección `a11`.
@@ -75,6 +81,13 @@ Y las dos cumbreras exteriores reproducen las dos cotas acotadas en los alzados
 
 Tres buhardillas/miradores: habitación 1 (Norte) y cocina y habitación 2 (Sur),
 con faldón al 80 % y alero enrasado con el faldón general.
+
+Existe todavía una **tercera cubierta más baja** —cumbrera en `y = −3,51`,
+vértice a 2,09 m sobre el pavimento— que es el frontón pequeño que se ve a la
+izquierda de `a06`. En `a05` sus dos aleros (`y = −0,56` y `y = −6,46`) y su
+cumbrera sólo aparecen sobre `x < 1,53` y `x > 25,19`: cubre las alas de dos
+plantas de los extremos y queda fuera de la vivienda, cuyo muro Oeste está en
+`x = 2,20`. Por eso no se modela.
 
 ### Pilares
 
