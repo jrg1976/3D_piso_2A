@@ -3,7 +3,7 @@
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
 let mode = 'walk';
-const cam = { x: 13.30, y: -10.10, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
+const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
 const orb = { tx: 13.4, ty: -8.6, tz: 1.4, dist: 21, az: -0.62, el: 0.42 };
 const keys = Object.create(null);
 const RADIUS = 0.20;
@@ -81,8 +81,17 @@ function buildPortals() {
     ]);
   }));
 }
+/** obstáculos macizos: pilares exentos y patinillos */
+function blocked(x, y) {
+  for (const p of PILLARS)
+    if (Math.abs(x - p.x) < p.w / 2 && Math.abs(y - p.y) < p.d / 2) return true;
+  for (const s of SHAFTS)
+    if (x > s.x0 && x < s.x1 && y > s.y0 && y < s.y1) return true;
+  return false;
+}
 /** ¿el punto pertenece al interior de la vivienda (unión de estancias)? */
 function inside(x, y) {
+  if (blocked(x, y)) return false;
   for (const r of ROOMS) for (const q of r.rects)
     if (x > q[0] && x < q[2] && y > q[1] && y < q[3]) return true;
   for (const d of DORMERS)
@@ -155,6 +164,10 @@ function bindControls() {
   document.getElementById('t-shell').onclick = e => toggle(e.currentTarget, v => shell.visible = v);
   document.getElementById('t-furn').onclick = e => toggle(e.currentTarget, v => {
     apt.furn.visible = v; apt.figs.visible = v;
+  });
+  document.getElementById('t-struct').onclick = e => toggle(e.currentTarget, v => {
+    apt.pillars.material.color.set(v ? 0xd08a2a : 0xdcd4c6);
+    apt.shafts.material.color.set(v ? 0x9c6a2e : 0xb9ab97);
   });
   document.getElementById('t-ceil').onclick = e => toggle(e.currentTarget, v => { apt.ceil.visible = v; });
   const hold = (id, k) => {

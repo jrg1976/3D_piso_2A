@@ -203,6 +203,7 @@ button{font:inherit;color:inherit;cursor:pointer}
       <button class="btn" id="mode-orbit" type="button" aria-pressed="false">Maqueta</button>
     </div>
     <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
+    <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
     <button class="btn" id="t-furn" type="button" aria-pressed="true">Mobiliario</button>
@@ -267,6 +268,37 @@ button{font:inherit;color:inherit;cursor:pointer}
     <li>Tres buhardillas/miradores: habitación 1 (Norte), cocina y habitación 2 (Sur).</li>
   </ul>
 
+  <h3>Pilares</h3>
+  <p>Perfiles de <span class="mono">0,14 m</span> con trasdosado
+     (<span class="mono">0,21 × 0,20</span>), del pavimento al faldón. Casi todos
+     se alinean con los ejes de cumbrera, que es donde apoya la estructura de
+     cubierta:</p>
+  <table>
+    <tr><td>Cocina · exento</td><td class="mono">9,08 / −8,27</td></tr>
+    <tr><td>Recibidor · exento</td><td class="mono">13,36 / −8,27</td></tr>
+    <tr><td>Salón–comedor · exento</td><td class="mono">13,36 / −11,06</td></tr>
+    <tr><td>Distribuidor · exento</td><td class="mono">17,75 / −8,27</td></tr>
+    <tr><td>Baño 2 · exento</td><td class="mono">20,85 / −8,27</td></tr>
+    <tr><td>Embebidos en muro</td><td class="mono">4 más</td></tr>
+  </table>
+  <p>El del salón queda en mitad de la estancia, sobre el eje del hastial;
+     el de la cocina, entre la zona de office y el paso al recibidor.</p>
+
+  <h3>Patinillos y salidas de humos</h3>
+  <p>Bloques de fábrica que arrancan del semisótano (sala de máquinas de
+     ventilación del garaje, a01) y salen por cubierta. Coronación medida en la
+     sección A-A' (a10): <span class="mono">+6,25 m</span> sobre el pavimento de
+     la bajocubierta, ≈ 1 m por encima de la cumbrera.</p>
+  <table>
+    <tr><td>Cocina · exento</td><td class="mono">0,51 × 0,90</td></tr>
+    <tr><td>Estudio · adosado</td><td class="mono">0,78 × 1,09</td></tr>
+    <tr><td>Estudio Sur · en muro</td><td class="mono">1,02 × 0,45</td></tr>
+    <tr><td>Habitación 2 · en rincón</td><td class="mono">0,50 × 0,73</td></tr>
+  </table>
+  <p>Llevan la extracción de campana y la ventilación de cocina y baños de
+     1ºB, 2ºD, 1ºE, 2ºB y de este mismo 3ºB, más las bajantes y los montantes
+     de calefacción y AFS/ACS (rótulos de a05).</p>
+
   <h3>Planos utilizados</h3>
   <ul>
     <li><b>a04</b> planta bajocubierta — trazado de muros, huecos y superficies.</li>
@@ -285,6 +317,8 @@ button{font:inherit;color:inherit;cursor:pointer}
         sólo a las esquinas de cocina y habitación 1.</li>
     <li>Tabiquería secundaria, armarios y aparatos sanitarios están resueltos
         como volúmenes simples, a modo de referencia de escala.</li>
+    <li>El botón <b>Estructura</b> tiñe pilares y patinillos para localizarlos
+        de un vistazo.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
   </ul>
 </section>
@@ -363,14 +397,16 @@ const ROOMS = [
   { id:'ban1', name:'Baño 1', rects:[[5.95,-7.40,9.40,-5.75]], label:[7.65,-6.55], sup:5.45 },
   { id:'coc',  name:'Cocina', rects:[[2.57,-11.00,5.85,-8.10],[5.85,-12.45,10.05,-7.65]],
     dormers:['d-coc'], label:[7.20,-10.00], sup:30.51 },
-  { id:'est',  name:'Estudio', rects:[[9.60,-7.35,11.90,-1.60]], label:[10.75,-4.40], sup:13.02 },
-  { id:'rec',  name:'Recibidor', rects:[[10.25,-9.35,16.55,-7.55]], label:[13.40,-8.45], sup:7.72 },
+  { id:'est',  name:'Estudio', rects:[[9.50,-4.88,11.95,-1.60],[9.50,-7.40,11.17,-4.88]],
+    label:[10.55,-3.60], sup:13.02 },
+  { id:'rec',  name:'Recibidor', rects:[[10.25,-9.35,14.45,-7.55],[14.45,-9.35,16.55,-8.39]],
+    label:[12.60,-8.55], sup:7.72 },
   { id:'sal',  name:'Salón–comedor', rects:[[10.25,-14.25,16.55,-9.35]], label:[13.40,-11.80], sup:30.00 },
   { id:'dis',  name:'Distribuidor', rects:[[16.75,-9.35,19.10,-7.55],[19.10,-9.35,21.40,-8.45]],
     label:[17.90,-8.60], sup:6.73 },
   { id:'ban2', name:'Baño 2', rects:[[19.10,-8.45,21.40,-6.65]], label:[20.25,-7.55], sup:3.78 },
-  { id:'hab3', name:'Habitación 1 (E)', rects:[[21.40,-11.00,24.20,-7.55]], label:[22.80,-9.30], sup:9.96 },
-  { id:'hab2', name:'Habitación 2', rects:[[16.75,-12.40,20.50,-9.45]], dormers:['d-hab2'],
+  { id:'hab3', name:'Habitación 1 (E)', rects:[[21.50,-11.00,24.20,-7.55]], label:[22.85,-9.30], sup:9.96 },
+  { id:'hab2', name:'Habitación 2', rects:[[16.75,-12.40,20.80,-9.45]], dormers:['d-hab2'],
     label:[18.30,-10.90], sup:14.55 }
 ];
 
@@ -393,7 +429,7 @@ const WALLS = [
   { a:[5.85,-5.675], b:[5.85,-7.525], t:W_INT },
   { a:[2.385,-8.175], b:[5.90,-8.175], t:0.15 },                   // hab.1 / cocina
   { a:[5.90,-7.525], b:[9.50,-7.525], t:0.25, holes:[[0.15,1.00,0.00,2.10,'door']] },
-  { a:[9.50,-1.50], b:[9.50,-7.525], t:0.30 },                     // cocina/vestidor – estudio
+  { a:[9.39,-1.50], b:[9.39,-7.525], t:0.22 },                     // cocina/vestidor – estudio
   { a:[2.385,-11.075], b:[5.90,-11.075], t:0.15 },
   { a:[5.85,-11.075], b:[5.85,-12.55], t:W_INT },
   { a:[5.85,-12.55], b:[10.15,-12.55], t:W_INT, holes:[[0.70,1.55,0.00,9.00,'open']] },
@@ -402,12 +438,15 @@ const WALLS = [
   { a:[7.475,-14.18], b:[7.475,-12.55], t:0.15 },
 
   // ---- estudio y balcón norte ----
-  { a:[9.50,-1.50], b:[12.00,-1.50], t:W_EXT, holes:[[0.85,1.75,0.00,2.10,'door']] },
-  { a:[12.00,-1.50], b:[12.00,-7.45], t:W_INT },
-  { a:[9.50,-7.45], b:[12.00,-7.45], t:W_INT, holes:[[1.15,2.05,0.00,2.10,'door']] },
+  { a:[9.39,-1.425], b:[12.075,-1.425], t:W_EXT, holes:[[1.40,2.35,0.00,2.10,'door']] },
+  { a:[12.075,-1.425], b:[12.075,-4.88], t:0.25 },
+  { a:[11.27,-5.97], b:[11.27,-7.45], t:0.20 },
+  { a:[9.39,-7.45], b:[10.35,-7.45], t:0.20, holes:[[0.06,0.92,0.00,2.10,'door']] },
 
   // ---- recibidor / salón ----
-  { a:[12.00,-7.45], b:[16.65,-7.45], t:W_INT, holes:[[0.35,1.25,0.00,2.10,'entry']] },
+  { a:[11.37,-7.45], b:[14.55,-7.45], t:W_INT, holes:[[0.95,1.85,0.00,2.10,'entry']] },
+  { a:[14.55,-7.45], b:[14.55,-8.30], t:W_INT },
+  { a:[14.55,-8.30], b:[16.65,-8.30], t:0.18 },
   { a:[10.15,-7.55], b:[10.15,-14.42], t:W_INT, holes:[[0.50,1.40,0.00,2.10,'door']] },
   { a:[10.15,-14.42], b:[16.65,-14.42], t:W_EXT, holes:[
       [0.55,2.45,0.00,2.15,'french'], [3.45,5.50,0.00,2.15,'french']] },
@@ -421,14 +460,53 @@ const WALLS = [
   { a:[19.10,-8.45], b:[21.40,-8.45], t:W_INT, holes:[[1.35,2.15,0.00,2.10,'door']] },
   { a:[21.40,-7.45], b:[24.385,-7.45], t:W_INT },
   { a:[24.385,-7.45], b:[24.385,-11.075], t:W_EXT, holes:[[0.60,1.75,0.90,2.30,'win']] },
-  { a:[21.40,-8.45], b:[21.40,-11.075], t:W_INT, holes:[[0.25,1.05,0.00,2.10,'door']] },
-  { a:[20.50,-11.075], b:[24.385,-11.075], t:W_EXT },
-  { a:[16.65,-9.40], b:[20.60,-9.40], t:0.10, holes:[[2.70,3.60,0.00,2.10,'door']] },
-  { a:[20.50,-9.40], b:[20.50,-12.50], t:W_INT },
-  { a:[16.65,-12.50], b:[20.50,-12.50], t:W_INT, holes:[[2.55,3.75,0.00,9.00,'open']] },
+  { a:[21.40,-8.45], b:[21.40,-9.29], t:W_INT, holes:[[0.02,0.82,0.00,2.10,'door']] },
+  { a:[21.40,-10.02], b:[21.40,-11.075], t:W_INT },
+  { a:[20.85,-11.075], b:[24.385,-11.075], t:W_EXT },
+  { a:[16.65,-9.40], b:[20.85,-9.40], t:0.10, holes:[[2.70,3.60,0.00,2.10,'door']] },
+  { a:[20.85,-10.02], b:[20.85,-12.50], t:0.10 },
+  { a:[16.65,-12.50], b:[20.85,-12.50], t:W_INT, holes:[[2.55,3.75,0.00,9.00,'open']] },
   { a:[19.125,-12.50], b:[19.125,-14.18], t:0.15 },                // mirador hab.2
   { a:[19.125,-14.18], b:[20.475,-14.18], t:0.15, holes:[[0.15,1.20,0.90,1.90,'win']] },
   { a:[20.475,-14.18], b:[20.475,-12.50], t:0.15 }
+];
+
+/* -------------------------- pilares --------------------------------
+   Perfiles de 0,14 m detectados en a04 con su trasdosado (0,21 × 0,20).
+   Casi todos se alinean con la cumbrera principal (y = −8,27) y con el
+   eje del hastial del salón (x = 13,36).  `free` = exento en la estancia.
+   -------------------------------------------------------------------- */
+const PILLARS = [
+  { x: 9.08, y: -8.27, w:0.21, d:0.20, room:'coc',  free:true  },
+  { x:13.36, y: -8.27, w:0.21, d:0.20, room:'rec',  free:true  },
+  { x:13.36, y:-11.06, w:0.21, d:0.20, room:'sal',  free:true  },
+  { x:17.75, y: -8.27, w:0.21, d:0.20, room:'dis',  free:true  },
+  { x:20.85, y: -8.27, w:0.21, d:0.20, room:'ban2', free:true  },
+  { x: 5.84, y: -8.27, w:0.21, d:0.28, room:'coc',  free:false },
+  { x:14.59, y: -8.27, w:0.21, d:0.20, room:'rec',  free:false },
+  { x:13.36, y:-14.26, w:0.21, d:0.20, room:'sal',  free:false },
+  { x:12.00, y: -5.83, w:0.26, d:0.24, room:'est',  free:false }
+];
+
+/* ------------------- patinillos / conductos de humos -----------------
+   Bloques de fábrica que suben desde el garaje (a01) y salen por
+   cubierta.  Coronación medida en la sección A-A' (a10): +6,25 m sobre
+   el pavimento de la bajocubierta, ≈ 1 m por encima de la cumbrera.
+   -------------------------------------------------------------------- */
+const SHAFT_TOP = 6.25;
+const SHAFTS = [
+  // extracción de campana y ventilación de cocina/wc de 1ºB, 2ºD y 3ºB
+  { x0: 5.25, y0:-10.12, x1: 5.76, y1: -9.22, room:'coc', free:true,
+    note:'Extracción de campana y ventilación 1ºB · 2ºD · 3ºB' },
+  // máquina de ventilación del garaje + montantes de calefacción y AFS/ACS
+  { x0:11.17, y0: -5.97, x1:11.95, y1: -4.88, room:'est', free:false,
+    note:'Ventilación del garaje y montantes' },
+  // patinillo del testero sur del estudio
+  { x0:10.35, y0: -7.85, x1:11.37, y1: -7.40, room:'est', free:false,
+    note:'Ventilación de cuarto de basuras' },
+  // extracción de campana y ventilación de 1ºE, 2ºB y 3ºB
+  { x0:20.80, y0:-10.02, x1:21.30, y1: -9.29, room:'hab2', free:false,
+    note:'Extracción de campana y ventilación 1ºE · 2ºB · 3ºB' }
 ];
 
 /* ------------------------- balcones (contexto) ----------------------- */
@@ -448,7 +526,7 @@ const FURNITURE = [
   [8.60,-7.30,9.35,-5.85,0.55,'tub'], [6.10,-6.05,7.10,-5.85,0.85,'sink'],
   // cocina
   [2.70,-8.80,5.60,-8.20,0.90,'counter'], [5.95,-8.30,9.90,-7.80,0.90,'counter'],
-  [4.20,-10.30,6.40,-9.30,0.76,'table'],
+  [3.10,-10.40,4.90,-9.20,0.76,'table'],
   // estudio
   [9.70,-3.20,11.00,-2.55,0.74,'table'], [11.10,-6.90,11.80,-4.20,0.90,'shelf'],
   // salón
@@ -464,16 +542,16 @@ const FURNITURE = [
 ];
 
 /* --------------------- posiciones de cámara sugeridas ---------------- */
-const FIGURES = [[3.55,-4.40],[4.60,-9.60],[11.30,-13.30],[15.90,-12.30],[17.55,-10.90],[11.40,-3.20],[22.60,-10.85]];
+const FIGURES = [[3.55,-4.40],[6.60,-9.90],[11.30,-13.30],[15.90,-12.30],[17.55,-10.90],[11.40,-3.20],[22.60,-10.85]];
 
 const VIEWS = [
-  { id:'sal',  name:'Salón–comedor',  pos:[13.30,-10.30], look:[13.36,-14.10, 2.60] },
-  { id:'coc',  name:'Cocina',         pos:[ 9.30,-11.80], look:[ 3.20, -9.40, 1.90] },
-  { id:'est',  name:'Estudio',        pos:[10.75, -6.60], look:[10.85, -1.70, 2.30] },
+  { id:'sal',  name:'Salón–comedor',  pos:[11.15,-10.05], look:[14.60,-13.60, 2.55] },
+  { id:'coc',  name:'Cocina',         pos:[ 8.90,-11.60], look:[ 3.20, -9.60, 1.90] },
+  { id:'est',  name:'Estudio',        pos:[10.30, -6.60], look:[10.70, -1.70, 2.30] },
   { id:'hab1', name:'Habitación 1',   pos:[ 5.20, -7.60], look:[ 4.24, -2.40, 2.20] },
   { id:'vest', name:'Vestidor',       pos:[ 9.00, -4.90], look:[ 5.70, -4.70, 1.70] },
-  { id:'rec',  name:'Recibidor',      pos:[12.40, -8.60], look:[16.60, -8.60, 2.00] },
-  { id:'hab2', name:'Habitación 2',   pos:[19.60,-10.20], look:[19.80,-13.90, 2.00] },
+  { id:'rec',  name:'Recibidor',      pos:[11.20, -8.70], look:[16.40, -8.60, 2.00] },
+  { id:'hab2', name:'Habitación 2',   pos:[19.90,-10.20], look:[19.80,-13.90, 2.00] },
   { id:'dis',  name:'Distribuidor',   pos:[17.20, -8.45], look:[21.30, -8.45, 1.90] },
   { id:'hab3', name:'Habitación 1 E', pos:[22.10, -8.20], look:[24.20,-10.40, 1.90] },
   { id:'ban2', name:'Baño 2',         pos:[19.60, -8.15], look:[21.30, -7.10, 1.80] }
@@ -585,21 +663,49 @@ function buildSlab(r, z, M, up) {
   if (up) M.quad(a, b, c, d); else M.quad(d, c, b, a);
 }
 
-/* Paños de estancia: se evalúa el faldón general (roofH) y se solapan 7 cm
-   bajo los muros, de modo que paños contiguos quedan exactamente coplanarios.
-   Los paños de buhardilla usan su propia cubierta y no llevan solape.        */
+/* Techo continuo: se malla el rectángulo envolvente de la vivienda y se
+   emiten sólo las celdas que caen sobre alguna estancia (dilatada 0,22 m
+   para cubrir el espesor de los muros).  Así no quedan juntas entre paños
+   ni resquicios por los que se cuele el cielo.                            */
+const CEIL_PAD = 0.22, CEIL_STEP = 0.22;
+
+function roomCovers(x, y) {
+  for (const r of ROOMS) for (const q of r.rects)
+    if (x > q[0] - CEIL_PAD && x < q[2] + CEIL_PAD &&
+        y > q[1] - CEIL_PAD && y < q[3] + CEIL_PAD) return true;
+  return false;
+}
+function buildCeiling(M) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  ROOMS.forEach(r => r.rects.forEach(q => {
+    x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]);
+    x1 = Math.max(x1, q[2]); y1 = Math.max(y1, q[3]);
+  }));
+  x0 -= CEIL_PAD; y0 -= CEIL_PAD; x1 += CEIL_PAD; y1 += CEIL_PAD;
+  const nx = Math.ceil((x1 - x0) / CEIL_STEP), ny = Math.ceil((y1 - y0) / CEIL_STEP);
+  const p = (X, Y) => V(X, Y, roofH(X, Y));
+  for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
+    const xa = x0 + i * CEIL_STEP, xb = Math.min(x1, xa + CEIL_STEP);
+    const ya = y0 + j * CEIL_STEP, yb = Math.min(y1, ya + CEIL_STEP);
+    const cx = (xa + xb) / 2, cy = (ya + yb) / 2;
+    if (!roomCovers(cx, cy)) continue;
+    if (dormerAt(cx, cy)) continue;                     // la buhardilla lleva su propio paño
+    M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));
+  }
+}
+/* Paño de buhardilla: usa su propia cubierta, sin solape. */
 function buildCeilingPatch(r, M, fn, pad) {
   const [x0, y0, x1, y1] = r;
-  const P = pad === undefined ? 0.07 : pad;
+  const P = pad === undefined ? 0 : pad;
   const ax = x0 - P, bx = x1 + P, ay = y0 - P, by = y1 + P;
-  const nx = Math.max(1, Math.ceil((bx - ax) / 0.30));
-  const ny = Math.max(1, Math.ceil((by - ay) / 0.30));
+  const nx = Math.max(1, Math.ceil((bx - ax) / 0.25));
+  const ny = Math.max(1, Math.ceil((by - ay) / 0.25));
   const f = fn || roofH;
   const p = (X, Y) => V(X, Y, f(X, Y));
   for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
     const xa = ax + (bx - ax) * i / nx, xb = ax + (bx - ax) * (i + 1) / nx;
     const ya = ay + (by - ay) * j / ny, yb = ay + (by - ay) * (j + 1) / ny;
-    M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));   // normal hacia abajo
+    M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));
   }
 }
 
@@ -616,6 +722,8 @@ function buildApartment() {
   const matGlass = new THREE.MeshLambertMaterial({ color: 0xcfe4ee, transparent: true, opacity: 0.16,
                                                   side: S, depthWrite: false });
   const matFurn = new THREE.MeshLambertMaterial({ color: 0x8d7660, side: S });
+  const matPil  = new THREE.MeshLambertMaterial({ color: 0xdcd4c6, side: S });
+  const matShaft= new THREE.MeshLambertMaterial({ color: 0xb9ab97, side: S });
   const matFig = new THREE.MeshLambertMaterial({ color: 0x7b93a6, side: S });
 
   // --- muros
@@ -627,8 +735,9 @@ function buildApartment() {
 
   // --- suelos, techos
   const Mf = new Mesher(), Mc = new Mesher();
+  buildCeiling(Mc);
   ROOMS.forEach(room => {
-    room.rects.forEach(r => { buildSlab(r, 0, Mf, true); buildCeilingPatch(r, Mc); });
+    room.rects.forEach(r => buildSlab(r, 0, Mf, true));
     (room.dormers || []).forEach(id => {
       const d = DORMERS.find(k => k.id === id);
       buildSlab([d.x0, d.y0, d.x1, d.y1], 0, Mf, true);
@@ -691,6 +800,29 @@ function buildApartment() {
   });
   const glass = new THREE.Mesh(Mg.geometry(), matGlass); group.add(glass);
 
+  // --- pilares (del pavimento al faldón)
+  const Mpil = new Mesher();
+  PILLARS.forEach(p => {
+    const x0 = p.x - p.w / 2, x1 = p.x + p.w / 2, y0 = p.y - p.d / 2, y1 = p.y + p.d / 2;
+    const top = Math.max(ceilAt(p.x, p.y), ceilAt(x0, y0), ceilAt(x1, y1)) + 0.02;
+    Mpil.box([V(x0,y0,0),V(x1,y0,0),V(x1,y1,0),V(x0,y1,0)],
+             [V(x0,y0,top),V(x1,y0,top),V(x1,y1,top),V(x0,y1,top)]);
+  });
+  const pillars = new THREE.Mesh(Mpil.geometry(), matPil);
+  pillars.castShadow = pillars.receiveShadow = true; group.add(pillars);
+
+  // --- patinillos: atraviesan el faldón y rematan sobre cubierta
+  const Msh = new Mesher();
+  SHAFTS.forEach(s => {
+    const bx = (x0,y0,x1,y1,z0,z1) => Msh.box(
+      [V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+      [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+    bx(s.x0, s.y0, s.x1, s.y1, 0, SHAFT_TOP - 0.16);
+    bx(s.x0 - 0.09, s.y0 - 0.09, s.x1 + 0.09, s.y1 + 0.09, SHAFT_TOP - 0.16, SHAFT_TOP);  // albardilla
+  });
+  const shafts = new THREE.Mesh(Msh.geometry(), matShaft);
+  shafts.castShadow = shafts.receiveShadow = true; group.add(shafts);
+
   // --- mobiliario
   const Mu = new Mesher();
   FURNITURE.forEach(f => {
@@ -713,7 +845,7 @@ function buildApartment() {
   });
   const figs = new THREE.Mesh(Mp.geometry(), matFig); figs.castShadow = true; group.add(figs);
 
-  return { group, walls, ceil, floor, furn, figs, glass };
+  return { group, walls, ceil, floor, furn, figs, glass, pillars, shafts };
 }
 
 /* ------------------- envolvente de cubierta (modo maqueta) ------------
@@ -806,7 +938,7 @@ function roundRect(g, x, y, w, h, r) {
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
 let mode = 'walk';
-const cam = { x: 13.30, y: -10.10, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
+const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
 const orb = { tx: 13.4, ty: -8.6, tz: 1.4, dist: 21, az: -0.62, el: 0.42 };
 const keys = Object.create(null);
 const RADIUS = 0.20;
@@ -884,8 +1016,17 @@ function buildPortals() {
     ]);
   }));
 }
+/** obstáculos macizos: pilares exentos y patinillos */
+function blocked(x, y) {
+  for (const p of PILLARS)
+    if (Math.abs(x - p.x) < p.w / 2 && Math.abs(y - p.y) < p.d / 2) return true;
+  for (const s of SHAFTS)
+    if (x > s.x0 && x < s.x1 && y > s.y0 && y < s.y1) return true;
+  return false;
+}
 /** ¿el punto pertenece al interior de la vivienda (unión de estancias)? */
 function inside(x, y) {
+  if (blocked(x, y)) return false;
   for (const r of ROOMS) for (const q of r.rects)
     if (x > q[0] && x < q[2] && y > q[1] && y < q[3]) return true;
   for (const d of DORMERS)
@@ -958,6 +1099,10 @@ function bindControls() {
   document.getElementById('t-shell').onclick = e => toggle(e.currentTarget, v => shell.visible = v);
   document.getElementById('t-furn').onclick = e => toggle(e.currentTarget, v => {
     apt.furn.visible = v; apt.figs.visible = v;
+  });
+  document.getElementById('t-struct').onclick = e => toggle(e.currentTarget, v => {
+    apt.pillars.material.color.set(v ? 0xd08a2a : 0xdcd4c6);
+    apt.shafts.material.color.set(v ? 0x9c6a2e : 0xb9ab97);
   });
   document.getElementById('t-ceil').onclick = e => toggle(e.currentTarget, v => { apt.ceil.visible = v; });
   const hold = (id, k) => {

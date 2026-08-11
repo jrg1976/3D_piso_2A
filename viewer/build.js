@@ -102,21 +102,49 @@ function buildSlab(r, z, M, up) {
   if (up) M.quad(a, b, c, d); else M.quad(d, c, b, a);
 }
 
-/* Paños de estancia: se evalúa el faldón general (roofH) y se solapan 7 cm
-   bajo los muros, de modo que paños contiguos quedan exactamente coplanarios.
-   Los paños de buhardilla usan su propia cubierta y no llevan solape.        */
+/* Techo continuo: se malla el rectángulo envolvente de la vivienda y se
+   emiten sólo las celdas que caen sobre alguna estancia (dilatada 0,22 m
+   para cubrir el espesor de los muros).  Así no quedan juntas entre paños
+   ni resquicios por los que se cuele el cielo.                            */
+const CEIL_PAD = 0.22, CEIL_STEP = 0.22;
+
+function roomCovers(x, y) {
+  for (const r of ROOMS) for (const q of r.rects)
+    if (x > q[0] - CEIL_PAD && x < q[2] + CEIL_PAD &&
+        y > q[1] - CEIL_PAD && y < q[3] + CEIL_PAD) return true;
+  return false;
+}
+function buildCeiling(M) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  ROOMS.forEach(r => r.rects.forEach(q => {
+    x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]);
+    x1 = Math.max(x1, q[2]); y1 = Math.max(y1, q[3]);
+  }));
+  x0 -= CEIL_PAD; y0 -= CEIL_PAD; x1 += CEIL_PAD; y1 += CEIL_PAD;
+  const nx = Math.ceil((x1 - x0) / CEIL_STEP), ny = Math.ceil((y1 - y0) / CEIL_STEP);
+  const p = (X, Y) => V(X, Y, roofH(X, Y));
+  for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
+    const xa = x0 + i * CEIL_STEP, xb = Math.min(x1, xa + CEIL_STEP);
+    const ya = y0 + j * CEIL_STEP, yb = Math.min(y1, ya + CEIL_STEP);
+    const cx = (xa + xb) / 2, cy = (ya + yb) / 2;
+    if (!roomCovers(cx, cy)) continue;
+    if (dormerAt(cx, cy)) continue;                     // la buhardilla lleva su propio paño
+    M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));
+  }
+}
+/* Paño de buhardilla: usa su propia cubierta, sin solape. */
 function buildCeilingPatch(r, M, fn, pad) {
   const [x0, y0, x1, y1] = r;
-  const P = pad === undefined ? 0.07 : pad;
+  const P = pad === undefined ? 0 : pad;
   const ax = x0 - P, bx = x1 + P, ay = y0 - P, by = y1 + P;
-  const nx = Math.max(1, Math.ceil((bx - ax) / 0.30));
-  const ny = Math.max(1, Math.ceil((by - ay) / 0.30));
+  const nx = Math.max(1, Math.ceil((bx - ax) / 0.25));
+  const ny = Math.max(1, Math.ceil((by - ay) / 0.25));
   const f = fn || roofH;
   const p = (X, Y) => V(X, Y, f(X, Y));
   for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
     const xa = ax + (bx - ax) * i / nx, xb = ax + (bx - ax) * (i + 1) / nx;
     const ya = ay + (by - ay) * j / ny, yb = ay + (by - ay) * (j + 1) / ny;
-    M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));   // normal hacia abajo
+    M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));
   }
 }
 
@@ -133,6 +161,8 @@ function buildApartment() {
   const matGlass = new THREE.MeshLambertMaterial({ color: 0xcfe4ee, transparent: true, opacity: 0.16,
                                                   side: S, depthWrite: false });
   const matFurn = new THREE.MeshLambertMaterial({ color: 0x8d7660, side: S });
+  const matPil  = new THREE.MeshLambertMaterial({ color: 0xdcd4c6, side: S });
+  const matShaft= new THREE.MeshLambertMaterial({ color: 0xb9ab97, side: S });
   const matFig = new THREE.MeshLambertMaterial({ color: 0x7b93a6, side: S });
 
   // --- muros
@@ -144,8 +174,9 @@ function buildApartment() {
 
   // --- suelos, techos
   const Mf = new Mesher(), Mc = new Mesher();
+  buildCeiling(Mc);
   ROOMS.forEach(room => {
-    room.rects.forEach(r => { buildSlab(r, 0, Mf, true); buildCeilingPatch(r, Mc); });
+    room.rects.forEach(r => buildSlab(r, 0, Mf, true));
     (room.dormers || []).forEach(id => {
       const d = DORMERS.find(k => k.id === id);
       buildSlab([d.x0, d.y0, d.x1, d.y1], 0, Mf, true);
@@ -208,6 +239,29 @@ function buildApartment() {
   });
   const glass = new THREE.Mesh(Mg.geometry(), matGlass); group.add(glass);
 
+  // --- pilares (del pavimento al faldón)
+  const Mpil = new Mesher();
+  PILLARS.forEach(p => {
+    const x0 = p.x - p.w / 2, x1 = p.x + p.w / 2, y0 = p.y - p.d / 2, y1 = p.y + p.d / 2;
+    const top = Math.max(ceilAt(p.x, p.y), ceilAt(x0, y0), ceilAt(x1, y1)) + 0.02;
+    Mpil.box([V(x0,y0,0),V(x1,y0,0),V(x1,y1,0),V(x0,y1,0)],
+             [V(x0,y0,top),V(x1,y0,top),V(x1,y1,top),V(x0,y1,top)]);
+  });
+  const pillars = new THREE.Mesh(Mpil.geometry(), matPil);
+  pillars.castShadow = pillars.receiveShadow = true; group.add(pillars);
+
+  // --- patinillos: atraviesan el faldón y rematan sobre cubierta
+  const Msh = new Mesher();
+  SHAFTS.forEach(s => {
+    const bx = (x0,y0,x1,y1,z0,z1) => Msh.box(
+      [V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+      [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+    bx(s.x0, s.y0, s.x1, s.y1, 0, SHAFT_TOP - 0.16);
+    bx(s.x0 - 0.09, s.y0 - 0.09, s.x1 + 0.09, s.y1 + 0.09, SHAFT_TOP - 0.16, SHAFT_TOP);  // albardilla
+  });
+  const shafts = new THREE.Mesh(Msh.geometry(), matShaft);
+  shafts.castShadow = shafts.receiveShadow = true; group.add(shafts);
+
   // --- mobiliario
   const Mu = new Mesher();
   FURNITURE.forEach(f => {
@@ -230,7 +284,7 @@ function buildApartment() {
   });
   const figs = new THREE.Mesh(Mp.geometry(), matFig); figs.castShadow = true; group.add(figs);
 
-  return { group, walls, ceil, floor, furn, figs, glass };
+  return { group, walls, ceil, floor, furn, figs, glass, pillars, shafts };
 }
 
 /* ------------------- envolvente de cubierta (modo maqueta) ------------

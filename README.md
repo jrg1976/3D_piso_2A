@@ -16,6 +16,7 @@ autocontenido (three.js incluido), sin dependencias externas.
 - **Maqueta** — vista orbital; al entrar se retira el techo para mirar dentro.
   `Cubierta` superpone el plano de faldones con 0,72 m de vuelo de alero.
 - **Rótulos** — nombre y superficie útil de cada estancia (las del cuadro de a04).
+- **Estructura** — tiñe pilares y patinillos para localizarlos de un vistazo.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -58,6 +59,44 @@ del alzado `a07`: 11,03 m (cumbrera) y 10,51 m.
 
 Tres buhardillas/miradores: habitación 1 (Norte) y cocina y habitación 2 (Sur),
 con faldón al 80 % y alero enrasado con el faldón general.
+
+### Pilares
+
+Detectados en `a04` como cuadrados de trazo grueso de **0,14 m** dentro de un
+trasdosado de 0,21 × 0,20. Casi todos caen sobre los ejes de cumbrera, que es
+donde apoya la estructura de cubierta: seis sobre `y = −8,27` y dos sobre
+`x = 13,36`. Cinco quedan **exentos** dentro de la vivienda:
+
+| Estancia | Posición |
+|---|---|
+| Cocina | 9,08 / −8,27 |
+| Recibidor | 13,36 / −8,27 |
+| Salón–comedor | 13,36 / −11,06 |
+| Distribuidor | 17,75 / −8,27 |
+| Baño 2 | 20,85 / −8,27 |
+
+El del salón queda en mitad de la estancia, sobre el eje del hastial.
+Otros cuatro van embebidos en muros (jamba cocina, tabique del recibidor,
+machón entre las puertas del balcón y testero del estudio).
+
+### Patinillos y salidas de humos
+
+Bloques de fábrica que arrancan del semisótano —la sala de máquinas de
+ventilación del garaje de `a01`— y salen por cubierta. La coronación está
+acotada en la sección A-A' (`a10`): **+6,25 m** sobre el pavimento de la
+bajocubierta, es decir ≈ 1 m por encima de la cumbrera, coherente con las
+chimeneas dibujadas en los alzados.
+
+| Patinillo | Planta | Situación |
+|---|---|---|
+| Cocina | 0,51 × 0,90 | exento en el centro de la cocina |
+| Estudio | 0,78 × 1,09 | adosado al testero Este |
+| Estudio Sur | 1,02 × 0,45 | dentro del muro Sur |
+| Habitación 2 | 0,50 × 0,73 | en el rincón con habitación 1 (E) |
+
+Según los rótulos de `a05` llevan la extracción de campana y la ventilación de
+cocina y baños de 1ºB, 2ºD, 1ºE, 2ºB y de este mismo 3ºB, más las bajantes y
+los montantes de calefacción y AFS/ACS.
 
 ### Simplificación asumida
 

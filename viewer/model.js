@@ -61,14 +61,16 @@ const ROOMS = [
   { id:'ban1', name:'Baño 1', rects:[[5.95,-7.40,9.40,-5.75]], label:[7.65,-6.55], sup:5.45 },
   { id:'coc',  name:'Cocina', rects:[[2.57,-11.00,5.85,-8.10],[5.85,-12.45,10.05,-7.65]],
     dormers:['d-coc'], label:[7.20,-10.00], sup:30.51 },
-  { id:'est',  name:'Estudio', rects:[[9.60,-7.35,11.90,-1.60]], label:[10.75,-4.40], sup:13.02 },
-  { id:'rec',  name:'Recibidor', rects:[[10.25,-9.35,16.55,-7.55]], label:[13.40,-8.45], sup:7.72 },
+  { id:'est',  name:'Estudio', rects:[[9.50,-4.88,11.95,-1.60],[9.50,-7.40,11.17,-4.88]],
+    label:[10.55,-3.60], sup:13.02 },
+  { id:'rec',  name:'Recibidor', rects:[[10.25,-9.35,14.45,-7.55],[14.45,-9.35,16.55,-8.39]],
+    label:[12.60,-8.55], sup:7.72 },
   { id:'sal',  name:'Salón–comedor', rects:[[10.25,-14.25,16.55,-9.35]], label:[13.40,-11.80], sup:30.00 },
   { id:'dis',  name:'Distribuidor', rects:[[16.75,-9.35,19.10,-7.55],[19.10,-9.35,21.40,-8.45]],
     label:[17.90,-8.60], sup:6.73 },
   { id:'ban2', name:'Baño 2', rects:[[19.10,-8.45,21.40,-6.65]], label:[20.25,-7.55], sup:3.78 },
-  { id:'hab3', name:'Habitación 1 (E)', rects:[[21.40,-11.00,24.20,-7.55]], label:[22.80,-9.30], sup:9.96 },
-  { id:'hab2', name:'Habitación 2', rects:[[16.75,-12.40,20.50,-9.45]], dormers:['d-hab2'],
+  { id:'hab3', name:'Habitación 1 (E)', rects:[[21.50,-11.00,24.20,-7.55]], label:[22.85,-9.30], sup:9.96 },
+  { id:'hab2', name:'Habitación 2', rects:[[16.75,-12.40,20.80,-9.45]], dormers:['d-hab2'],
     label:[18.30,-10.90], sup:14.55 }
 ];
 
@@ -91,7 +93,7 @@ const WALLS = [
   { a:[5.85,-5.675], b:[5.85,-7.525], t:W_INT },
   { a:[2.385,-8.175], b:[5.90,-8.175], t:0.15 },                   // hab.1 / cocina
   { a:[5.90,-7.525], b:[9.50,-7.525], t:0.25, holes:[[0.15,1.00,0.00,2.10,'door']] },
-  { a:[9.50,-1.50], b:[9.50,-7.525], t:0.30 },                     // cocina/vestidor – estudio
+  { a:[9.39,-1.50], b:[9.39,-7.525], t:0.22 },                     // cocina/vestidor – estudio
   { a:[2.385,-11.075], b:[5.90,-11.075], t:0.15 },
   { a:[5.85,-11.075], b:[5.85,-12.55], t:W_INT },
   { a:[5.85,-12.55], b:[10.15,-12.55], t:W_INT, holes:[[0.70,1.55,0.00,9.00,'open']] },
@@ -100,12 +102,15 @@ const WALLS = [
   { a:[7.475,-14.18], b:[7.475,-12.55], t:0.15 },
 
   // ---- estudio y balcón norte ----
-  { a:[9.50,-1.50], b:[12.00,-1.50], t:W_EXT, holes:[[0.85,1.75,0.00,2.10,'door']] },
-  { a:[12.00,-1.50], b:[12.00,-7.45], t:W_INT },
-  { a:[9.50,-7.45], b:[12.00,-7.45], t:W_INT, holes:[[1.15,2.05,0.00,2.10,'door']] },
+  { a:[9.39,-1.425], b:[12.075,-1.425], t:W_EXT, holes:[[1.40,2.35,0.00,2.10,'door']] },
+  { a:[12.075,-1.425], b:[12.075,-4.88], t:0.25 },
+  { a:[11.27,-5.97], b:[11.27,-7.45], t:0.20 },
+  { a:[9.39,-7.45], b:[10.35,-7.45], t:0.20, holes:[[0.06,0.92,0.00,2.10,'door']] },
 
   // ---- recibidor / salón ----
-  { a:[12.00,-7.45], b:[16.65,-7.45], t:W_INT, holes:[[0.35,1.25,0.00,2.10,'entry']] },
+  { a:[11.37,-7.45], b:[14.55,-7.45], t:W_INT, holes:[[0.95,1.85,0.00,2.10,'entry']] },
+  { a:[14.55,-7.45], b:[14.55,-8.30], t:W_INT },
+  { a:[14.55,-8.30], b:[16.65,-8.30], t:0.18 },
   { a:[10.15,-7.55], b:[10.15,-14.42], t:W_INT, holes:[[0.50,1.40,0.00,2.10,'door']] },
   { a:[10.15,-14.42], b:[16.65,-14.42], t:W_EXT, holes:[
       [0.55,2.45,0.00,2.15,'french'], [3.45,5.50,0.00,2.15,'french']] },
@@ -119,14 +124,53 @@ const WALLS = [
   { a:[19.10,-8.45], b:[21.40,-8.45], t:W_INT, holes:[[1.35,2.15,0.00,2.10,'door']] },
   { a:[21.40,-7.45], b:[24.385,-7.45], t:W_INT },
   { a:[24.385,-7.45], b:[24.385,-11.075], t:W_EXT, holes:[[0.60,1.75,0.90,2.30,'win']] },
-  { a:[21.40,-8.45], b:[21.40,-11.075], t:W_INT, holes:[[0.25,1.05,0.00,2.10,'door']] },
-  { a:[20.50,-11.075], b:[24.385,-11.075], t:W_EXT },
-  { a:[16.65,-9.40], b:[20.60,-9.40], t:0.10, holes:[[2.70,3.60,0.00,2.10,'door']] },
-  { a:[20.50,-9.40], b:[20.50,-12.50], t:W_INT },
-  { a:[16.65,-12.50], b:[20.50,-12.50], t:W_INT, holes:[[2.55,3.75,0.00,9.00,'open']] },
+  { a:[21.40,-8.45], b:[21.40,-9.29], t:W_INT, holes:[[0.02,0.82,0.00,2.10,'door']] },
+  { a:[21.40,-10.02], b:[21.40,-11.075], t:W_INT },
+  { a:[20.85,-11.075], b:[24.385,-11.075], t:W_EXT },
+  { a:[16.65,-9.40], b:[20.85,-9.40], t:0.10, holes:[[2.70,3.60,0.00,2.10,'door']] },
+  { a:[20.85,-10.02], b:[20.85,-12.50], t:0.10 },
+  { a:[16.65,-12.50], b:[20.85,-12.50], t:W_INT, holes:[[2.55,3.75,0.00,9.00,'open']] },
   { a:[19.125,-12.50], b:[19.125,-14.18], t:0.15 },                // mirador hab.2
   { a:[19.125,-14.18], b:[20.475,-14.18], t:0.15, holes:[[0.15,1.20,0.90,1.90,'win']] },
   { a:[20.475,-14.18], b:[20.475,-12.50], t:0.15 }
+];
+
+/* -------------------------- pilares --------------------------------
+   Perfiles de 0,14 m detectados en a04 con su trasdosado (0,21 × 0,20).
+   Casi todos se alinean con la cumbrera principal (y = −8,27) y con el
+   eje del hastial del salón (x = 13,36).  `free` = exento en la estancia.
+   -------------------------------------------------------------------- */
+const PILLARS = [
+  { x: 9.08, y: -8.27, w:0.21, d:0.20, room:'coc',  free:true  },
+  { x:13.36, y: -8.27, w:0.21, d:0.20, room:'rec',  free:true  },
+  { x:13.36, y:-11.06, w:0.21, d:0.20, room:'sal',  free:true  },
+  { x:17.75, y: -8.27, w:0.21, d:0.20, room:'dis',  free:true  },
+  { x:20.85, y: -8.27, w:0.21, d:0.20, room:'ban2', free:true  },
+  { x: 5.84, y: -8.27, w:0.21, d:0.28, room:'coc',  free:false },
+  { x:14.59, y: -8.27, w:0.21, d:0.20, room:'rec',  free:false },
+  { x:13.36, y:-14.26, w:0.21, d:0.20, room:'sal',  free:false },
+  { x:12.00, y: -5.83, w:0.26, d:0.24, room:'est',  free:false }
+];
+
+/* ------------------- patinillos / conductos de humos -----------------
+   Bloques de fábrica que suben desde el garaje (a01) y salen por
+   cubierta.  Coronación medida en la sección A-A' (a10): +6,25 m sobre
+   el pavimento de la bajocubierta, ≈ 1 m por encima de la cumbrera.
+   -------------------------------------------------------------------- */
+const SHAFT_TOP = 6.25;
+const SHAFTS = [
+  // extracción de campana y ventilación de cocina/wc de 1ºB, 2ºD y 3ºB
+  { x0: 5.25, y0:-10.12, x1: 5.76, y1: -9.22, room:'coc', free:true,
+    note:'Extracción de campana y ventilación 1ºB · 2ºD · 3ºB' },
+  // máquina de ventilación del garaje + montantes de calefacción y AFS/ACS
+  { x0:11.17, y0: -5.97, x1:11.95, y1: -4.88, room:'est', free:false,
+    note:'Ventilación del garaje y montantes' },
+  // patinillo del testero sur del estudio
+  { x0:10.35, y0: -7.85, x1:11.37, y1: -7.40, room:'est', free:false,
+    note:'Ventilación de cuarto de basuras' },
+  // extracción de campana y ventilación de 1ºE, 2ºB y 3ºB
+  { x0:20.80, y0:-10.02, x1:21.30, y1: -9.29, room:'hab2', free:false,
+    note:'Extracción de campana y ventilación 1ºE · 2ºB · 3ºB' }
 ];
 
 /* ------------------------- balcones (contexto) ----------------------- */
@@ -146,7 +190,7 @@ const FURNITURE = [
   [8.60,-7.30,9.35,-5.85,0.55,'tub'], [6.10,-6.05,7.10,-5.85,0.85,'sink'],
   // cocina
   [2.70,-8.80,5.60,-8.20,0.90,'counter'], [5.95,-8.30,9.90,-7.80,0.90,'counter'],
-  [4.20,-10.30,6.40,-9.30,0.76,'table'],
+  [3.10,-10.40,4.90,-9.20,0.76,'table'],
   // estudio
   [9.70,-3.20,11.00,-2.55,0.74,'table'], [11.10,-6.90,11.80,-4.20,0.90,'shelf'],
   // salón
@@ -162,16 +206,16 @@ const FURNITURE = [
 ];
 
 /* --------------------- posiciones de cámara sugeridas ---------------- */
-const FIGURES = [[3.55,-4.40],[4.60,-9.60],[11.30,-13.30],[15.90,-12.30],[17.55,-10.90],[11.40,-3.20],[22.60,-10.85]];
+const FIGURES = [[3.55,-4.40],[6.60,-9.90],[11.30,-13.30],[15.90,-12.30],[17.55,-10.90],[11.40,-3.20],[22.60,-10.85]];
 
 const VIEWS = [
-  { id:'sal',  name:'Salón–comedor',  pos:[13.30,-10.30], look:[13.36,-14.10, 2.60] },
-  { id:'coc',  name:'Cocina',         pos:[ 9.30,-11.80], look:[ 3.20, -9.40, 1.90] },
-  { id:'est',  name:'Estudio',        pos:[10.75, -6.60], look:[10.85, -1.70, 2.30] },
+  { id:'sal',  name:'Salón–comedor',  pos:[11.15,-10.05], look:[14.60,-13.60, 2.55] },
+  { id:'coc',  name:'Cocina',         pos:[ 8.90,-11.60], look:[ 3.20, -9.60, 1.90] },
+  { id:'est',  name:'Estudio',        pos:[10.30, -6.60], look:[10.70, -1.70, 2.30] },
   { id:'hab1', name:'Habitación 1',   pos:[ 5.20, -7.60], look:[ 4.24, -2.40, 2.20] },
   { id:'vest', name:'Vestidor',       pos:[ 9.00, -4.90], look:[ 5.70, -4.70, 1.70] },
-  { id:'rec',  name:'Recibidor',      pos:[12.40, -8.60], look:[16.60, -8.60, 2.00] },
-  { id:'hab2', name:'Habitación 2',   pos:[19.60,-10.20], look:[19.80,-13.90, 2.00] },
+  { id:'rec',  name:'Recibidor',      pos:[11.20, -8.70], look:[16.40, -8.60, 2.00] },
+  { id:'hab2', name:'Habitación 2',   pos:[19.90,-10.20], look:[19.80,-13.90, 2.00] },
   { id:'dis',  name:'Distribuidor',   pos:[17.20, -8.45], look:[21.30, -8.45, 1.90] },
   { id:'hab3', name:'Habitación 1 E', pos:[22.10, -8.20], look:[24.20,-10.40, 1.90] },
   { id:'ban2', name:'Baño 2',         pos:[19.60, -8.15], look:[21.30, -7.10, 1.80] }
