@@ -158,7 +158,9 @@ Los huecos se han medido jamba a jamba sobre `a04`:
 | Recibidor – Distribuidor | sin puerta: hueco corrido |
 | Cocina – Baño 1 | no existe paso |
 | Vestidor – Baño 1 | `x 7,72–8,45` en `y = −5,68` |
-| Vestidor – Estudio | `y −4,72…−5,42` en `x = 9,39` |
+| Vestidor – Estudio | `y −4,72…−5,42` en `x = 9,40` |
+| Recibidor – Estudio | hueco de 0,94 m entre `x = 9,46` y el patinillo (`x = 10,40`), sin puerta |
+| Cocina – Recibidor | corredera, `y −8,36…−9,25` en `x = 9,40` |
 | Baño 2 | `x 19,44–20,14` en `y = −8,32` |
 | Habitación 1 (E) | `y −8,51…−9,19` en `x = 20,76` |
 | Habitación 2 | `x 19,42–20,10` en `y = −9,37` |
@@ -167,7 +169,15 @@ Entre el recibidor y el distribuidor no hay tabique: el muro de `x = 16,50`
 sólo arranca en `y = −9,30` hacia el Sur, separando el salón de la habitación 2.
 El muro Sur del baño 1 (`y = −7,52`) es corrido de `x = 5,90` a `9,50`, de modo
 que el baño 1 sólo se abre al vestidor y el ala izquierda se recorre por el paso
-vestidor–estudio de `x = 9,39`.
+vestidor–estudio de `x = 9,40`.
+
+Al **estudio se entra desde el recibidor**, no desde la cocina: el tabique de
+`x = 9,40` es corrido desde el muro Norte hasta `y = −8,36`, así que separa la
+cocina del recibidor en toda esa altura, y el hueco que queda entre su cara
+Este y el patinillo del testero Sur del estudio es el paso. La cocina comunica
+con el recibidor por una **corredera** en ese mismo tabique (`y −8,36…−9,25`,
+0,89 m), y con el salón no comunica: el muro de `y = −9,32` y el de `x = 10,22`
+cierran ese lado.
 
 El pequeño «Distribuidor S: 1,76 m²» dibujado al Norte del muro `y = −7,43` no
 pertenece a esta vivienda —su puerta está en el tabique `x = 16,30`— y las once
