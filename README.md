@@ -133,7 +133,12 @@ chimeneas dibujadas en los alzados.
 | Estudio | 0,78 × 1,09 | adosado al testero Este |
 | Estudio Sur | 1,02 × 0,45 | dentro del muro Sur |
 | Recibidor «V. GARAJE» | 1,56 × 0,95 | adosado al muro Norte, `14,46–16,02 / −7,42…−8,37` |
-| Habitación 1 (E) | 0,80 × 0,78 | en el rincón con habitación 2 |
+| Habitación 1 (norte) | 0,61 × 0,78 | junto a la buhardilla, `4,75–5,36 / −3,32…−4,10` |
+| Habitación 1 (E) | 0,85 × 0,78 | en el rincón con habitación 2 |
+
+El de la habitación 1 pasa por dentro del dormitorio sin servirlo: en `a05`
+está rotulado *«Extracción de campana 1ºC y 2ºE · Bajante · Ventilación cocina
+y wc de 1ºC y 2ºE»*.
 
 Según los rótulos de `a05` llevan la extracción de campana y la ventilación de
 cocina y baños de 1ºB, 2ºD, 1ºE, 2ºB y de este mismo 3ºB, más las bajantes y
@@ -185,6 +190,26 @@ admite tantas zonas como haga falta y pueden solaparse: donde lo hagan manda la
 más baja. El botón **Falso techo** del visor genera exactamente ese bloque, listo
 para pegar aquí.
 
+## Comprobación del modelo
+
+`node viewer/check.js` pasa dos pruebas sobre la geometría, y `build.py` la
+ejecuta antes de empaquetar: si falla, no genera el visor.
+
+1. **Estanqueidad** — recorre el perímetro de cada estancia 5 cm por fuera y
+   exige que cada punto sea macizo (muro, pilar, patinillo, balcón) o interior
+   de otra estancia o de un hueco de paso. Un tramo de puntos seguidos que no
+   cumple es un agujero: falta muro, los muros no cierran la esquina, o el
+   rectángulo de la estancia no casa con la cara del paramento.
+2. **Conexión** — relleno por inundación desde el recibidor con el mismo disco
+   de 0,20 m que usa la cámara, para verificar que las once estancias son
+   accesibles.
+
+Hacen falta las dos. La de conexión sola sólo detecta pasos que **faltan**,
+nunca pasos que **sobran**: así es como sobrevivió durante varias revisiones una
+ranura de 15 cm a lo largo de todo el muro entre la habitación 1 y la cocina
+—el muro estaba colocado 15 cm al Sur de su sitio y los rectángulos de las dos
+estancias no llegaban a él— mientras la prueba de conexión seguía dando 11/11.
+
 ## Estructura
 
 ```
@@ -194,7 +219,8 @@ viewer/
   build.js         generación de la malla three.js
   app.js           cámara, controles, HUD
   shell.html       interfaz y estilos
-  build.py         empaqueta todo en piso-b-3d.html
+  check.js         estanqueidad + conexión
+  build.py         comprueba y empaqueta todo en piso-b-3d.html
   piso-b-3d.html   ← el visor (autocontenido)
 ```
 
