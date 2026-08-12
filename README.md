@@ -18,8 +18,16 @@ autocontenido (three.js incluido), sin dependencias externas.
 - **Rótulos** — nombre y superficie útil de cada estancia (las del cuadro de a04).
 - **Estructura** — tiñe pilares y patinillos para localizarlos de un vistazo.
 - **Medir** — marca puntos con un clic en el suelo y copia sus coordenadas; dos
-  clics definen un rectángulo. Sirve para situar falsos techos y cualquier otro
-  añadido sin tener que describirlo con palabras.
+  clics definen un rectángulo. Sirve para situar cualquier añadido sin tener que
+  describirlo con palabras.
+- **Falso techo** — crea zonas de pladur. Una estancia puede llevar varias
+  alturas, así que la unidad es la **zona**: un rectángulo con *su* altura.
+  Se escribe la altura libre (y una nota opcional), se dan dos clics en el suelo
+  —o se pulsa *Toda la estancia*— y la banda aparece al momento en el modelo con
+  el canto marcado. Donde dos zonas se solapan manda la más baja. El indicador de
+  altura libre pasa a leer la del falso techo y la cámara se agacha bajo él.
+  *Copiar lista* exporta todas las zonas con coordenadas y alturas; se guardan
+  en el navegador, de modo que se pueden ir metiendo por tandas.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -161,12 +169,28 @@ pertenece a esta vivienda —su puerta está en el tabique `x = 16,30`— y las 
 estancias rotuladas de B suman 144,78 m², que es la superficie del cuadro
 (144,76 m²).
 
+## Falsos techos
+
+Las zonas confirmadas se guardan en `CEILINGS`, dentro de `viewer/model.js`:
+
+```js
+const CEILINGS = [
+  { x0: 5.95, y0: -7.40, x1: 9.40, y1: -5.75, h: 2.40, name: 'Baño 1' },
+  { x0: 8.60, y0: -7.30, x1: 9.40, y1: -5.85, h: 2.15, name: 'sobre la bañera' },
+];
+```
+
+`h` es la altura libre del pavimento a la cara inferior del pladur. Una estancia
+admite tantas zonas como haga falta y pueden solaparse: donde lo hagan manda la
+más baja. El botón **Falso techo** del visor genera exactamente ese bloque, listo
+para pegar aquí.
+
 ## Estructura
 
 ```
 planos/            a01–a14 originales
 viewer/
-  model.js         cotas, cubierta, estancias, muros, huecos, vistas
+  model.js         cotas, cubierta, estancias, muros, huecos, falsos techos, vistas
   build.js         generación de la malla three.js
   app.js           cámara, controles, HUD
   shell.html       interfaz y estilos

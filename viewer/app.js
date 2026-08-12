@@ -3,6 +3,7 @@
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
 let measuring = false, marks = [], markGroup = null;
+let plafonding = false, zones = [], pending = null, zoneGroup = null;
 let mode = 'walk';
 const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
 const orb = { tx: 13.4, ty: -8.6, tz: 1.4, dist: 21, az: -0.62, el: 0.42 };
@@ -58,6 +59,8 @@ function init() {
   });
 
   markGroup = new THREE.Group(); scene.add(markGroup);
+  zoneGroup = new THREE.Group(); scene.add(zoneGroup);
+  loadZones();
   buildPortals();
   buildViewButtons();
   applyView(VIEWS[0]);
@@ -134,7 +137,9 @@ function bindControls() {
   });
   c.addEventListener('pointerup', e => {
     drag = false; c.classList.remove('grabbing');
-    if (measuring && e.button === 0 && Math.hypot(e.clientX - downX, e.clientY - downY) < 5) pick(e);
+    if (e.button !== 0 || Math.hypot(e.clientX - downX, e.clientY - downY) >= 5) return;
+    if (measuring) pick(e);
+    else if (plafonding) pickZone(e);
   });
   c.addEventListener('pointercancel', () => { drag = false; c.classList.remove('grabbing'); });
   c.addEventListener('pointermove', e => {
@@ -174,22 +179,31 @@ function bindControls() {
   });
   document.getElementById('t-measure').onclick = e => toggle(e.currentTarget, v => {
     measuring = v;
+    if (v) setPlafond(false);
     document.getElementById('measure').hidden = !v;
-    document.querySelector('.hint').hidden = v;
+    document.querySelector('.hint').hidden = v || plafonding;
     if (v) renderMarks();
   });
-  document.getElementById('m-clear').onclick = () => { marks = []; renderMarks(); };
-  document.getElementById('m-copy').onclick = () => {
-    navigator.clipboard.writeText(marksText()).then(() => {
-      const b = document.getElementById('m-copy'); const t = b.textContent;
-      b.textContent = 'Copiado'; setTimeout(() => { b.textContent = t; }, 1200);
-    });
+  document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
+  document.getElementById('p-undo').onclick = () => {
+    if (pending) pending = null; else zones.pop();
+    renderZones();
   };
+  document.getElementById('p-clear').onclick = () => { pending = null; zones = []; renderZones(); };
+  document.getElementById('p-room').onclick = () => addRoomZone();
+  document.getElementById('p-copy').onclick = () => copyTo('p-copy', zonesText());
+  document.getElementById('p-h').oninput = () => { if (pending) renderZones(); };
+  ['p-h', 'p-name'].forEach(id => document.getElementById(id)
+    .addEventListener('keydown', e => e.stopPropagation()));
+  document.getElementById('m-clear').onclick = () => { marks = []; renderMarks(); };
+  document.getElementById('m-copy').onclick = () => copyTo('m-copy', marksText());
   document.getElementById('t-struct').onclick = e => toggle(e.currentTarget, v => {
     apt.pillars.material.color.set(v ? 0xd08a2a : 0xdcd4c6);
     apt.shafts.material.color.set(v ? 0x9c6a2e : 0xb9ab97);
   });
-  document.getElementById('t-ceil').onclick = e => toggle(e.currentTarget, v => { apt.ceil.visible = v; });
+  document.getElementById('t-ceil').onclick = e => toggle(e.currentTarget, v => {
+    apt.ceil.visible = v; syncZoneVis();
+  });
   const hold = (id, k) => {
     const el = document.getElementById(id);
     const on = e => { e.preventDefault(); keys[k] = true; };
@@ -224,6 +238,7 @@ function setMode(m) {
   const on = m === 'walk';
   cb.setAttribute('aria-pressed', on);
   apt.ceil.visible = on;
+  syncZoneVis();
   if (m === 'orbit') { orb.tx = cam.x; orb.ty = cam.y; }
 }
 function buildViewButtons() {
@@ -268,7 +283,7 @@ function step(dt) {
 }
 function place() {
   if (mode === 'walk') {
-    const h = ceilAt(cam.x, cam.y);
+    const h = freeH(cam.x, cam.y);
     const eye = Math.min(cam.eye, Math.max(0.85, h - 0.14));
     camera.position.set(cam.x, eye, -cam.y);
     const dir = new THREE.Vector3(
@@ -283,13 +298,16 @@ function place() {
       -cy + orb.dist * Math.cos(orb.el) * Math.cos(orb.az));
     camera.position.copy(p);
     camera.lookAt(cx, orb.tz, -cy);
-    hud(ceilAt(cx, cy), null);
+    hud(freeH(cx, cy), null);
   }
 }
 function hud(h, eye) {
-  const r = roomAt(mode === 'walk' ? cam.x : orb.tx, mode === 'walk' ? cam.y : orb.ty);
+  const px = mode === 'walk' ? cam.x : orb.tx, py = mode === 'walk' ? cam.y : orb.ty;
+  const r = roomAt(px, py);
   document.getElementById('hud-room').textContent = r ? r.name : '—';
-  document.getElementById('hud-h').textContent = h.toFixed(2).replace('.', ',') + ' m';
+  const ft = plafondAt(px, py);
+  document.getElementById('hud-h').textContent = h.toFixed(2).replace('.', ',') + ' m' +
+    (ft !== null && ft <= ceilAt(px, py) ? '  ·  falso techo' : '');
   const low = document.getElementById('hud-low');
   low.hidden = !(eye !== null && eye < cam.eye - 0.02);
   document.getElementById('hud-xy').textContent =
@@ -309,16 +327,21 @@ const _ray = new THREE.Raycaster();
 const _plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);   // suelo, z = 0
 const _hit = new THREE.Vector3();
 
-function pick(e) {
+/** punto del suelo (z = 0) bajo el cursor */
+function floorHit(e) {
   const c = document.getElementById('view'), r = c.getBoundingClientRect();
   const nd = new THREE.Vector2(
     ((e.clientX - r.left) / r.width) * 2 - 1,
     -((e.clientY - r.top) / r.height) * 2 + 1);
   _ray.setFromCamera(nd, camera);
-  if (!_ray.ray.intersectPlane(_plane, _hit)) return;
-  const x = +_hit.x.toFixed(2), y = +(-_hit.z).toFixed(2);
-  const room = roomAt(x, y);
-  marks.push({ x, y, room: room ? room.name : '—', h: +ceilAt(x, y).toFixed(2) });
+  if (!_ray.ray.intersectPlane(_plane, _hit)) return null;
+  return { x: +_hit.x.toFixed(2), y: +(-_hit.z).toFixed(2) };
+}
+
+function pick(e) {
+  const p = floorHit(e); if (!p) return;
+  const room = roomAt(p.x, p.y);
+  marks.push({ x: p.x, y: p.y, room: room ? room.name : '—', h: +ceilAt(p.x, p.y).toFixed(2) });
   renderMarks();
 }
 
@@ -373,12 +396,202 @@ function marksText() {
   return L.join('\n');
 }
 
+/* ------------------------ falsos techos ------------------------------
+   Cada zona es un rectángulo con su propia altura, así que una estancia
+   puede llevar todas las que haga falta. Donde se solapan manda la más
+   baja, que es la que se ve y bajo la que se anda.
+   -------------------------------------------------------------------- */
+const STORE = 'piso-b-falsos-techos';
+
+function setPlafond(v) {
+  plafonding = v;
+  document.getElementById('t-plafond').setAttribute('aria-pressed', v);
+  document.getElementById('plafond').hidden = !v;
+  if (v && measuring) {
+    measuring = false;
+    document.getElementById('t-measure').setAttribute('aria-pressed', false);
+    document.getElementById('measure').hidden = true;
+  }
+  document.querySelector('.hint').hidden = v || measuring;
+  syncZoneVis();
+  if (v) { pending = null; renderZones(); }
+}
+/** en maqueta el techo se retira para mirar dentro; las bandas de pladur
+    sólo se mantienen si se está trabajando con ellas */
+function syncZoneVis() {
+  if (!zoneGroup) return;
+  zoneGroup.visible = plafonding || !apt || apt.ceil.visible;
+}
+
+/** altura del falso techo en (x,y), o null si no hay */
+function plafondAt(x, y) {
+  let h = null;
+  for (const z of zones)
+    if (x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1)
+      h = h === null ? z.h : Math.min(h, z.h);
+  return h;
+}
+/** altura libre real: faldón o falso techo, lo que quede más bajo */
+function freeH(x, y) {
+  const s = ceilAt(x, y), p = plafondAt(x, y);
+  return p === null ? s : Math.min(s, p);
+}
+
+function pickZone(e) {
+  const p = floorHit(e); if (!p) return;
+  if (!pending) { pending = p; renderZones(); return; }
+  const x0 = Math.min(pending.x, p.x), x1 = Math.max(pending.x, p.x);
+  const y0 = Math.min(pending.y, p.y), y1 = Math.max(pending.y, p.y);
+  pending = null;
+  if (x1 - x0 < 0.05 || y1 - y0 < 0.05) { renderZones(); return; }
+  pushZone(x0, y0, x1, y1);
+}
+/** la estancia entera bajo el punto de vista actual */
+function addRoomZone() {
+  const x = mode === 'walk' ? cam.x : orb.tx, y = mode === 'walk' ? cam.y : orb.ty;
+  const r = roomAt(x, y);
+  if (!r) return;
+  const q = r.rects.find(k => x >= k[0] && x <= k[2] && y >= k[1] && y <= k[3]) || r.rects[0];
+  pushZone(q[0], q[1], q[2], q[3], r.name);
+}
+function pushZone(x0, y0, x1, y1, fallback) {
+  const hi = document.getElementById('p-h');
+  const h = clamp(parseFloat(String(hi.value).replace(',', '.')) || 2.5, 1.5, 6);
+  const ni = document.getElementById('p-name');
+  const room = roomAt((x0 + x1) / 2, (y0 + y1) / 2);
+  zones.push({
+    x0: +x0.toFixed(2), y0: +y0.toFixed(2), x1: +x1.toFixed(2), y1: +y1.toFixed(2),
+    h: +h.toFixed(2),
+    room: room ? room.name : (fallback || '—'),
+    name: ni.value.trim()
+  });
+  ni.value = '';
+  renderZones();
+}
+
+function renderZones() {
+  document.getElementById('p-step').innerHTML = pending
+    ? '<b>2.</b> Clic en la esquina opuesta. La zona se creará a ' +
+      n2(clamp(parseFloat(String(document.getElementById('p-h').value).replace(',', '.')) || 2.5, 1.5, 6)) + ' m.'
+    : '<b>1.</b> Clic en una esquina de la zona en el suelo. Puedes añadir todas las que quieras en la misma estancia.';
+
+  const ul = document.getElementById('p-list');
+  ul.innerHTML = '';
+  if (!zones.length) {
+    const li = document.createElement('li');
+    li.className = 'p-empty';
+    li.textContent = 'Ninguna zona todavía.';
+    ul.appendChild(li);
+  }
+  zones.forEach((z, i) => {
+    const li = document.createElement('li');
+    const nm = document.createElement('span');
+    nm.className = 'pn';
+    nm.textContent = z.room + (z.name ? ' · ' + z.name : '');
+    const hh = document.createElement('span');
+    hh.className = 'ph'; hh.textContent = n2(z.h) + ' m';
+    const del = document.createElement('button');
+    del.className = 'p-del'; del.type = 'button';
+    del.setAttribute('aria-label', 'Quitar zona ' + (i + 1));
+    del.textContent = '✕';
+    del.onclick = () => { zones.splice(i, 1); renderZones(); };
+    li.append(nm, hh, del);
+    ul.appendChild(li);
+  });
+  ul.scrollTop = ul.scrollHeight;
+
+  saveZones();
+  drawZones();
+}
+
+function drawZones() {
+  while (zoneGroup.children.length) zoneGroup.remove(zoneGroup.children[0]);
+  const face = new THREE.MeshLambertMaterial({
+    color: 0xf0e6d2, side: THREE.DoubleSide, transparent: true, opacity: 0.94
+  });
+  const edge = new THREE.MeshBasicMaterial({ color: 0xd08a2a });
+  zones.forEach(z => {
+    const w = z.x1 - z.x0, d = z.y1 - z.y0;
+    const g = new THREE.BoxGeometry(w, 0.05, d);
+    const m = new THREE.Mesh(g, face);
+    m.position.set((z.x0 + z.x1) / 2, z.h + 0.025, -(z.y0 + z.y1) / 2);
+    m.castShadow = m.receiveShadow = true;
+    zoneGroup.add(m);
+    const pts = [[z.x0, z.y0], [z.x1, z.y0], [z.x1, z.y1], [z.x0, z.y1], [z.x0, z.y0]];
+    for (let i = 0; i < 4; i++) {
+      const [ax, ay] = pts[i], [bx, by] = pts[i + 1];
+      const L = Math.hypot(bx - ax, by - ay);
+      const b = new THREE.Mesh(new THREE.BoxGeometry(
+        Math.abs(bx - ax) > 0.001 ? L : 0.028, 0.058,
+        Math.abs(by - ay) > 0.001 ? L : 0.028), edge);
+      b.position.set((ax + bx) / 2, z.h + 0.026, -(ay + by) / 2);
+      zoneGroup.add(b);
+    }
+  });
+  if (pending) {
+    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 10),
+                               new THREE.MeshBasicMaterial({ color: 0xd08a2a, depthTest: false }));
+    pin.position.set(pending.x, 0.6, -pending.y); pin.renderOrder = 5;
+    zoneGroup.add(pin);
+  }
+}
+
+function zonesText() {
+  const L = ['Falsos techos de pladur — piso B, planta bajocubierta.',
+             'x / y en metros, sistema del plano a04; z = 0 en el pavimento (+118,00).',
+             'h = altura libre bajo el falso techo.', ''];
+  zones.forEach((z, i) => L.push(
+    (i + 1) + '. ' + z.room + (z.name ? ' · ' + z.name : '') +
+    '\n   [' + n2(z.x0) + ', ' + n2(z.y0) + ', ' + n2(z.x1) + ', ' + n2(z.y1) + ']' +
+    '   ' + n2(z.x1 - z.x0) + ' × ' + n2(z.y1 - z.y0) + ' m' +
+    '   h = ' + n2(z.h) + ' m'));
+  L.push('', 'CEILINGS = [');
+  zones.forEach(z => L.push(
+    '  { x0:' + z.x0.toFixed(2) + ', y0:' + z.y0.toFixed(2) +
+    ', x1:' + z.x1.toFixed(2) + ', y1:' + z.y1.toFixed(2) +
+    ', h:' + z.h.toFixed(2) + ", name:'" + (z.name || z.room).replace(/'/g, '') + "' },"));
+  L.push('];');
+  return L.join('\n');
+}
+
+function copyTo(id, text) {
+  const b = document.getElementById(id), t = b.textContent;
+  const ok = () => { b.textContent = 'Copiado'; setTimeout(() => { b.textContent = t; }, 1200); };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(ok, () => fallback());
+  else fallback();
+  function fallback() {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); ok(); } catch (_) {}
+    document.body.removeChild(ta);
+  }
+}
+
+function saveZones() {
+  try { localStorage.setItem(STORE, JSON.stringify({ base: baseSig(), zones })); } catch (_) {}
+}
+/** firma de las zonas ya incorporadas al modelo: si cambian, el borrador
+    guardado en el navegador queda obsoleto y manda el modelo */
+function baseSig() { return JSON.stringify(CEILINGS); }
+
+function loadZones() {
+  zones = CEILINGS.map(z => Object.assign({
+    room: (roomAt((z.x0 + z.x1) / 2, (z.y0 + z.y1) / 2) || {}).name || '—', name: ''
+  }, z));
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (s && Array.isArray(s.zones) && s.zones.length && s.base === baseSig()) zones = s.zones;
+  } catch (_) {}
+  renderZones();
+}
+
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;
   const d = Math.hypot(dx, dy) || 1;
-  const h = ceilAt(cam.x, cam.y);
+  const h = freeH(cam.x, cam.y);
   const eye = Math.min(cam.eye, Math.max(0.85, h - 0.14));
   cam.yaw = Math.atan2(-dx, dy);
   cam.pitch = clamp(Math.atan2(v.look[2] - eye, d), -0.9, 0.9);

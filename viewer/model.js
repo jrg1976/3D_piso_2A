@@ -210,6 +210,17 @@ const SHAFTS = [
     note:'Ventilación del garaje (V. GARAJE) + bajante' }
 ];
 
+/* --------------------- falsos techos de pladur -----------------------
+   Cada zona es un rectángulo con SU propia altura libre, de modo que una
+   misma estancia puede llevar varias: {x0,y0,x1,y1, h, name}.
+   Donde se solapen manda la más baja, que es lo que se ve.
+   Se cargan aquí las zonas confirmadas; el botón «Falso techo» del visor
+   permite añadir y exportar las que falten.
+   -------------------------------------------------------------------- */
+const CEILINGS = [
+  // { x0: 5.95, y0: -7.40, x1: 9.40, y1: -5.75, h: 2.40, name: 'Baño 1' },
+];
+
 /* ------------------------- balcones (contexto) ----------------------- */
 const BALCONIES = [
   { x0:10.15, y0:-15.60, x1:16.65, y1:-14.42, name:'Balcón 1 Viv. B' },
