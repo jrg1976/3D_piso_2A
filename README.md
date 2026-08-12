@@ -124,11 +124,42 @@ chimeneas dibujadas en los alzados.
 | Cocina | 0,51 × 0,90 | exento en el centro de la cocina |
 | Estudio | 0,78 × 1,09 | adosado al testero Este |
 | Estudio Sur | 1,02 × 0,45 | dentro del muro Sur |
-| Habitación 2 | 0,50 × 0,73 | en el rincón con habitación 1 (E) |
+| Recibidor «V. GARAJE» | 1,56 × 0,95 | adosado al muro Norte, `14,46–16,02 / −7,42…−8,37` |
+| Habitación 1 (E) | 0,80 × 0,78 | en el rincón con habitación 2 |
 
 Según los rótulos de `a05` llevan la extracción de campana y la ventilación de
 cocina y baños de 1ºB, 2ºD, 1ºE, 2ºB y de este mismo 3ºB, más las bajantes y
 los montantes de calefacción y AFS/ACS.
+
+El mayor de todos es el rotulado **«V. GARAJE»** en `a04`: es la salida de la
+ventilación del garaje y vuelve a aparecer con el mismo rótulo en la planta de
+cubierta `a05`, junto a la trampilla y a la máquina de ventilación.
+
+## Puertas y circulación
+
+Los huecos se han medido jamba a jamba sobre `a04`:
+
+| Paso | Hueco |
+|---|---|
+| Entrada desde el espacio común | `x 11,56–12,30` en `y = −7,76` |
+| Recibidor – Distribuidor | sin puerta: hueco corrido |
+| Cocina – Baño 1 | no existe paso |
+| Vestidor – Baño 1 | `x 7,72–8,45` en `y = −5,68` |
+| Vestidor – Estudio | `y −4,72…−5,42` en `x = 9,39` |
+| Baño 2 | `x 19,44–20,14` en `y = −8,32` |
+| Habitación 1 (E) | `y −8,51…−9,19` en `x = 20,76` |
+| Habitación 2 | `x 19,42–20,10` en `y = −9,37` |
+
+Entre el recibidor y el distribuidor no hay tabique: el muro de `x = 16,50`
+sólo arranca en `y = −9,30` hacia el Sur, separando el salón de la habitación 2.
+El muro Sur del baño 1 (`y = −7,52`) es corrido de `x = 5,90` a `9,50`, de modo
+que el baño 1 sólo se abre al vestidor y el ala izquierda se recorre por el paso
+vestidor–estudio de `x = 9,39`.
+
+El pequeño «Distribuidor S: 1,76 m²» dibujado al Norte del muro `y = −7,43` no
+pertenece a esta vivienda —su puerta está en el tabique `x = 16,30`— y las once
+estancias rotuladas de B suman 144,78 m², que es la superficie del cuadro
+(144,76 m²).
 
 ## Estructura
 
