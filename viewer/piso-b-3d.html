@@ -42,6 +42,10 @@ body{
 #stage{position:fixed;inset:0}
 #view{width:100%;height:100%;display:block;cursor:grab;touch-action:none;background:#1a1d21}
 #view.grabbing{cursor:grabbing}
+#plan{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;
+      cursor:crosshair;background:var(--paper)}
+#plan[hidden]{display:none}
+#plan.grabbing{cursor:grabbing}
 
 /* ---------- cartela superior ---------- */
 .title-block{
@@ -243,7 +247,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
-<div id="stage"><canvas id="view"></canvas></div>
+<div id="stage"><canvas id="view"></canvas><canvas id="plan" hidden></canvas></div>
 
 <header class="title-block">
   <div class="tb-cell"><span class="tb-id">a<b>04</b></span></div>
@@ -268,6 +272,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <div class="seg">
       <button class="btn" id="mode-walk" type="button" aria-pressed="true">Recorrer</button>
       <button class="btn" id="mode-orbit" type="button" aria-pressed="false">Maqueta</button>
+      <button class="btn" id="mode-plan" type="button" aria-pressed="false">Planta</button>
     </div>
     <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
     <button class="btn" id="t-measure" type="button" aria-pressed="false">Medir</button>
@@ -340,6 +345,9 @@ button{font:inherit;color:inherit;cursor:pointer}
   arrastrar para mirar · rueda = campo visual</span>
   <span id="hint-orbit" hidden>Arrastrar para girar · rueda para acercar ·
   <kbd>⇧</kbd>+arrastrar o botón derecho para desplazar</span>
+  <span id="hint-plan" hidden>Arrastrar para desplazar · rueda para acercar ·
+  las esquinas y las caras de muro <b>imantan</b> el punto ·
+  <kbd>esc</kbd> anula la esquina pendiente</span>
 </div>
 
 <section class="notes" id="notes" aria-label="Cotas y fuentes">
@@ -444,7 +452,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 
   <h3>Falsos techos de pladur</h3>
   <p>Una estancia puede llevar varias alturas, así que la unidad no es la
-     estancia sino la <b>zona</b>: un rectángulo con <i>su</i> altura. El botón
+     estancia sino la <b>zona</b>: un rectángulo con <i>su</i> altura. Se
+     trabajan mejor desde la vista <b>Planta</b>, que es un dibujo 2D a escala
+     con los muros, sus huecos, los pilares, los patinillos y las cumbreras:
+     ahí el punto se <b>imanta</b> a las caras de muro, a las jambas y a las
+     esquinas, se ve en vivo la medida del rectángulo, y se sombrea en rojo la
+     parte donde el faldón ya está por debajo de la altura tecleada. El botón
      <b>Falso techo</b> permite crearlas una a una:</p>
   <ul>
     <li>Escribe primero la <b>altura libre</b> (del pavimento a la cara inferior
@@ -1515,6 +1528,7 @@ function init() {
     s.visible = false; labels.push(s); scene.add(s);
   });
 
+  planInit();
   markGroup = new THREE.Group(); scene.add(markGroup);
   zoneGroup = new THREE.Group(); scene.add(zoneGroup);
   loadZones();
@@ -1629,6 +1643,8 @@ function bindControls() {
 
   document.getElementById('mode-walk').onclick = () => setMode('walk');
   document.getElementById('mode-orbit').onclick = () => setMode('orbit');
+  document.getElementById('mode-plan').onclick = () => setMode('plan');
+  bindPlan();
   document.getElementById('t-labels').onclick = e => toggle(e.currentTarget, v => labels.forEach(l => l.visible = v));
   document.getElementById('t-shell').onclick = e => toggle(e.currentTarget, v => shell.visible = v);
   document.getElementById('t-furn').onclick = e => toggle(e.currentTarget, v => {
@@ -1642,6 +1658,7 @@ function bindControls() {
     if (v) renderMarks();
   });
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
+  document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
     renderZones();
@@ -1649,7 +1666,7 @@ function bindControls() {
   document.getElementById('p-clear').onclick = () => { pending = null; zones = []; renderZones(); };
   document.getElementById('p-room').onclick = () => addRoomZone();
   document.getElementById('p-copy').onclick = () => copyTo('p-copy', zonesText());
-  document.getElementById('p-h').oninput = () => { if (pending) renderZones(); };
+  document.getElementById('p-h').oninput = () => { plan.dirty = true; if (pending) renderZones(); };
   ['p-h', 'p-name'].forEach(id => document.getElementById(id)
     .addEventListener('keydown', e => e.stopPropagation()));
   document.getElementById('m-clear').onclick = () => { marks = []; renderMarks(); };
@@ -1685,10 +1702,15 @@ function toggle(el, fn) {
 function setMode(m) {
   const prev = mode;
   mode = m;
-  document.getElementById('mode-walk').setAttribute('aria-pressed', m === 'walk');
-  document.getElementById('mode-orbit').setAttribute('aria-pressed', m === 'orbit');
-  document.getElementById('hint-walk').hidden = m !== 'walk';
-  document.getElementById('hint-orbit').hidden = m !== 'orbit';
+  ['walk','orbit','plan'].forEach(k =>
+    document.getElementById('mode-' + k).setAttribute('aria-pressed', m === k));
+  ['walk','orbit','plan'].forEach(k =>
+    document.getElementById('hint-' + k).hidden = m !== k);
+  document.getElementById('plan').hidden = m !== 'plan';
+  document.getElementById('view').style.visibility = m === 'plan' ? 'hidden' : '';
+  document.getElementById('touchpad').style.display = m === 'walk' ? '' : 'none';
+  document.getElementById('index-panel').style.display = m === 'plan' ? 'none' : '';
+  if (m === 'plan') { if (!plan.fitted) planFit(); plan.dirty = true; }
   if (prev === m) return;
   // al pasar a maqueta se retira el techo para poder mirar dentro
   const cb = document.getElementById('t-ceil');
@@ -1719,9 +1741,14 @@ function buildViewButtons() {
 let last = performance.now();
 function loop(t) {
   const dt = Math.min((t - last) / 1000, 0.05); last = t;
-  if (mode === 'walk') step(dt);
-  place();
-  renderer.render(scene, camera);
+  if (mode === 'plan') {
+    if (plan.dirty) drawPlan();
+    hudPlan();
+  } else {
+    if (mode === 'walk') step(dt);
+    place();
+    renderer.render(scene, camera);
+  }
   requestAnimationFrame(loop);
 }
 function step(dt) {
@@ -1772,6 +1799,7 @@ function hud(h, eye) {
     (mode === 'walk' ? cam.y : orb.ty).toFixed(1).replace('.', ',');
 }
 function onResize() {
+  plan.dirty = true;
   const c = document.getElementById('view');
   const w = c.clientWidth, h = c.clientHeight;
   renderer.setSize(w, h, false);
@@ -1905,7 +1933,8 @@ function pickZone(e) {
 }
 /** la estancia entera bajo el punto de vista actual */
 function addRoomZone() {
-  const x = mode === 'walk' ? cam.x : orb.tx, y = mode === 'walk' ? cam.y : orb.ty;
+  const x = mode === 'walk' ? cam.x : mode === 'plan' ? plan.cx : orb.tx;
+  const y = mode === 'walk' ? cam.y : mode === 'plan' ? plan.cy : orb.ty;
   const r = roomAt(x, y);
   if (!r) return;
   const q = r.rects.find(k => x >= k[0] && x <= k[2] && y >= k[1] && y <= k[3]) || r.rects[0];
@@ -1959,6 +1988,7 @@ function renderZones() {
 
   saveZones();
   drawZones();
+  plan.dirty = true;
 }
 
 function drawZones() {
@@ -2041,6 +2071,314 @@ function loadZones() {
     if (s && Array.isArray(s.zones) && s.zones.length && s.base === baseSig()) zones = s.zones;
   } catch (_) {}
   renderZones();
+}
+
+/* =====================================================================
+   VISTA EN PLANTA
+   Dibujo 2D a escala sobre canvas: muros con sus huecos, pilares,
+   patinillos, cumbreras y las zonas de falso techo. Es donde se trabajan
+   los falsos techos: el punto se imanta a las caras de muro y a las
+   esquinas, y mientras se teclea una altura se sombrea la parte donde el
+   faldón ya está por debajo de ella.
+   ===================================================================== */
+const plan = { cx: 13.3, cy: -8.0, s: 46, hover: null, dirty: true, fitted: false };
+let planCtx = null, SNAPX = [], SNAPY = [];
+
+function planInit() {
+  const c = document.getElementById('plan');
+  planCtx = c.getContext('2d');
+  const push = (a, v) => { if (a.indexOf(+v.toFixed(3)) < 0) a.push(+v.toFixed(3)); };
+  WALLS.forEach(w => {
+    const [ax, ay] = w.a, [bx, by] = w.b;
+    const h = Math.abs(by - ay) < 1e-6;
+    if (h) { push(SNAPY, ay - w.t/2); push(SNAPY, ay + w.t/2); push(SNAPX, ax); push(SNAPX, bx); }
+    else   { push(SNAPX, ax - w.t/2); push(SNAPX, ax + w.t/2); push(SNAPY, ay); push(SNAPY, by); }
+    (w.holes || []).forEach(k => {
+      const L = Math.hypot(bx - ax, by - ay), dx = (bx - ax)/L, dy = (by - ay)/L;
+      [k[0], k[1]].forEach(u => { push(SNAPX, ax + dx*u); push(SNAPY, ay + dy*u); });
+    });
+  });
+  ROOMS.forEach(r => r.rects.forEach(q => {
+    push(SNAPX, q[0]); push(SNAPX, q[2]); push(SNAPY, q[1]); push(SNAPY, q[3]);
+  }));
+  SHAFTS.forEach(s => { push(SNAPX, s.x0); push(SNAPX, s.x1); push(SNAPY, s.y0); push(SNAPY, s.y1); });
+  PILLARS.forEach(p => { push(SNAPX, p.x - p.w/2); push(SNAPX, p.x + p.w/2);
+                         push(SNAPY, p.y - p.d/2); push(SNAPY, p.y + p.d/2); });
+  SNAPX.sort((a, b) => a - b); SNAPY.sort((a, b) => a - b);
+}
+function planFit() {
+  const c = document.getElementById('plan');
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  ROOMS.forEach(r => r.rects.forEach(q => {
+    x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]);
+    x1 = Math.max(x1, q[2]); y1 = Math.max(y1, q[3]);
+  }));
+  plan.cx = (x0 + x1) / 2; plan.cy = (y0 + y1) / 2;
+  plan.s = Math.min((c.clientWidth - 130) / (x1 - x0 + 1.6),
+                    (c.clientHeight - 190) / (y1 - y0 + 1.6));
+  plan.s = clamp(plan.s, 8, 260);
+  plan.fitted = true;
+}
+const pX = x => (x - plan.cx) * plan.s + planCtx.canvas.clientWidth / 2;
+const pY = y => (plan.cy - y) * plan.s + planCtx.canvas.clientHeight / 2;
+const mX = px => (px - planCtx.canvas.clientWidth / 2) / plan.s + plan.cx;
+const mY = py => plan.cy - (py - planCtx.canvas.clientHeight / 2) / plan.s;
+
+/** imanta a la referencia más próxima (dentro de 11 px) */
+function planSnap(x, y) {
+  const tol = 11 / plan.s;
+  const near = (arr, v) => {
+    let best = null, bd = tol;
+    for (const k of arr) { const d = Math.abs(k - v); if (d < bd) { bd = d; best = k; } }
+    return best;
+  };
+  const sx = near(SNAPX, x), sy = near(SNAPY, y);
+  return { x: sx === null ? +x.toFixed(2) : sx, y: sy === null ? +y.toFixed(2) : sy,
+           snapX: sx !== null, snapY: sy !== null };
+}
+
+/** tramos macizos de cada muro, descontando los huecos de paso */
+function wallPolys() {
+  const out = [];
+  WALLS.forEach(w => {
+    const [ax, ay] = w.a, [bx, by] = w.b, L = Math.hypot(bx - ax, by - ay);
+    const dx = (bx - ax) / L, dy = (by - ay) / L, nx = -dy * w.t / 2, ny = dx * w.t / 2;
+    const hs = (w.holes || []).filter(h => h[4] !== 'win')
+                              .map(h => [h[0], h[1]]).sort((p, q) => p[0] - q[0]);
+    let u = 0; const seg = [];
+    hs.forEach(h => { if (h[0] > u) seg.push([u, h[0]]); u = Math.max(u, h[1]); });
+    if (u < L) seg.push([u, L]);
+    seg.forEach(([u0, u1]) => out.push([
+      [ax + dx*u0 + nx, ay + dy*u0 + ny], [ax + dx*u1 + nx, ay + dy*u1 + ny],
+      [ax + dx*u1 - nx, ay + dy*u1 - ny], [ax + dx*u0 - nx, ay + dy*u0 - ny]]));
+    (w.holes || []).forEach(h => {                       // umbral de cada hueco
+      if (h[3] < 1.9) return;
+      out.push({ door: [[ax + dx*h[0], ay + dy*h[0]], [ax + dx*h[1], ay + dy*h[1]]] });
+    });
+  });
+  return out;
+}
+let PLAN_POLYS = null;
+
+function drawPlan() {
+  const c = planCtx.canvas, g = planCtx;
+  const W = c.clientWidth, H = c.clientHeight, dpr = Math.min(devicePixelRatio, 2);
+  if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) {
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+  }
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const css = getComputedStyle(document.documentElement);
+  const col = n => css.getPropertyValue(n).trim() || '#000';
+  const PAPER = col('--paper'), TEXT = col('--text'), MUT = col('--muted'), AMB = col('--amber');
+  g.fillStyle = PAPER; g.fillRect(0, 0, W, H);
+  if (!PLAN_POLYS) PLAN_POLYS = wallPolys();
+
+  // --- retícula de 1 m
+  const step = plan.s < 22 ? 5 : 1;
+  g.lineWidth = 1;
+  g.strokeStyle = 'rgba(128,128,128,0.16)';
+  g.beginPath();
+  for (let x = Math.ceil(mX(0) / step) * step; x < mX(W); x += step) { g.moveTo(pX(x), 0); g.lineTo(pX(x), H); }
+  for (let y = Math.floor(mY(0) / step) * step; y > mY(H); y -= step) { g.moveTo(0, pY(y)); g.lineTo(W, pY(y)); }
+  g.stroke();
+
+  // --- estancias
+  g.fillStyle = 'rgba(190,145,99,0.13)';
+  ROOMS.forEach(r => r.rects.forEach(q =>
+    g.fillRect(pX(q[0]), pY(q[3]), (q[2]-q[0]) * plan.s, (q[3]-q[1]) * plan.s)));
+  DORMERS.forEach(d =>
+    g.fillRect(pX(d.x0), pY(d.y1), (d.x1-d.x0) * plan.s, (d.y1-d.y0) * plan.s));
+
+  // --- zona por debajo de la altura tecleada (sólo con la herramienta activa)
+  if (plafonding) {
+    const h = clamp(parseFloat(String(document.getElementById('p-h').value).replace(',', '.')) || 2.5, 1.5, 6);
+    const st = 0.16;
+    g.fillStyle = 'rgba(200,60,40,0.16)';
+    ROOMS.forEach(r => r.rects.forEach(q => {
+      for (let x = q[0]; x < q[2]; x += st) for (let y = q[1]; y < q[3]; y += st)
+        if (ceilAt(x + st/2, y + st/2) < h)
+          g.fillRect(pX(x), pY(y + st), st * plan.s + 1, st * plan.s + 1);
+    }));
+  }
+
+  // --- cumbreras y peldaños
+  g.setLineDash([9, 6]); g.lineWidth = 1.2; g.strokeStyle = 'rgba(128,128,128,0.75)';
+  g.beginPath();
+  [ROOF.ridgeY, ROOF.ridgeY2].forEach(y => { g.moveTo(0, pY(y)); g.lineTo(W, pY(y)); });
+  [ROOF.endW, ROOF.endE, ROOF.gableNx, ROOF.gableSx].forEach(x => { g.moveTo(pX(x), 0); g.lineTo(pX(x), H); });
+  g.stroke(); g.setLineDash([]);
+
+  // --- muros, pilares y patinillos
+  g.fillStyle = TEXT;
+  PLAN_POLYS.forEach(p => {
+    if (p.door) return;
+    g.beginPath(); g.moveTo(pX(p[0][0]), pY(p[0][1]));
+    for (let i = 1; i < 4; i++) g.lineTo(pX(p[i][0]), pY(p[i][1]));
+    g.closePath(); g.fill();
+  });
+  g.strokeStyle = MUT; g.lineWidth = 1;
+  PLAN_POLYS.forEach(p => {
+    if (!p.door) return;
+    g.beginPath(); g.moveTo(pX(p.door[0][0]), pY(p.door[0][1]));
+    g.lineTo(pX(p.door[1][0]), pY(p.door[1][1])); g.stroke();
+  });
+  g.fillStyle = '#8c6a3a';
+  PILLARS.forEach(p => g.fillRect(pX(p.x - p.w/2), pY(p.y + p.d/2), p.w * plan.s, p.d * plan.s));
+  g.fillStyle = 'rgba(140,106,58,0.55)';
+  SHAFTS.forEach(s => g.fillRect(pX(s.x0), pY(s.y1), (s.x1-s.x0) * plan.s, (s.y1-s.y0) * plan.s));
+
+  // --- zonas de falso techo
+  zones.forEach((z, i) => {
+    const x = pX(z.x0), y = pY(z.y1), w = (z.x1-z.x0) * plan.s, h = (z.y1-z.y0) * plan.s;
+    g.fillStyle = 'rgba(224,150,40,0.24)'; g.fillRect(x, y, w, h);
+    g.strokeStyle = AMB; g.lineWidth = 1.8; g.setLineDash([6, 4]);
+    g.strokeRect(x, y, w, h); g.setLineDash([]);
+    if (w > 46 && h > 24) {
+      g.fillStyle = AMB; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '700 12px ui-monospace,SFMono-Regular,Menlo,monospace';
+      g.fillText(n2(z.h) + ' m', x + w/2, y + h/2);
+      if (z.name && h > 40) {
+        g.font = '500 10px ui-sans-serif,system-ui,sans-serif';
+        g.fillStyle = MUT; g.fillText(z.name, x + w/2, y + h/2 + 14);
+      }
+    }
+  });
+
+  // --- rótulos de estancia
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  ROOMS.forEach(r => {
+    if (plan.s < 20) return;
+    g.fillStyle = TEXT; g.font = '650 12px ui-sans-serif,system-ui,sans-serif';
+    g.fillText(r.name, pX(r.label[0]), pY(r.label[1]) - 7);
+    g.fillStyle = MUT; g.font = '500 10.5px ui-monospace,SFMono-Regular,Menlo,monospace';
+    g.fillText(r.sup.toFixed(2).replace('.', ',') + ' m²', pX(r.label[0]), pY(r.label[1]) + 7);
+  });
+
+  // --- esquina pendiente y cursor imantado
+  if (pending) crossMark(g, pending, AMB, true);
+  if (plan.hover) {
+    crossMark(g, plan.hover, plan.hover.snapX || plan.hover.snapY ? AMB : MUT, false);
+    if (pending) {
+      const x0 = Math.min(pending.x, plan.hover.x), x1 = Math.max(pending.x, plan.hover.x);
+      const y0 = Math.min(pending.y, plan.hover.y), y1 = Math.max(pending.y, plan.hover.y);
+      g.strokeStyle = AMB; g.lineWidth = 1.5; g.setLineDash([5, 4]);
+      g.strokeRect(pX(x0), pY(y1), (x1-x0) * plan.s, (y1-y0) * plan.s);
+      g.setLineDash([]);
+      g.fillStyle = AMB; g.font = '700 12px ui-monospace,SFMono-Regular,Menlo,monospace';
+      g.fillText(n2(x1-x0) + ' × ' + n2(y1-y0) + ' m', (pX(x0)+pX(x1))/2, pY(y1) - 12);
+    }
+  }
+
+  // --- escala gráfica
+  const m = plan.s > 60 ? 1 : plan.s > 26 ? 2 : 5;
+  const bx = 24, by = 128;
+  g.strokeStyle = TEXT; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + m * plan.s, by);
+  g.moveTo(bx, by - 4); g.lineTo(bx, by + 4);
+  g.moveTo(bx + m * plan.s, by - 4); g.lineTo(bx + m * plan.s, by + 4); g.stroke();
+  g.fillStyle = TEXT; g.textAlign = 'left'; g.textBaseline = 'bottom';
+  g.font = '600 11px ui-monospace,SFMono-Regular,Menlo,monospace';
+  g.fillText(m + ' m', bx, by - 8);
+  g.textAlign = 'left'; g.fillStyle = MUT; g.textBaseline = 'top';
+  g.font = '600 11px ui-sans-serif,system-ui,sans-serif';
+  g.fillText('Norte ↑   ·   planta a04', bx, by + 10);
+  plan.dirty = false;
+}
+/* --------------------- controles de la planta ------------------------ */
+function bindPlan() {
+  const c = document.getElementById('plan');
+  let drag = false, moved = false, lx = 0, ly = 0;
+  const rel = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const touches = new Map();
+  let pinch = 0;
+  c.addEventListener('pointerdown', e => {
+    touches.set(e.pointerId, [e.clientX, e.clientY]);
+    if (touches.size === 2) { pinch = pinchDist(); drag = false; return; }
+    drag = true; moved = false; lx = e.clientX; ly = e.clientY;
+    c.setPointerCapture(e.pointerId);
+  });
+  const pinchDist = () => {
+    const v = [...touches.values()];
+    return Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]);
+  };
+  const endTouch = e => { touches.delete(e.pointerId); if (touches.size < 2) pinch = 0; };
+  c.addEventListener('pointermove', e => {
+    if (touches.has(e.pointerId)) touches.set(e.pointerId, [e.clientX, e.clientY]);
+    if (touches.size === 2 && pinch) {            // pellizco para acercar
+      const d = pinchDist();
+      plan.s = clamp(plan.s * (d / pinch), 8, 300);
+      pinch = d; plan.dirty = true; moved = true;
+      return;
+    }
+    const [px, py] = rel(e);
+    plan.hover = planSnap(mX(px), mY(py));
+    if (drag) {
+      const dx = e.clientX - lx, dy = e.clientY - ly;
+      if (Math.hypot(e.clientX - lx, e.clientY - ly) > 0) moved = moved || Math.hypot(dx, dy) > 3;
+      plan.cx -= dx / plan.s; plan.cy += dy / plan.s;
+      lx = e.clientX; ly = e.clientY;
+      c.classList.add('grabbing');
+    }
+    plan.dirty = true;
+  });
+  c.addEventListener('pointerleave', () => { plan.hover = null; plan.dirty = true; });
+  c.addEventListener('pointerup', e => {
+    endTouch(e);
+    c.classList.remove('grabbing');
+    const wasDrag = drag && moved; drag = false;
+    if (wasDrag || e.button !== 0) return;
+    const [px, py] = rel(e);
+    const p = planSnap(mX(px), mY(py));
+    if (plafonding) planZoneClick(p);
+    else if (measuring) {
+      const r = roomAt(p.x, p.y);
+      marks.push({ x: p.x, y: p.y, room: r ? r.name : '—', h: +ceilAt(p.x, p.y).toFixed(2) });
+      renderMarks();
+    }
+    plan.dirty = true;
+  });
+  c.addEventListener('pointercancel', e => { endTouch(e); drag = false; c.classList.remove('grabbing'); });
+  c.addEventListener('wheel', e => {
+    e.preventDefault();
+    const [px, py] = rel(e);
+    const bx = mX(px), by = mY(py);
+    plan.s = clamp(plan.s * (1 - Math.sign(e.deltaY) * 0.12), 8, 300);
+    plan.cx = bx - (px - c.clientWidth / 2) / plan.s;
+    plan.cy = by + (py - c.clientHeight / 2) / plan.s;
+    plan.dirty = true;
+  }, { passive: false });
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && pending) { pending = null; renderZones(); }
+  });
+}
+/** clic en la planta con la herramienta de falso techo activa */
+function planZoneClick(p) {
+  if (!pending) { pending = { x: p.x, y: p.y }; renderZones(); return; }
+  const x0 = Math.min(pending.x, p.x), x1 = Math.max(pending.x, p.x);
+  const y0 = Math.min(pending.y, p.y), y1 = Math.max(pending.y, p.y);
+  pending = null;
+  if (x1 - x0 < 0.05 || y1 - y0 < 0.05) { renderZones(); return; }
+  pushZone(x0, y0, x1, y1);
+}
+function hudPlan() {
+  const p = plan.hover;
+  const r = p ? roomAt(p.x, p.y) : null;
+  document.getElementById('hud-room').textContent = r ? r.name : '—';
+  const ft = p ? plafondAt(p.x, p.y) : null;
+  document.getElementById('hud-h').textContent = p
+    ? (ft === null ? n2(ceilAt(p.x, p.y)) + ' m'
+                   : n2(Math.min(ceilAt(p.x, p.y), ft)) + ' m  ·  falso techo')
+    : '—';
+  document.getElementById('hud-xy').textContent = p ? n2(p.x) + ' / ' + n2(p.y) : '—';
+  document.getElementById('hud-low').hidden = true;
+}
+
+function crossMark(g, p, color, solid) {
+  const x = pX(p.x), y = pY(p.y), r = solid ? 9 : 7;
+  g.strokeStyle = color; g.lineWidth = solid ? 2 : 1.3;
+  g.beginPath(); g.moveTo(x - r, y); g.lineTo(x + r, y);
+  g.moveTo(x, y - r); g.lineTo(x, y + r); g.stroke();
+  if (solid) { g.fillStyle = color; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); }
 }
 
 /** coloca la cámara en pos mirando a look[x,y,z] */

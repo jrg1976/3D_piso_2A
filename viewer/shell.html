@@ -42,6 +42,10 @@ body{
 #stage{position:fixed;inset:0}
 #view{width:100%;height:100%;display:block;cursor:grab;touch-action:none;background:#1a1d21}
 #view.grabbing{cursor:grabbing}
+#plan{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;
+      cursor:crosshair;background:var(--paper)}
+#plan[hidden]{display:none}
+#plan.grabbing{cursor:grabbing}
 
 /* ---------- cartela superior ---------- */
 .title-block{
@@ -243,7 +247,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
-<div id="stage"><canvas id="view"></canvas></div>
+<div id="stage"><canvas id="view"></canvas><canvas id="plan" hidden></canvas></div>
 
 <header class="title-block">
   <div class="tb-cell"><span class="tb-id">a<b>04</b></span></div>
@@ -268,6 +272,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <div class="seg">
       <button class="btn" id="mode-walk" type="button" aria-pressed="true">Recorrer</button>
       <button class="btn" id="mode-orbit" type="button" aria-pressed="false">Maqueta</button>
+      <button class="btn" id="mode-plan" type="button" aria-pressed="false">Planta</button>
     </div>
     <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
     <button class="btn" id="t-measure" type="button" aria-pressed="false">Medir</button>
@@ -340,6 +345,9 @@ button{font:inherit;color:inherit;cursor:pointer}
   arrastrar para mirar · rueda = campo visual</span>
   <span id="hint-orbit" hidden>Arrastrar para girar · rueda para acercar ·
   <kbd>⇧</kbd>+arrastrar o botón derecho para desplazar</span>
+  <span id="hint-plan" hidden>Arrastrar para desplazar · rueda para acercar ·
+  las esquinas y las caras de muro <b>imantan</b> el punto ·
+  <kbd>esc</kbd> anula la esquina pendiente</span>
 </div>
 
 <section class="notes" id="notes" aria-label="Cotas y fuentes">
@@ -444,7 +452,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 
   <h3>Falsos techos de pladur</h3>
   <p>Una estancia puede llevar varias alturas, así que la unidad no es la
-     estancia sino la <b>zona</b>: un rectángulo con <i>su</i> altura. El botón
+     estancia sino la <b>zona</b>: un rectángulo con <i>su</i> altura. Se
+     trabajan mejor desde la vista <b>Planta</b>, que es un dibujo 2D a escala
+     con los muros, sus huecos, los pilares, los patinillos y las cumbreras:
+     ahí el punto se <b>imanta</b> a las caras de muro, a las jambas y a las
+     esquinas, se ve en vivo la medida del rectángulo, y se sombrea en rojo la
+     parte donde el faldón ya está por debajo de la altura tecleada. El botón
      <b>Falso techo</b> permite crearlas una a una:</p>
   <ul>
     <li>Escribe primero la <b>altura libre</b> (del pavimento a la cara inferior

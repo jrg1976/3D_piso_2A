@@ -15,12 +15,20 @@ autocontenido (three.js incluido), sin dependencias externas.
   la altura libre en cada punto.
 - **Maqueta** — vista orbital; al entrar se retira el techo para mirar dentro.
   `Cubierta` superpone el plano de faldones con 0,72 m de vuelo de alero.
+- **Planta** — dibujo 2D a escala: muros con sus huecos, pilares, patinillos,
+  cumbreras y peldaños de cubierta, rótulos y escala gráfica. Es la vista donde
+  se trabajan los falsos techos: el punto se **imanta** a las caras de muro, a
+  las jambas y a las esquinas de cada estancia, y al arrastrar se ve en vivo la
+  medida del rectángulo. Con la herramienta de falso techo activa, se **sombrea
+  en rojo la parte donde el faldón ya está por debajo de la altura tecleada**,
+  así que se ve de un vistazo hasta dónde cabe cada banda. Arrastrar desplaza,
+  la rueda (o el pellizco) acerca, `esc` anula la esquina pendiente.
 - **Rótulos** — nombre y superficie útil de cada estancia (las del cuadro de a04).
 - **Estructura** — tiñe pilares y patinillos para localizarlos de un vistazo.
 - **Medir** — marca puntos con un clic en el suelo y copia sus coordenadas; dos
   clics definen un rectángulo. Sirve para situar cualquier añadido sin tener que
   describirlo con palabras.
-- **Falso techo** — crea zonas de pladur. Una estancia puede llevar varias
+- **Falso techo** — crea zonas de pladur (mejor desde **Planta**). Una estancia puede llevar varias
   alturas, así que la unidad es la **zona**: un rectángulo con *su* altura.
   Se escribe la altura libre (y una nota opcional), se dan dos clics en el suelo
   —o se pulsa *Toda la estancia*— y la banda aparece al momento en el modelo con
