@@ -1355,8 +1355,11 @@ function buildBase() {
     Mr.box([V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
            [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
   };
-  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.02, REV));
-  BASE_JOINT.forEach(r => solid(r, BOT, TOP - 0.03, 0));
+  /* el macizo se queda 0,30 por debajo del remate: si sube más, su cara
+     superior compite con la del remate y con la de la cornisa —tres losas
+     horizontales a pocos centímetros— y aparecen las bandas grises */
+  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.30, REV));
+  BASE_JOINT.forEach(r => solid(r, BOT, TOP - 0.32, 0));
   const rev = new THREE.Mesh(Mr.geometry(),
     new THREE.MeshLambertMaterial({ color: 0x4a4640, side: THREE.DoubleSide }));
   group.add(rev);
@@ -1385,17 +1388,17 @@ function buildBase() {
       if (t < hi) quadStrip(Mf, P, t, hi, zf, zt);
     });
   });
-  // remate superior: 0,10 por debajo del pavimento de la vivienda, para no
-  // solaparse con sus solados (queda oculto bajo los faldones y el alero)
+  // remate superior: única cara horizontal visible del zócalo, 6 cm por
+  // debajo del pavimento de la vivienda para no competir con sus solados
   BASE_MASS.forEach(r => {
-    const [x0, y0, x1, y1] = r, z = TOP - 0.10;
+    const [x0, y0, x1, y1] = r, z = TOP - 0.06;
     Mf.quad(V(x0,y0,z), V(x1,y0,z), V(x1,y1,z), V(x0,y1,z));
   });
-  // cornisa bajo el arranque de la vivienda
+  // cornisa: por debajo del remate, para que sólo asome el vuelo de 0,11
   BASE_MASS.forEach(r => {
     const [x0, y0, x1, y1] = [r[0]-0.11, r[1]-0.11, r[2]+0.11, r[3]+0.11];
-    Mf.box([V(x0,y0,-0.26),V(x1,y0,-0.26),V(x1,y1,-0.26),V(x0,y1,-0.26)],
-           [V(x0,y0,-0.05),V(x1,y0,-0.05),V(x1,y1,-0.05),V(x0,y1,-0.05)]);
+    Mf.box([V(x0,y0,-0.30),V(x1,y0,-0.30),V(x1,y1,-0.30),V(x0,y1,-0.30)],
+           [V(x0,y0,-0.12),V(x1,y0,-0.12),V(x1,y1,-0.12),V(x0,y1,-0.12)]);
   });
   // imposta de forjado
   [Z_P1, Z_PB].forEach(z => BASE_MASS.forEach(r => {
@@ -1525,7 +1528,10 @@ function init() {
     document.head.appendChild(mv);
   }
   const canvas = document.getElementById('view');
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  /* búfer de profundidad logarítmico: con near 0,10 y 300 m de alcance, el
+     lineal no da resolución suficiente y las superficies casi coplanarias
+     del zócalo se rayaban al girar la maqueta */
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1535,7 +1541,7 @@ function init() {
   scene.add(buildSky());
   scene.add(buildGround());
 
-  camera = new THREE.PerspectiveCamera(68, 1, 0.05, 400);
+  camera = new THREE.PerspectiveCamera(68, 1, 0.10, 300);
 
   scene.add(new THREE.HemisphereLight(0xeef4fa, 0xcabfae, 1.25));
   scene.add(new THREE.AmbientLight(0xfff6ea, 0.55));

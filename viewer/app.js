@@ -24,7 +24,10 @@ function init() {
     document.head.appendChild(mv);
   }
   const canvas = document.getElementById('view');
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  /* búfer de profundidad logarítmico: con near 0,10 y 300 m de alcance, el
+     lineal no da resolución suficiente y las superficies casi coplanarias
+     del zócalo se rayaban al girar la maqueta */
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -34,7 +37,7 @@ function init() {
   scene.add(buildSky());
   scene.add(buildGround());
 
-  camera = new THREE.PerspectiveCamera(68, 1, 0.05, 400);
+  camera = new THREE.PerspectiveCamera(68, 1, 0.10, 300);
 
   scene.add(new THREE.HemisphereLight(0xeef4fa, 0xcabfae, 1.25));
   scene.add(new THREE.AmbientLight(0xfff6ea, 0.55));
