@@ -163,6 +163,8 @@ button{font:inherit;color:inherit;cursor:pointer}
   font-size:11.5px;color:var(--text-2);line-height:1.55;margin-bottom:9px;
 }
 .p-step b{color:var(--amber);font-weight:700}
+.p-step kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:var(--btn);border:1px solid var(--chrome-line);border-radius:4px;padding:0 4px}
 .p-row{display:flex;gap:6px;align-items:center;margin-bottom:8px}
 .p-row label{font-size:11px;color:var(--muted);white-space:nowrap}
 .p-in{
@@ -181,6 +183,8 @@ button{font:inherit;color:inherit;cursor:pointer}
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;
   padding:3px 0;border-bottom:1px solid var(--chrome-line);
 }
+.p-list li{cursor:pointer;border-radius:5px;padding-left:5px;padding-right:3px}
+.p-list li.sel{background:var(--amber-soft);outline:1px solid var(--amber)}
 .p-list li .pn{color:var(--text);font-family:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .p-list li .ph{color:var(--amber);font-weight:700}
 .p-del{
@@ -471,6 +475,16 @@ button{font:inherit;color:inherit;cursor:pointer}
     <li>La banda aparece al momento en el modelo, con el canto marcado, y el
         indicador de <b>altura libre</b> pasa a leer la del falso techo; en
         <b>Recorrer</b> la cámara se agacha bajo ella.</li>
+    <li>Para <b>modificar</b> una banda, un clic encima en <b>Planta</b>: se
+        selecciona y saca ocho tiradores (las cuatro esquinas y los cuatro
+        puntos medios de lado). Arrastra un lado para alargarla o ensancharla,
+        o el interior para moverla entera; se sigue imantando a los muros. La
+        altura y la nota del panel pasan a aplicarse a esa banda.
+        <b>Supr</b> la borra, <b>esc</b> deselecciona.</li>
+    <li>Las bandas contiguas <b>a la misma cota forman un solo plano</b>: sólo
+        se cierran los cantos libres, de modo que dos rectángulos que se tocan
+        no dejan junta a la vista. El escalón sí se ve cuando las alturas son
+        distintas.</li>
     <li><b>Copiar lista</b> deja en el portapapeles todas las zonas con sus
         coordenadas y alturas, listas para pegar. Se guardan en el navegador,
         así que puedes ir haciéndolo por tandas.</li>

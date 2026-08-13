@@ -3,7 +3,7 @@
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
 let measuring = false, marks = [], markGroup = null;
-let plafonding = false, zones = [], pending = null, zoneGroup = null;
+let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
 let mode = 'walk';
 const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
 const orb = { tx: 13.4, ty: -8.6, tz: -1.4, dist: 36, az: -0.62, el: 0.34 };
@@ -192,12 +192,24 @@ function bindControls() {
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
-    renderZones();
+    selZone = -1; renderZones();
   };
-  document.getElementById('p-clear').onclick = () => { pending = null; zones = []; renderZones(); };
+  document.getElementById('p-clear').onclick = () => {
+    pending = null; zones = []; selZone = -1; renderZones();
+  };
   document.getElementById('p-room').onclick = () => addRoomZone();
   document.getElementById('p-copy').onclick = () => copyTo('p-copy', zonesText());
-  document.getElementById('p-h').oninput = () => { plan.dirty = true; if (pending) renderZones(); };
+  document.getElementById('p-h').oninput = () => {
+    plan.dirty = true;
+    if (selZone >= 0) {
+      const v = parseFloat(String(document.getElementById('p-h').value).replace(',', '.'));
+      if (v >= 1.5 && v <= 6) { zones[selZone].h = +v.toFixed(2); renderZones(); return; }
+    }
+    if (pending) renderZones();
+  };
+  document.getElementById('p-name').oninput = () => {
+    if (selZone >= 0) { zones[selZone].name = document.getElementById('p-name').value.trim(); renderZones(); }
+  };
   ['p-h', 'p-name'].forEach(id => document.getElementById(id)
     .addEventListener('keydown', e => e.stopPropagation()));
   document.getElementById('m-clear').onclick = () => { marks = []; renderMarks(); };
@@ -432,11 +444,11 @@ function setPlafond(v) {
   syncZoneVis();
   if (v) { pending = null; renderZones(); }
 }
-/** en maqueta el techo se retira para mirar dentro; las bandas de pladur
-    sólo se mantienen si se está trabajando con ellas */
+/** las bandas de pladur forman parte del modelo y se ven siempre: en
+    maqueta son justo lo que se quiere repasar desde arriba */
 function syncZoneVis() {
   if (!zoneGroup) return;
-  zoneGroup.visible = plafonding || !apt || apt.ceil.visible;
+  zoneGroup.visible = true;
 }
 
 /** altura del falso techo en (x,y), o null si no hay */
@@ -482,15 +494,20 @@ function pushZone(x0, y0, x1, y1, fallback) {
     room: room ? room.name : (fallback || '—'),
     name: ni.value.trim()
   });
-  ni.value = '';
   renderZones();
 }
 
 function renderZones() {
+  if (selZone >= zones.length) selZone = -1;
   document.getElementById('p-step').innerHTML = pending
     ? '<b>2.</b> Clic en la esquina opuesta. La zona se creará a ' +
       n2(clamp(parseFloat(String(document.getElementById('p-h').value).replace(',', '.')) || 2.5, 1.5, 6)) + ' m.'
-    : '<b>1.</b> Clic en una esquina de la zona en el suelo. Puedes añadir todas las que quieras en la misma estancia.';
+    : selZone >= 0
+      ? '<b>Zona ' + (selZone + 1) + ' seleccionada.</b> Arrastra los tiradores para ' +
+        'alargarla o ensancharla, o el interior para moverla. La altura de aquí abajo ' +
+        'se le aplica. <kbd>Supr</kbd> la borra, <kbd>esc</kbd> deselecciona.'
+      : '<b>1.</b> Clic en una esquina de la zona. Clic sobre una banda ya hecha para ' +
+        'seleccionarla y poder modificarla.';
 
   const ul = document.getElementById('p-list');
   ul.innerHTML = '';
@@ -511,7 +528,9 @@ function renderZones() {
     del.className = 'p-del'; del.type = 'button';
     del.setAttribute('aria-label', 'Quitar zona ' + (i + 1));
     del.textContent = '✕';
-    del.onclick = () => { zones.splice(i, 1); renderZones(); };
+    del.onclick = ev => { ev.stopPropagation(); zones.splice(i, 1); selZone = -1; renderZones(); };
+    if (i === selZone) li.classList.add('sel');
+    li.onclick = () => selectZone(i === selZone ? -1 : i);
     li.append(nm, hh, del);
     ul.appendChild(li);
   });
@@ -522,30 +541,63 @@ function renderZones() {
   plan.dirty = true;
 }
 
+/* Las bandas contiguas a la misma cota forman un solo plano: sólo se
+   cierran los cantos libres. Cada lado se recorre en tramos de 5 cm y se
+   emite únicamente donde no hay otra zona a la misma altura al otro lado,
+   de modo que dos rectángulos que se tocan no dejan junta a la vista.   */
+const ZT = 0.05;                                   // canto de la placa
+function zoneAt(x, y, h, skip) {
+  for (let i = 0; i < zones.length; i++) {
+    if (i === skip) continue;
+    const z = zones[i];
+    if (Math.abs(z.h - h) < 0.005 &&
+        x > z.x0 - 1e-6 && x < z.x1 + 1e-6 && y > z.y0 - 1e-6 && y < z.y1 + 1e-6) return true;
+  }
+  return false;
+}
+/** tramos libres de un lado: t va de a a b y `probe` da el punto exterior */
+function freeRuns(a, b, probe, h, idx) {
+  const st = 0.05, out = []; let s = null;
+  for (let t = a; t < b - 1e-9; t += st) {
+    const m = Math.min(t + st / 2, b);
+    const [px, py] = probe(m);
+    const free = !zoneAt(px, py, h, idx);
+    if (free && s === null) s = t;
+    if (!free && s !== null) { out.push([s, t]); s = null; }
+  }
+  if (s !== null) out.push([s, b]);
+  return out;
+}
 function drawZones() {
   while (zoneGroup.children.length) zoneGroup.remove(zoneGroup.children[0]);
-  const face = new THREE.MeshLambertMaterial({
-    color: 0xf0e6d2, side: THREE.DoubleSide, transparent: true, opacity: 0.94
+  const Mf = new Mesher(), Me = new Mesher();
+  zones.forEach((z, i) => {
+    const zb = z.h, zt = z.h + ZT;
+    Mf.quad(V(z.x0,z.y0,zt), V(z.x1,z.y0,zt), V(z.x1,z.y1,zt), V(z.x0,z.y1,zt));   // trasdós
+    Mf.quad(V(z.x0,z.y1,zb), V(z.x1,z.y1,zb), V(z.x1,z.y0,zb), V(z.x0,z.y0,zb));   // cara vista
+    const sides = [
+      { a:z.x0, b:z.x1, probe:t => [t, z.y0 - 0.03], seg:(u0,u1) => [[u0,z.y0],[u1,z.y0]] },
+      { a:z.x0, b:z.x1, probe:t => [t, z.y1 + 0.03], seg:(u0,u1) => [[u0,z.y1],[u1,z.y1]] },
+      { a:z.y0, b:z.y1, probe:t => [z.x0 - 0.03, t], seg:(u0,u1) => [[z.x0,u0],[z.x0,u1]] },
+      { a:z.y0, b:z.y1, probe:t => [z.x1 + 0.03, t], seg:(u0,u1) => [[z.x1,u0],[z.x1,u1]] }
+    ];
+    sides.forEach(s => freeRuns(s.a, s.b, s.probe, z.h, i).forEach(([u0, u1]) => {
+      const [p, q] = s.seg(u0, u1);
+      Mf.quad(V(p[0],p[1],zb), V(q[0],q[1],zb), V(q[0],q[1],zt), V(p[0],p[1],zt));
+      const e = 0.014, dx = q[0]-p[0], dy = q[1]-p[1], L = Math.hypot(dx,dy) || 1;
+      const nx = -dy/L*e, ny = dx/L*e;
+      Me.box([V(p[0]-nx,p[1]-ny,zb), V(q[0]-nx,q[1]-ny,zb), V(q[0]+nx,q[1]+ny,zb), V(p[0]+nx,p[1]+ny,zb)],
+             [V(p[0]-nx,p[1]-ny,zt+0.004), V(q[0]-nx,q[1]-ny,zt+0.004),
+              V(q[0]+nx,q[1]+ny,zt+0.004), V(p[0]+nx,p[1]+ny,zt+0.004)]);
+    }));
   });
-  const edge = new THREE.MeshBasicMaterial({ color: 0xd08a2a });
-  zones.forEach(z => {
-    const w = z.x1 - z.x0, d = z.y1 - z.y0;
-    const g = new THREE.BoxGeometry(w, 0.05, d);
-    const m = new THREE.Mesh(g, face);
-    m.position.set((z.x0 + z.x1) / 2, z.h + 0.025, -(z.y0 + z.y1) / 2);
-    m.castShadow = m.receiveShadow = true;
-    zoneGroup.add(m);
-    const pts = [[z.x0, z.y0], [z.x1, z.y0], [z.x1, z.y1], [z.x0, z.y1], [z.x0, z.y0]];
-    for (let i = 0; i < 4; i++) {
-      const [ax, ay] = pts[i], [bx, by] = pts[i + 1];
-      const L = Math.hypot(bx - ax, by - ay);
-      const b = new THREE.Mesh(new THREE.BoxGeometry(
-        Math.abs(bx - ax) > 0.001 ? L : 0.028, 0.058,
-        Math.abs(by - ay) > 0.001 ? L : 0.028), edge);
-      b.position.set((ax + bx) / 2, z.h + 0.026, -(ay + by) / 2);
-      zoneGroup.add(b);
-    }
-  });
+  if (!Mf.empty) {
+    const m = new THREE.Mesh(Mf.geometry(),
+      new THREE.MeshLambertMaterial({ color: 0xf0e6d2, side: THREE.DoubleSide }));
+    m.castShadow = m.receiveShadow = true; zoneGroup.add(m);
+  }
+  if (!Me.empty) zoneGroup.add(new THREE.Mesh(Me.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0xd8a25c, side: THREE.DoubleSide })));
   if (pending) {
     const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 10),
                                new THREE.MeshBasicMaterial({ color: 0xd08a2a, depthTest: false }));
@@ -761,8 +813,11 @@ function drawPlan() {
   // --- zonas de falso techo
   zones.forEach((z, i) => {
     const x = pX(z.x0), y = pY(z.y1), w = (z.x1-z.x0) * plan.s, h = (z.y1-z.y0) * plan.s;
-    g.fillStyle = 'rgba(224,150,40,0.24)'; g.fillRect(x, y, w, h);
-    g.strokeStyle = AMB; g.lineWidth = 1.8; g.setLineDash([6, 4]);
+    const sel = i === selZone;
+    g.fillStyle = sel ? 'rgba(224,150,40,0.38)' : 'rgba(224,150,40,0.24)';
+    g.fillRect(x, y, w, h);
+    g.strokeStyle = AMB; g.lineWidth = sel ? 2.4 : 1.8;
+    g.setLineDash(sel ? [] : [6, 4]);
     g.strokeRect(x, y, w, h); g.setLineDash([]);
     if (w > 46 && h > 24) {
       g.fillStyle = AMB; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -773,6 +828,12 @@ function drawPlan() {
         g.fillStyle = MUT; g.fillText(z.name, x + w/2, y + h/2 + 14);
       }
     }
+    if (sel && plafonding) HANDLES.forEach(([hx, hy]) => {   // tiradores
+      const p = handlePos(z, hx, hy), s = hx && hy ? 5 : 4;
+      g.fillStyle = PAPER; g.strokeStyle = AMB; g.lineWidth = 2;
+      g.beginPath(); g.rect(pX(p.x) - s, pY(p.y) - s, s*2, s*2);
+      g.fill(); g.stroke();
+    });
   });
 
   // --- rótulos de estancia
@@ -815,18 +876,82 @@ function drawPlan() {
   g.fillText('Norte ↑   ·   planta a04', bx, by + 10);
   plan.dirty = false;
 }
+/* ---------------- selección y tiradores de las zonas ------------------
+   Ocho tiradores: las cuatro esquinas y los cuatro puntos medios de lado.
+   Arrastrando un lado la banda se alarga o se ensancha; arrastrando el
+   interior se mueve entera. Todo se sigue imantando a los muros.
+   ---------------------------------------------------------------------- */
+const HANDLES = [[-1,-1],[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0]];
+function handlePos(z, hx, hy) {
+  return { x: hx < 0 ? z.x0 : hx > 0 ? z.x1 : (z.x0 + z.x1) / 2,
+           y: hy < 0 ? z.y0 : hy > 0 ? z.y1 : (z.y0 + z.y1) / 2 };
+}
+/** ¿hay un tirador de la zona seleccionada bajo el cursor? */
+function handleAt(px, py) {
+  if (selZone < 0 || selZone >= zones.length) return null;
+  const z = zones[selZone];
+  for (const [hx, hy] of HANDLES) {
+    const p = handlePos(z, hx, hy);
+    if (Math.hypot(pX(p.x) - px, pY(p.y) - py) <= 11) return [hx, hy];
+  }
+  return null;
+}
+function zoneIndexAt(x, y) {
+  for (let i = zones.length - 1; i >= 0; i--) {
+    const z = zones[i];
+    if (x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1) return i;
+  }
+  return -1;
+}
+function selectZone(i) {
+  selZone = i;
+  if (i >= 0) {
+    document.getElementById('p-h').value = zones[i].h.toFixed(2);
+    document.getElementById('p-name').value = zones[i].name || '';
+  }
+  renderZones();
+}
+/** aplica el arrastre de un tirador (o el movimiento completo) */
+function dragZone(z, mode, p, ref) {
+  const MIN = 0.10;
+  if (mode === 'move') {
+    const dx = p.x - ref.gx, dy = p.y - ref.gy;
+    z.x0 = +(ref.x0 + dx).toFixed(2); z.x1 = +(ref.x1 + dx).toFixed(2);
+    z.y0 = +(ref.y0 + dy).toFixed(2); z.y1 = +(ref.y1 + dy).toFixed(2);
+    return;
+  }
+  const [hx, hy] = mode;
+  if (hx < 0) z.x0 = Math.min(+p.x.toFixed(2), z.x1 - MIN);
+  if (hx > 0) z.x1 = Math.max(+p.x.toFixed(2), z.x0 + MIN);
+  if (hy < 0) z.y0 = Math.min(+p.y.toFixed(2), z.y1 - MIN);
+  if (hy > 0) z.y1 = Math.max(+p.y.toFixed(2), z.y0 + MIN);
+}
+
 /* --------------------- controles de la planta ------------------------ */
 function bindPlan() {
   const c = document.getElementById('plan');
   let drag = false, moved = false, lx = 0, ly = 0;
   const rel = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   const touches = new Map();
-  let pinch = 0;
+  let pinch = 0, edit = null, editRef = null;
   c.addEventListener('pointerdown', e => {
     touches.set(e.pointerId, [e.clientX, e.clientY]);
-    if (touches.size === 2) { pinch = pinchDist(); drag = false; return; }
+    if (touches.size === 2) { pinch = pinchDist(); drag = false; edit = null; return; }
     drag = true; moved = false; lx = e.clientX; ly = e.clientY;
     c.setPointerCapture(e.pointerId);
+    edit = null;
+    if (!plafonding || pending) return;
+    const [px, py] = rel(e), p = planSnap(mX(px), mY(py));
+    const h = handleAt(px, py);
+    if (h) { edit = { mode: h, i: selZone }; }
+    else {
+      const i = zoneIndexAt(p.x, p.y);
+      if (i >= 0 && i === selZone) {
+        const z = zones[i];
+        edit = { mode: 'move', i, ref: { x0:z.x0, y0:z.y0, x1:z.x1, y1:z.y1, gx:p.x, gy:p.y } };
+      }
+    }
+    if (edit) editRef = JSON.parse(JSON.stringify(zones[edit.i]));
   });
   const pinchDist = () => {
     const v = [...touches.values()];
@@ -843,6 +968,14 @@ function bindPlan() {
     }
     const [px, py] = rel(e);
     plan.hover = planSnap(mX(px), mY(py));
+    if (edit && drag) {
+      moved = true;
+      const z = zones[edit.i];
+      Object.assign(z, editRef);
+      dragZone(z, edit.mode, plan.hover, edit.mode === 'move' ? edit.ref : null);
+      plan.dirty = true;
+      return;
+    }
     if (drag) {
       const dx = e.clientX - lx, dy = e.clientY - ly;
       if (Math.hypot(e.clientX - lx, e.clientY - ly) > 0) moved = moved || Math.hypot(dx, dy) > 3;
@@ -857,6 +990,7 @@ function bindPlan() {
     endTouch(e);
     c.classList.remove('grabbing');
     const wasDrag = drag && moved; drag = false;
+    if (edit) { const done = edit; edit = null; if (moved) { renderZones(); return; } }
     if (wasDrag || e.button !== 0) return;
     const [px, py] = rel(e);
     const p = planSnap(mX(px), mY(py));
@@ -879,17 +1013,27 @@ function bindPlan() {
     plan.dirty = true;
   }, { passive: false });
   addEventListener('keydown', e => {
-    if (e.key === 'Escape' && pending) { pending = null; renderZones(); }
+    if (/^(INPUT|TEXTAREA)$/.test((e.target.tagName || ''))) return;
+    if (e.key === 'Escape') { pending = null; selectZone(-1); }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selZone >= 0) {
+      zones.splice(selZone, 1); selectZone(-1);
+    }
   });
 }
 /** clic en la planta con la herramienta de falso techo activa */
 function planZoneClick(p) {
-  if (!pending) { pending = { x: p.x, y: p.y }; renderZones(); return; }
+  if (!pending) {
+    const i = zoneIndexAt(p.x, p.y);          // primero, seleccionar lo que ya hay
+    if (i >= 0 && i !== selZone) { selectZone(i); return; }
+    if (i >= 0 && i === selZone) { selectZone(-1); return; }
+    pending = { x: p.x, y: p.y }; renderZones(); return;
+  }
   const x0 = Math.min(pending.x, p.x), x1 = Math.max(pending.x, p.x);
   const y0 = Math.min(pending.y, p.y), y1 = Math.max(pending.y, p.y);
   pending = null;
   if (x1 - x0 < 0.05 || y1 - y0 < 0.05) { renderZones(); return; }
   pushZone(x0, y0, x1, y1);
+  selectZone(zones.length - 1);
 }
 function hudPlan() {
   const p = plan.hover;

@@ -36,6 +36,15 @@ autocontenido (three.js incluido), sin dependencias externas.
   altura libre pasa a leer la del falso techo y la cámara se agacha bajo él.
   *Copiar lista* exporta todas las zonas con coordenadas y alturas; se guardan
   en el navegador, de modo que se pueden ir metiendo por tandas.
+  **Se pueden modificar**: un clic sobre una banda en la vista *Planta* la
+  selecciona y saca ocho tiradores —las cuatro esquinas y los cuatro puntos
+  medios de lado—; se arrastra un lado para alargarla o ensancharla, o el
+  interior para moverla entera, y todo se sigue imantando a los muros. La
+  altura y la nota del panel pasan a aplicarse a la banda seleccionada.
+  `Supr` la borra, `esc` deselecciona.
+  Las bandas contiguas **a la misma cota forman un solo plano**: sólo se
+  cierran los cantos libres, así que dos rectángulos que se tocan no dejan
+  junta a la vista. El escalón sí se ve cuando las alturas son distintas.
 - **El edificio entero** bajo la vivienda: las dos plantas inferiores con sus
   huecos y balcones, las alas de dos plantas de los extremos con su cubierta
   baja, y el terreno a la cota que le corresponde. La vivienda es una tercera
