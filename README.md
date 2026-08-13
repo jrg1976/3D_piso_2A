@@ -15,6 +15,16 @@ autocontenido (three.js incluido), sin dependencias externas.
   la altura libre en cada punto.
 - **Maqueta** — vista orbital; al entrar se retira el techo para mirar dentro.
   `Cubierta` superpone el plano de faldones con 0,72 m de vuelo de alero.
+  Lleva su propia barra de navegación: **Encajar**, **Cenital**, **Isométrica**
+  y los cuatro **alzados** (N, S, E, O), cada uno encuadrado de forma exacta
+  —se proyectan las ocho esquinas de la envolvente sobre los ejes de pantalla,
+  no una esfera envolvente, así que el encuadre queda justo—, con transición
+  suave y una brújula que dice hacia dónde cae el Norte. La rueda acerca
+  **hacia el punto del cursor**; el botón central, el derecho o `⇧`+arrastrar
+  desplazan; `WASD` y las flechas también; `1`…`7` llaman a las vistas.
+  La órbita llega hasta los **89°**, de modo que la cenital es cenital de
+  verdad, y en maqueta el ángulo de visión baja a 32° para que la maqueta se
+  lea casi como una axonometría y las paredes no se abran hacia los bordes.
 - **Planta** — dibujo 2D a escala: muros con sus huecos, pilares, patinillos,
   cumbreras y peldaños de cubierta, rótulos y escala gráfica. Es la vista donde
   se trabajan los falsos techos: el punto se **imanta** a las caras de muro, a

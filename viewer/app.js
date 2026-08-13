@@ -7,6 +7,11 @@ let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = 
 let mode = 'walk';
 const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
 const orb = { tx: 13.4, ty: -8.6, tz: -1.4, dist: 36, az: -0.62, el: 0.34 };
+const EL_MIN = 0.02, EL_MAX = 1.553;               // hasta 89°: cenital de verdad
+/* en maqueta se usa un ángulo de visión estrecho: la maqueta se lee casi
+   como una axonometría y las paredes dejan de abrirse hacia los bordes */
+const ORBIT_FOV = 32; let walkFov = 68;
+let orbAnim = null, orbSeen = false;
 const keys = Object.create(null);
 const RADIUS = 0.20;
 
@@ -150,25 +155,32 @@ function bindControls() {
     if (mode === 'walk') {
       cam.yaw -= dx * 0.0045;
       cam.pitch = clamp(cam.pitch - dy * 0.0035, -1.2, 1.2);
-    } else if (btn === 2 || e.shiftKey) {
+    } else if (btn === 1 || btn === 2 || e.shiftKey) {
+      orbAnim = null;
       const s = orb.dist * 0.0016;
       orb.tx -= (Math.cos(orb.az) * dx - Math.sin(orb.az) * dy * 0.6) * s;
       orb.ty -= (Math.sin(orb.az) * dx + Math.cos(orb.az) * dy * 0.6) * s;
     } else {
+      orbAnim = null;
       orb.az -= dx * 0.006;
-      orb.el = clamp(orb.el - dy * 0.005, 0.06, 1.45);
+      orb.el = clamp(orb.el - dy * 0.005, EL_MIN, EL_MAX);
     }
   });
   c.addEventListener('contextmenu', e => e.preventDefault());
   c.addEventListener('wheel', e => {
     e.preventDefault();
-    if (mode === 'orbit') orb.dist = clamp(orb.dist * (1 + Math.sign(e.deltaY) * 0.12), 6, 110);
-    else camera.fov = clamp(camera.fov + Math.sign(e.deltaY) * 3, 35, 92), camera.updateProjectionMatrix();
+    if (mode === 'orbit') orbZoom(Math.sign(e.deltaY), e);
+    else { walkFov = clamp(walkFov + Math.sign(e.deltaY) * 3, 35, 92);
+           camera.fov = walkFov; camera.updateProjectionMatrix(); }
   }, { passive: false });
 
   addEventListener('keydown', e => {
+    if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName || '')) return;
     keys[e.key.toLowerCase()] = true;
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(e.key.toLowerCase())) e.preventDefault();
+    if (mode !== 'orbit') return;
+    const k = { Home:'fit', '1':'fit', '2':'top', '3':'iso', '4':'n', '5':'s', '6':'e', '7':'o' }[e.key];
+    if (k) orbView(k);
   });
   addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
@@ -176,6 +188,7 @@ function bindControls() {
   document.getElementById('mode-orbit').onclick = () => setMode('orbit');
   document.getElementById('mode-plan').onclick = () => setMode('plan');
   bindPlan();
+  bindOrbTools();
   document.getElementById('t-labels').onclick = e => toggle(e.currentTarget, v => labels.forEach(l => l.visible = v));
   document.getElementById('t-shell').onclick = e => toggle(e.currentTarget, v => shell.visible = v);
   document.getElementById('t-furn').onclick = e => toggle(e.currentTarget, v => {
@@ -253,6 +266,7 @@ function setMode(m) {
   document.getElementById('view').style.visibility = m === 'plan' ? 'hidden' : '';
   document.getElementById('touchpad').style.display = m === 'walk' ? '' : 'none';
   document.getElementById('index-panel').style.display = m === 'plan' ? 'none' : '';
+  document.getElementById('orbtools').hidden = m !== 'orbit';
   if (m === 'plan') { if (!plan.fitted) planFit(); plan.dirty = true; }
   if (prev === m) return;
   // al pasar a maqueta se retira el techo para poder mirar dentro
@@ -261,7 +275,7 @@ function setMode(m) {
   cb.setAttribute('aria-pressed', on);
   apt.ceil.visible = on;
   syncZoneVis();
-  if (m === 'orbit') { orb.tx = cam.x; orb.ty = cam.y; }
+  if (m === 'orbit') { orb.tx = cam.x; orb.ty = cam.y; if (!orbSeen) { orbSeen = true; orbView('fit'); } }
 }
 function buildViewButtons() {
   const nav = document.getElementById('views');
@@ -289,6 +303,7 @@ function loop(t) {
     hudPlan();
   } else {
     if (mode === 'walk') step(dt);
+    else orbStep(dt);
     place();
     renderer.render(scene, camera);
   }
@@ -309,6 +324,8 @@ function step(dt) {
   else if (allowed(cam.x, cam.y + dy)) cam.y += dy;
 }
 function place() {
+  const wantFov = mode === 'orbit' ? ORBIT_FOV : walkFov;
+  if (Math.abs(camera.fov - wantFov) > 0.01) { camera.fov = wantFov; camera.updateProjectionMatrix(); }
   if (mode === 'walk') {
     const h = freeH(cam.x, cam.y);
     const eye = Math.min(cam.eye, Math.max(0.85, h - 0.14));
@@ -325,8 +342,13 @@ function place() {
       -cy + orb.dist * Math.cos(orb.el) * Math.cos(orb.az));
     camera.position.copy(p);
     camera.lookAt(cx, orb.tz, -cy);
+    updateCompass();
     hud(freeH(cx, cy), null);
   }
+}
+function updateCompass() {
+  const n = document.getElementById('ot-compass');
+  if (n) n.firstElementChild.style.transform = 'rotate(' + (-orb.az * 180 / Math.PI) + 'deg)';
 }
 function hud(h, eye) {
   const px = mode === 'walk' ? cam.x : orb.tx, py = mode === 'walk' ? cam.y : orb.ty;
@@ -654,6 +676,122 @@ function loadZones() {
     if (s && Array.isArray(s.zones) && s.zones.length && s.base === baseSig()) zones = s.zones;
   } catch (_) {}
   renderZones();
+}
+
+/* =====================================================================
+   NAVEGACIÓN DE LA MAQUETA
+   Vistas encajadas (cenital, isométrica y los cuatro alzados), zoom
+   hacia el punto del cursor, desplazamiento con el botón central o con
+   las flechas, y una brújula que dice hacia dónde cae el Norte.
+   ===================================================================== */
+/** envolvente de lo que hay que encajar */
+function modelBox(onlyFlat) {
+  let b = { x0: 1e9, y0: 1e9, z0: 1e9, x1: -1e9, y1: -1e9, z1: -1e9 };
+  const add = (x, y, z) => {
+    b.x0 = Math.min(b.x0, x); b.x1 = Math.max(b.x1, x);
+    b.y0 = Math.min(b.y0, y); b.y1 = Math.max(b.y1, y);
+    b.z0 = Math.min(b.z0, z); b.z1 = Math.max(b.z1, z);
+  };
+  ROOMS.forEach(r => r.rects.forEach(q => {
+    add(q[0], q[1], 0); add(q[2], q[3], Math.max(ceilAt(q[0], q[1]), ceilAt(q[2], q[3])));
+  }));
+  add(ROOF.gableSx, ROOF.ridgeY, ROOF.H + 0.4);
+  if (!onlyFlat) BASE_MASS.forEach(r => { add(r[0], r[1], Z_PB); add(r[2], r[3], 0); });
+  return b;
+}
+/** distancia a la que la envolvente entra justa en el encuadre desde
+    una dirección dada: se proyectan las ocho esquinas sobre los ejes de
+    pantalla, en vez de usar la esfera envolvente, que sobra por todos lados */
+function fitDist(b, az, el, k) {
+  const e = Math.min(el, 1.5);
+  const f = new THREE.Vector3(-Math.cos(e) * Math.sin(az), -Math.sin(e), -Math.cos(e) * Math.cos(az));
+  const right = new THREE.Vector3().crossVectors(f, new THREE.Vector3(0, 1, 0)).normalize();
+  const up = new THREE.Vector3().crossVectors(right, f).normalize();
+  const c = new THREE.Vector3((b.x0 + b.x1) / 2, (b.z0 + b.z1) / 2, -(b.y0 + b.y1) / 2);
+  const fv = ORBIT_FOV * Math.PI / 180;
+  const fh = 2 * Math.atan(Math.tan(fv / 2) * Math.max(0.35, camera.aspect));
+  const th = Math.tan(fh / 2) / (k || 1.06), tv = Math.tan(fv / 2) / (k || 1.06);
+  let d = 0;
+  /* para cada esquina: |v·derecha| ≤ (v·frente + d)·tan(fh/2)  →  despejar d */
+  for (const X of [b.x0, b.x1]) for (const Y of [b.y0, b.y1]) for (const Z of [b.z0, b.z1]) {
+    const v = new THREE.Vector3(X, Z, -Y).sub(c), p = v.dot(f);
+    d = Math.max(d, Math.abs(v.dot(right)) / th - p, Math.abs(v.dot(up)) / tv - p);
+  }
+  return clamp(d, 7, 140);
+}
+/** lleva la órbita a un destino con una transición corta */
+function orbGoto(to, ms) {
+  const from = { az: orb.az, el: orb.el, dist: orb.dist, tx: orb.tx, ty: orb.ty, tz: orb.tz };
+  const t = Object.assign({}, from, to);
+  while (t.az - from.az > Math.PI) t.az -= 2 * Math.PI;    // por el camino corto
+  while (t.az - from.az < -Math.PI) t.az += 2 * Math.PI;
+  orbAnim = { from, to: t, t0: performance.now(), ms: ms === undefined ? 520 : ms };
+}
+function orbView(kind) {
+  const b = modelBox(kind === 'top');    // la cenital encuadra la vivienda; el resto, el edificio
+  const c = { tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2, tz: (b.z0 + b.z1) / 2 };
+  const V = {
+    fit:  { az: -0.62, el: 0.34 },
+    top:  { az: 0,     el: EL_MAX },
+    iso:  { az: -0.68, el: 0.60 },
+    n:    { az: Math.PI, el: 0.12 },
+    s:    { az: 0,        el: 0.12 },
+    e:    { az: -Math.PI / 2, el: 0.12 },
+    o:    { az:  Math.PI / 2, el: 0.12 }
+  }[kind];
+  if (!V) return;
+  const k = /^[nseo]$/.test(kind) ? 1.12 : 1.08;
+  orbGoto(Object.assign({ dist: fitDist(b, V.az, V.el, k) }, c, V));
+}
+/** acerca o aleja manteniendo bajo el cursor el punto del suelo señalado */
+function orbZoom(dir, e) {
+  orbAnim = null;
+  const before = orb.dist;
+  orb.dist = clamp(orb.dist * (1 + dir * 0.12), 6, 140);
+  if (!e) return;
+  const c = document.getElementById('view'), r = c.getBoundingClientRect();
+  const nd = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1,
+                               -((e.clientY - r.top) / r.height) * 2 + 1);
+  _ray.setFromCamera(nd, camera);
+  const pl = new THREE.Plane(new THREE.Vector3(0, 1, 0), -orb.tz);
+  const hit = new THREE.Vector3();
+  if (!_ray.ray.intersectPlane(pl, hit)) return;
+  const k = 1 - orb.dist / before;
+  orb.tx += (hit.x - orb.tx) * k;
+  orb.ty += (-hit.z - orb.ty) * k;
+}
+/** desplaza el objetivo en el plano de la pantalla */
+function orbPan(sx, sy) {
+  orbAnim = null;
+  const s = orb.dist * 0.02;
+  orb.tx += (Math.cos(orb.az) * sx - Math.sin(orb.az) * sy) * s;
+  orb.ty += (Math.sin(orb.az) * sx + Math.cos(orb.az) * sy) * s;
+}
+function orbStep(dt) {
+  let sx = 0, sy = 0;
+  if (keys['a'] || keys['arrowleft'])  sx -= 1;
+  if (keys['d'] || keys['arrowright']) sx += 1;
+  if (keys['w'] || keys['arrowup'])    sy += 1;
+  if (keys['s'] || keys['arrowdown'])  sy -= 1;
+  if (sx || sy) orbPan(sx * dt * 42, sy * dt * 42);
+  if (keys['+'] || keys['='])  orbZoom(-1 * dt * 8);
+  if (keys['-'] || keys['_'])  orbZoom( 1 * dt * 8);
+  if (!orbAnim) return;
+  const u = clamp((performance.now() - orbAnim.t0) / orbAnim.ms, 0, 1);
+  const k = u < 0.5 ? 4*u*u*u : 1 - Math.pow(-2*u + 2, 3) / 2;      // suavizado
+  for (const p of ['az','el','dist','tx','ty','tz'])
+    orb[p] = orbAnim.from[p] + (orbAnim.to[p] - orbAnim.from[p]) * k;
+  if (u >= 1) orbAnim = null;
+}
+function bindOrbTools() {
+  document.querySelectorAll('#orbtools [data-orb]').forEach(b => {
+    b.onclick = () => {
+      const k = b.dataset.orb;
+      if (k === 'in') orbZoom(-1);
+      else if (k === 'out') orbZoom(1);
+      else orbView(k);
+    };
+  });
 }
 
 /* =====================================================================
