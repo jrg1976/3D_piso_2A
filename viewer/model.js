@@ -228,6 +228,77 @@ const CEILINGS = [
   // { x0: 5.95, y0: -7.40, x1: 9.40, y1: -5.75, h: 2.40, name: 'Baño 1' },
 ];
 
+/* ------------------ plantas inferiores (contexto) --------------------
+   a02 (planta baja) y a03 (planta primera) están dibujados en el mismo
+   marco que a04, así que su geometría se lee sin registrar nada: se
+   rasteriza cada paño de fachada y se buscan los tramos sin fábrica.
+   El perímetro sale de proyectar la mancha de tinta de a03 fila a fila y
+   columna a columna; da 27,10 × 13,35 m, que son las cotas 27,06 y 13,33
+   acotadas en el propio plano.
+
+   Cotas (z = 0 en el pavimento de la bajocubierta, +118,00):
+     cara inferior del forjado bajocubierta  −0,38   (+117,62)
+     planta primera                          −2,90   (+115,10)
+     planta baja                             −5,80   (+112,20)
+     solera del semisótano                   −8,87   (+109,13)
+   -------------------------------------------------------------------- */
+const Z_P1 = -2.90, Z_PB = -5.80, Z_SOT = -8.87;
+
+/* la huella son tres prismas escalonados; se tocan sin solaparse */
+const BASE_MASS = [
+  [-0.20, -5.70, 26.80, -1.25],    // barra Norte, todo el frente
+  [ 2.05,-13.05, 24.45, -5.70],    // cuerpo central
+  [ 4.70,-14.55, 21.65,-13.05]     // cuerpo Sur (el que lleva los balcones)
+];
+/* rellenos que cosen las juntas para que no se vea la costura */
+const BASE_JOINT = [
+  [ 2.05, -5.95, 24.45, -5.45],
+  [ 4.70,-13.30, 21.65,-12.80]
+];
+
+/* paños vistos.  d='h' recorre en x a una y fija; d='v' recorre en y a
+   una x fija.  Los huecos van en coordenada absoluta del eje que recorre */
+const BASE_FACES = [
+  { d:'h', c: -1.25, a:-0.20, b:26.80, n:+1, holes:[
+      [1.23,1.97],[3.35,4.10],[6.20,7.40],[9.95,11.15],[12.78,13.53],
+      [15.38,16.57],[19.12,20.32],[22.43,23.18],[24.55,25.30]] },
+  { d:'h', c: -5.70, a:-0.20, b: 2.05, n:-1, holes:[[0.42,1.62]] },
+  { d:'h', c: -5.70, a:24.45, b:26.80, n:-1, holes:[[24.80,26.00]] },
+  { d:'h', c:-13.05, a: 2.05, b: 4.70, n:-1, holes:[[3.05,4.25]] },
+  { d:'h', c:-13.05, a:21.65, b:24.45, n:-1, holes:[[22.17,23.38]] },
+  { d:'h', c:-14.55, a: 4.70, b:21.65, n:-1, holes:[
+      [6.40,7.60],[9.93,11.12],[12.60,13.82],[15.40,16.60],[18.82,20.02]] },
+  { d:'v', c: -0.20, a:-1.25, b: -5.70, n:-1, holes:[[-4.03,-2.84]] },
+  { d:'v', c: 26.80, a:-1.25, b: -5.70, n:+1, holes:[] },
+  { d:'v', c:  2.05, a:-5.70, b:-13.05, n:-1, holes:[] },
+  { d:'v', c: 24.45, a:-5.70, b:-13.05, n:+1, holes:[] },
+  { d:'v', c:  4.70, a:-13.05, b:-14.55, n:-1, holes:[] },
+  { d:'v', c: 21.65, a:-13.05, b:-14.55, n:+1, holes:[] }
+];
+/* antepecho y dintel de los huecos, sobre el pavimento de cada planta */
+const BASE_SILL = 0.95, BASE_HEAD = 2.35;
+
+/* balcones de las plantas inferiores (los cuatro del Sur y el del Oeste) */
+const BASE_BALC = [
+  [ 5.95,-15.10, 8.20,-14.55], [ 9.40,-15.10,11.75,-14.55],
+  [14.95,-15.10,17.25,-14.55], [18.30,-15.10,20.55,-14.55],
+  [-0.85, -4.55,-0.20, -2.34]
+];
+
+/* cubierta baja de las dos alas de dos plantas: cumbrera en y = −3,51 a
+   +2,09 sobre el pavimento de la bajocubierta, aleros en −0,56 y −6,46
+   (a05).  Sólo aparece sobre x < 1,53 y x > 25,19.                      */
+const WING_ROOF = { ridgeY: -3.51, top: 2.09, s: 0.709, eaveN: -0.16, eaveS: -6.86 };
+const WING_BAYS = [[-0.95, 1.53], [25.19, 27.55]];
+const wingRoofH = y => WING_ROOF.top - WING_ROOF.s * Math.abs(y - WING_ROOF.ridgeY);
+
+/* terreno: la calle queda al Sur y el terreno sube hacia el Norte y el
+   Este (línea de terreno natural de a07 y a08) */
+function groundZ(x, y) {
+  return -7.55 + 1.75 * Math.min(1, Math.max(0, (y + 16.2) / 16.2))
+               + 0.30 * Math.min(1, Math.max(0, (x + 1) / 28));
+}
+
 /* ------------------------- balcones (contexto) ----------------------- */
 const BALCONIES = [
   { x0:10.15, y0:-15.60, x1:16.65, y1:-14.42, name:'Balcón 1 Viv. B' },

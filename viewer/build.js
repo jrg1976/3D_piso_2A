@@ -363,16 +363,145 @@ function buildSky() {
   tex.magFilter = THREE.LinearFilter;
   const sky = new THREE.Mesh(new THREE.SphereGeometry(160, 24, 16),
     new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, depthWrite: false, fog: false }));
-  sky.position.set(13, 0, 8);
+  sky.position.set(13, -6.0, 8);
   return sky;
 }
+/* ------------------- plantas inferiores (contexto) --------------------
+   Dos plantas más el arranque del semisótano, con los huecos medidos en
+   a02/a03. La fábrica se dibuja como paños con hueco; detrás va un
+   prisma retranqueado 0,12 que hace de mocheta y deja los huecos oscuros.
+   ---------------------------------------------------------------------- */
+function buildBase() {
+  const group = new THREE.Group();
+  const TOP = 0.00, BOT = Z_SOT;
+  const REV = 0.12;
+
+  // --- macizo retranqueado (se ve por los huecos)
+  const Mr = new Mesher();
+  const solid = (r, z0, z1, in_) => {
+    const [x0, y0, x1, y1] = [r[0] + in_, r[1] + in_, r[2] - in_, r[3] - in_];
+    Mr.box([V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+           [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+  };
+  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.02, REV));
+  BASE_JOINT.forEach(r => solid(r, BOT, TOP - 0.03, 0));
+  const rev = new THREE.Mesh(Mr.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0x4a4640, side: THREE.DoubleSide }));
+  group.add(rev);
+
+  // --- paños de fachada con sus huecos, planta a planta
+  const Mf = new Mesher(), Mg = new Mesher();
+  const bands = [[Z_PB, Z_P1], [Z_P1, TOP]];          // planta baja y primera
+  BASE_FACES.forEach(f => {
+    const hor = f.d === 'h';
+    const P = (t, z) => hor ? V(t, f.c, z) : V(f.c, t, z);
+    const lo = Math.min(f.a, f.b), hi = Math.max(f.a, f.b);
+    // banda ciega bajo la planta baja (arranque enterrado)
+    quadStrip(Mf, P, lo, hi, BOT, Z_PB);
+    bands.forEach(([zf, zt]) => {
+      const zs = zf + BASE_SILL, zh = zf + BASE_HEAD;
+      const hs = f.holes.map(h => [Math.min(h[0], h[1]), Math.max(h[0], h[1])])
+                        .filter(h => h[1] > lo && h[0] < hi).sort((a, b) => a[0] - b[0]);
+      let t = lo;
+      hs.forEach(h => {
+        if (h[0] > t) quadStrip(Mf, P, t, h[0], zf, zt);
+        quadStrip(Mf, P, h[0], h[1], zf, zs);          // antepecho
+        quadStrip(Mf, P, h[0], h[1], zh, zt);          // dintel
+        Mg.quad(P(h[0], zs), P(h[1], zs), P(h[1], zh), P(h[0], zh));
+        t = h[1];
+      });
+      if (t < hi) quadStrip(Mf, P, t, hi, zf, zt);
+    });
+  });
+  // remate superior: 0,10 por debajo del pavimento de la vivienda, para no
+  // solaparse con sus solados (queda oculto bajo los faldones y el alero)
+  BASE_MASS.forEach(r => {
+    const [x0, y0, x1, y1] = r, z = TOP - 0.10;
+    Mf.quad(V(x0,y0,z), V(x1,y0,z), V(x1,y1,z), V(x0,y1,z));
+  });
+  // cornisa bajo el arranque de la vivienda
+  BASE_MASS.forEach(r => {
+    const [x0, y0, x1, y1] = [r[0]-0.11, r[1]-0.11, r[2]+0.11, r[3]+0.11];
+    Mf.box([V(x0,y0,-0.26),V(x1,y0,-0.26),V(x1,y1,-0.26),V(x0,y1,-0.26)],
+           [V(x0,y0,-0.05),V(x1,y0,-0.05),V(x1,y1,-0.05),V(x0,y1,-0.05)]);
+  });
+  // imposta de forjado
+  [Z_P1, Z_PB].forEach(z => BASE_MASS.forEach(r => {
+    const [x0, y0, x1, y1] = [r[0]-0.07, r[1]-0.07, r[2]+0.07, r[3]+0.07];
+    Mf.box([V(x0,y0,z-0.10),V(x1,y0,z-0.10),V(x1,y1,z-0.10),V(x0,y1,z-0.10)],
+           [V(x0,y0,z+0.06),V(x1,y0,z+0.06),V(x1,y1,z+0.06),V(x0,y1,z+0.06)]);
+  }));
+  const fac = new THREE.Mesh(Mf.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: THREE.DoubleSide }));
+  fac.castShadow = fac.receiveShadow = true;
+  group.add(fac);
+  group.add(new THREE.Mesh(Mg.geometry(), new THREE.MeshLambertMaterial({
+    color: 0x2b3138, side: THREE.DoubleSide })));
+
+  // --- balcones de las dos plantas
+  const Mb = new Mesher();
+  [Z_P1, Z_PB].forEach(z => BASE_BALC.forEach(b => balcony(Mb, b, z)));
+  const balc = new THREE.Mesh(Mb.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0xb4b0a8, side: THREE.DoubleSide }));
+  balc.castShadow = true; group.add(balc);
+
+  // --- cubierta baja de las dos alas de dos plantas
+  const Mw = new Mesher();
+  WING_BAYS.forEach(([x0, x1]) => {
+    const n = 12, ya = WING_ROOF.eaveN, yb = WING_ROOF.eaveS;
+    for (let i = 0; i < n; i++) {
+      const y0 = ya + (yb - ya) * i / n, y1 = ya + (yb - ya) * (i + 1) / n;
+      const h0 = wingRoofH(y0), h1 = wingRoofH(y1);
+      Mw.quad(V(x0,y0,h0), V(x1,y0,h0), V(x1,y1,h1), V(x0,y1,h1));
+    }
+    [x0, x1].forEach(x => Mw.tri(V(x,ya,wingRoofH(ya)), V(x,WING_ROOF.ridgeY,WING_ROOF.top),
+                                 V(x,yb,wingRoofH(yb))));
+  });
+  const wing = new THREE.Mesh(Mw.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0x7d7568, side: THREE.DoubleSide }));
+  wing.castShadow = wing.receiveShadow = true; group.add(wing);
+  return group;
+}
+/** paño rectangular vertical entre dos parámetros y dos cotas */
+function quadStrip(M, P, t0, t1, z0, z1) {
+  if (t1 - t0 < 1e-6 || z1 - z0 < 1e-6) return;
+  M.quad(P(t0, z0), P(t1, z0), P(t1, z1), P(t0, z1));
+}
+/** losa de balcón con su barandilla, a la cota z */
+function balcony(M, b, z) {
+  const [x0, y0, x1, y1] = b;
+  M.box([V(x0,y0,z-0.18),V(x1,y0,z-0.18),V(x1,y1,z-0.18),V(x0,y1,z-0.18)],
+        [V(x0,y0,z),V(x1,y0,z),V(x1,y1,z),V(x0,y1,z)]);
+  const rail = (ax, ay, bx, by) => {
+    const t = 0.05, L = Math.hypot(bx-ax, by-ay), dx = (bx-ax)/L, dy = (by-ay)/L;
+    const nx = -dy*t/2, ny = dx*t/2;
+    M.box([V(ax-nx,ay-ny,z+0.95),V(bx-nx,by-ny,z+0.95),V(bx+nx,by+ny,z+0.95),V(ax+nx,ay+ny,z+0.95)],
+          [V(ax-nx,ay-ny,z+1.05),V(bx-nx,by-ny,z+1.05),V(bx+nx,by+ny,z+1.05),V(ax+nx,ay+ny,z+1.05)]);
+    const n = Math.round(L/0.13);
+    for (let i = 1; i < n; i++) {
+      const u = L*i/n, px = ax+dx*u, py = ay+dy*u, e = 0.012;
+      M.box([V(px-e,py-e,z+0.02),V(px+e,py-e,z+0.02),V(px+e,py+e,z+0.02),V(px-e,py+e,z+0.02)],
+            [V(px-e,py-e,z+1.00),V(px+e,py-e,z+1.00),V(px+e,py+e,z+1.00),V(px-e,py+e,z+1.00)]);
+    }
+  };
+  // la barandilla va por los tres lados libres (el cuarto es la fachada)
+  const w = x1 - x0, d = y1 - y0;
+  if (w >= d) { rail(x0,y0,x1,y0); rail(x0,y0,x0,y1); rail(x1,y0,x1,y1); }
+  else        { rail(x0,y0,x0,y1); rail(x0,y0,x1,y0); rail(x0,y1,x1,y1); }
+}
+
 function buildGround() {
-  const g = new THREE.PlaneGeometry(320, 320);
-  const m = new THREE.MeshLambertMaterial({ color: 0x6e7a5c });
-  const mesh = new THREE.Mesh(g, m);
-  mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(13, -5.80, 8);
-  mesh.receiveShadow = false;
+  const N = 60, R = 130, cx = 13.3, cy = -7.5;
+  const M = new Mesher();
+  const h = (x, y) => groundZ(Math.max(-40, Math.min(67, x)), Math.max(-70, Math.min(50, y)));
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const xa = cx - R + 2*R*i/N, xb = cx - R + 2*R*(i+1)/N;
+    const ya = cy - R + 2*R*j/N, yb = cy - R + 2*R*(j+1)/N;
+    M.quad(V(xa,ya,h(xa,ya)), V(xb,ya,h(xb,ya)), V(xb,yb,h(xb,yb)), V(xa,yb,h(xa,yb)));
+  }
+  const mesh = new THREE.Mesh(M.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0x6e7a5c, side: THREE.DoubleSide }));
+  mesh.receiveShadow = true;
   return mesh;
 }
 

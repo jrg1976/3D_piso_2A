@@ -28,6 +28,10 @@ autocontenido (three.js incluido), sin dependencias externas.
   altura libre pasa a leer la del falso techo y la cámara se agacha bajo él.
   *Copiar lista* exporta todas las zonas con coordenadas y alturas; se guardan
   en el navegador, de modo que se pueden ir metiendo por tandas.
+- **El edificio entero** bajo la vivienda: las dos plantas inferiores con sus
+  huecos y balcones, las alas de dos plantas de los extremos con su cubierta
+  baja, y el terreno a la cota que le corresponde. La vivienda es una tercera
+  planta y se ve como tal.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -98,7 +102,7 @@ vértice a 2,09 m sobre el pavimento— que es el frontón pequeño que se ve a 
 izquierda de `a06`. En `a05` sus dos aleros (`y = −0,56` y `y = −6,46`) y su
 cumbrera sólo aparecen sobre `x < 1,53` y `x > 25,19`: cubre las alas de dos
 plantas de los extremos y queda fuera de la vivienda, cuyo muro Oeste está en
-`x = 2,20`. Por eso no se modela.
+`x = 2,20`. Se modela con el resto del edificio, no con la vivienda.
 
 ### Pilares
 
@@ -199,6 +203,33 @@ const CEILINGS = [
 admite tantas zonas como haga falta y pueden solaparse: donde lo hagan manda la
 más baja. El botón **Falso techo** del visor genera exactamente ese bloque, listo
 para pegar aquí.
+
+## Las plantas inferiores
+
+`a02` (planta baja) y `a03` (planta primera) están dibujados en el mismo marco
+que `a04`, así que su geometría se lee sin registrar nada. El perímetro sale de
+proyectar la mancha de tinta de `a03` fila a fila y columna a columna:
+**27,10 × 13,35 m**, que son las cotas 27,06 y 13,33 acotadas en el propio
+plano. Es una huella escalonada en tres cuerpos:
+
+| Cuerpo | Huella |
+|---|---|
+| Barra Norte, todo el frente | `−0,20 … 26,80` × `−1,25 … −5,70` |
+| Cuerpo central | `2,05 … 24,45` × `−5,70 … −13,05` |
+| Cuerpo Sur (el de los balcones) | `4,70 … 21,65` × `−13,05 … −14,55` |
+
+Los **huecos** se sacan rasterizando cada paño de fachada y buscando los tramos
+sin fábrica: nueve en la fachada Norte, cinco en la Sur del cuerpo profundo, uno
+en cada retranqueo y la puerta de balcón del testero Oeste (Viv. E). Los cuatro
+balcones del Sur y el del Oeste salen del mismo barrido.
+
+Las **alas de los extremos** son de dos plantas y llevan la tercera cubierta
+—cumbrera en `y = −3,51` a +2,09 sobre el pavimento de la bajocubierta, aleros
+en `−0,56` y `−6,46`— que en `a05` sólo aparece sobre `x < 1,53` y `x > 25,19`.
+
+El **terreno** sigue la línea de terreno natural de `a07` y `a08`: la calle
+queda al Sur y sube hacia el Norte y el Este, de modo que el semisótano del
+garaje (solera +109,13) queda visto por delante y enterrado por detrás.
 
 ## Comprobación del modelo
 

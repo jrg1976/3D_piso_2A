@@ -398,7 +398,8 @@ button{font:inherit;color:inherit;cursor:pointer}
      la que se ve como frontón pequeño a la izquierda de a06. Cubre las alas de
      dos plantas de los extremos —<span class="mono">x &lt; 1,53</span> y
      <span class="mono">x &gt; 25,19</span>— y por tanto queda fuera de la
-     vivienda, cuyo muro Oeste está en <span class="mono">x = 2,20</span>.</p>
+     vivienda, cuyo muro Oeste está en <span class="mono">x = 2,20</span>: se
+     modela con el resto del edificio, no con la vivienda.</p>
   <p>Tres buhardillas/miradores: habitación 1 (Norte), cocina y habitación 2 (Sur).</p>
 
   <h3>Pilares</h3>
@@ -501,6 +502,28 @@ button{font:inherit;color:inherit;cursor:pointer}
      está en el tabique <span class="mono">x = 16,30</span>, y las once estancias
      rotuladas de B suman <span class="mono">144,78 m²</span>, que es la
      superficie del cuadro (144,76 m²).</p>
+
+  <h3>Las plantas inferiores</h3>
+  <p>a02 (planta baja) y a03 (planta primera) están dibujados en el mismo marco
+     que a04, así que su geometría se lee sin registrar nada. El perímetro sale
+     de proyectar la mancha de tinta de a03 fila a fila y columna a columna:
+     <b>27,10 × 13,35 m</b>, que son las cotas 27,06 y 13,33 del propio plano.
+     Es una huella escalonada en tres cuerpos:</p>
+  <table>
+    <tr><td>Barra Norte</td><td class="mono">−0,20…26,80 × −1,25…−5,70</td></tr>
+    <tr><td>Cuerpo central</td><td class="mono">2,05…24,45 × −5,70…−13,05</td></tr>
+    <tr><td>Cuerpo Sur</td><td class="mono">4,70…21,65 × −13,05…−14,55</td></tr>
+  </table>
+  <p>Los huecos se obtienen rasterizando cada paño de fachada y buscando los
+     tramos sin fábrica: nueve al Norte, cinco al Sur del cuerpo profundo, uno
+     en cada retranqueo y la puerta de balcón del testero Oeste. Los cuatro
+     balcones del Sur y el del Oeste salen del mismo barrido.</p>
+  <p>Las alas de los extremos son de dos plantas y llevan la tercera cubierta
+     —cumbrera en <span class="mono">y = −3,51</span> a +2,09, aleros en −0,56 y
+     −6,46— que en a05 sólo se dibuja sobre <span class="mono">x &lt; 1,53</span>
+     y <span class="mono">x &gt; 25,19</span>. El terreno sigue la línea de
+     terreno natural de a07 y a08: la calle queda al Sur y sube hacia el Norte,
+     con el semisótano del garaje visto por delante y enterrado por detrás.</p>
 
   <h3>Comprobación del modelo</h3>
   <p>Antes de empaquetar el visor se pasan dos pruebas sobre la geometría:</p>

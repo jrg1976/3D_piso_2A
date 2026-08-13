@@ -6,7 +6,7 @@ let measuring = false, marks = [], markGroup = null;
 let plafonding = false, zones = [], pending = null, zoneGroup = null;
 let mode = 'walk';
 const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
-const orb = { tx: 13.4, ty: -8.6, tz: 1.4, dist: 21, az: -0.62, el: 0.42 };
+const orb = { tx: 13.4, ty: -8.6, tz: -1.4, dist: 36, az: -0.62, el: 0.34 };
 const keys = Object.create(null);
 const RADIUS = 0.20;
 
@@ -47,6 +47,7 @@ function init() {
   const fill = new THREE.DirectionalLight(0xcfe0ee, 0.45);
   fill.position.set(-14, 10, -14); scene.add(fill);
 
+  scene.add(buildBase());
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -160,7 +161,7 @@ function bindControls() {
   c.addEventListener('contextmenu', e => e.preventDefault());
   c.addEventListener('wheel', e => {
     e.preventDefault();
-    if (mode === 'orbit') orb.dist = clamp(orb.dist * (1 + Math.sign(e.deltaY) * 0.12), 6, 70);
+    if (mode === 'orbit') orb.dist = clamp(orb.dist * (1 + Math.sign(e.deltaY) * 0.12), 6, 110);
     else camera.fov = clamp(camera.fov + Math.sign(e.deltaY) * 3, 35, 92), camera.updateProjectionMatrix();
   }, { passive: false });
 

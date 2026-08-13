@@ -398,7 +398,8 @@ button{font:inherit;color:inherit;cursor:pointer}
      la que se ve como frontón pequeño a la izquierda de a06. Cubre las alas de
      dos plantas de los extremos —<span class="mono">x &lt; 1,53</span> y
      <span class="mono">x &gt; 25,19</span>— y por tanto queda fuera de la
-     vivienda, cuyo muro Oeste está en <span class="mono">x = 2,20</span>.</p>
+     vivienda, cuyo muro Oeste está en <span class="mono">x = 2,20</span>: se
+     modela con el resto del edificio, no con la vivienda.</p>
   <p>Tres buhardillas/miradores: habitación 1 (Norte), cocina y habitación 2 (Sur).</p>
 
   <h3>Pilares</h3>
@@ -501,6 +502,28 @@ button{font:inherit;color:inherit;cursor:pointer}
      está en el tabique <span class="mono">x = 16,30</span>, y las once estancias
      rotuladas de B suman <span class="mono">144,78 m²</span>, que es la
      superficie del cuadro (144,76 m²).</p>
+
+  <h3>Las plantas inferiores</h3>
+  <p>a02 (planta baja) y a03 (planta primera) están dibujados en el mismo marco
+     que a04, así que su geometría se lee sin registrar nada. El perímetro sale
+     de proyectar la mancha de tinta de a03 fila a fila y columna a columna:
+     <b>27,10 × 13,35 m</b>, que son las cotas 27,06 y 13,33 del propio plano.
+     Es una huella escalonada en tres cuerpos:</p>
+  <table>
+    <tr><td>Barra Norte</td><td class="mono">−0,20…26,80 × −1,25…−5,70</td></tr>
+    <tr><td>Cuerpo central</td><td class="mono">2,05…24,45 × −5,70…−13,05</td></tr>
+    <tr><td>Cuerpo Sur</td><td class="mono">4,70…21,65 × −13,05…−14,55</td></tr>
+  </table>
+  <p>Los huecos se obtienen rasterizando cada paño de fachada y buscando los
+     tramos sin fábrica: nueve al Norte, cinco al Sur del cuerpo profundo, uno
+     en cada retranqueo y la puerta de balcón del testero Oeste. Los cuatro
+     balcones del Sur y el del Oeste salen del mismo barrido.</p>
+  <p>Las alas de los extremos son de dos plantas y llevan la tercera cubierta
+     —cumbrera en <span class="mono">y = −3,51</span> a +2,09, aleros en −0,56 y
+     −6,46— que en a05 sólo se dibuja sobre <span class="mono">x &lt; 1,53</span>
+     y <span class="mono">x &gt; 25,19</span>. El terreno sigue la línea de
+     terreno natural de a07 y a08: la calle queda al Sur y sube hacia el Norte,
+     con el semisótano del garaje visto por delante y enterrado por detrás.</p>
 
   <h3>Comprobación del modelo</h3>
   <p>Antes de empaquetar el visor se pasan dos pruebas sobre la geometría:</p>
@@ -780,6 +803,77 @@ const SHAFTS = [
 const CEILINGS = [
   // { x0: 5.95, y0: -7.40, x1: 9.40, y1: -5.75, h: 2.40, name: 'Baño 1' },
 ];
+
+/* ------------------ plantas inferiores (contexto) --------------------
+   a02 (planta baja) y a03 (planta primera) están dibujados en el mismo
+   marco que a04, así que su geometría se lee sin registrar nada: se
+   rasteriza cada paño de fachada y se buscan los tramos sin fábrica.
+   El perímetro sale de proyectar la mancha de tinta de a03 fila a fila y
+   columna a columna; da 27,10 × 13,35 m, que son las cotas 27,06 y 13,33
+   acotadas en el propio plano.
+
+   Cotas (z = 0 en el pavimento de la bajocubierta, +118,00):
+     cara inferior del forjado bajocubierta  −0,38   (+117,62)
+     planta primera                          −2,90   (+115,10)
+     planta baja                             −5,80   (+112,20)
+     solera del semisótano                   −8,87   (+109,13)
+   -------------------------------------------------------------------- */
+const Z_P1 = -2.90, Z_PB = -5.80, Z_SOT = -8.87;
+
+/* la huella son tres prismas escalonados; se tocan sin solaparse */
+const BASE_MASS = [
+  [-0.20, -5.70, 26.80, -1.25],    // barra Norte, todo el frente
+  [ 2.05,-13.05, 24.45, -5.70],    // cuerpo central
+  [ 4.70,-14.55, 21.65,-13.05]     // cuerpo Sur (el que lleva los balcones)
+];
+/* rellenos que cosen las juntas para que no se vea la costura */
+const BASE_JOINT = [
+  [ 2.05, -5.95, 24.45, -5.45],
+  [ 4.70,-13.30, 21.65,-12.80]
+];
+
+/* paños vistos.  d='h' recorre en x a una y fija; d='v' recorre en y a
+   una x fija.  Los huecos van en coordenada absoluta del eje que recorre */
+const BASE_FACES = [
+  { d:'h', c: -1.25, a:-0.20, b:26.80, n:+1, holes:[
+      [1.23,1.97],[3.35,4.10],[6.20,7.40],[9.95,11.15],[12.78,13.53],
+      [15.38,16.57],[19.12,20.32],[22.43,23.18],[24.55,25.30]] },
+  { d:'h', c: -5.70, a:-0.20, b: 2.05, n:-1, holes:[[0.42,1.62]] },
+  { d:'h', c: -5.70, a:24.45, b:26.80, n:-1, holes:[[24.80,26.00]] },
+  { d:'h', c:-13.05, a: 2.05, b: 4.70, n:-1, holes:[[3.05,4.25]] },
+  { d:'h', c:-13.05, a:21.65, b:24.45, n:-1, holes:[[22.17,23.38]] },
+  { d:'h', c:-14.55, a: 4.70, b:21.65, n:-1, holes:[
+      [6.40,7.60],[9.93,11.12],[12.60,13.82],[15.40,16.60],[18.82,20.02]] },
+  { d:'v', c: -0.20, a:-1.25, b: -5.70, n:-1, holes:[[-4.03,-2.84]] },
+  { d:'v', c: 26.80, a:-1.25, b: -5.70, n:+1, holes:[] },
+  { d:'v', c:  2.05, a:-5.70, b:-13.05, n:-1, holes:[] },
+  { d:'v', c: 24.45, a:-5.70, b:-13.05, n:+1, holes:[] },
+  { d:'v', c:  4.70, a:-13.05, b:-14.55, n:-1, holes:[] },
+  { d:'v', c: 21.65, a:-13.05, b:-14.55, n:+1, holes:[] }
+];
+/* antepecho y dintel de los huecos, sobre el pavimento de cada planta */
+const BASE_SILL = 0.95, BASE_HEAD = 2.35;
+
+/* balcones de las plantas inferiores (los cuatro del Sur y el del Oeste) */
+const BASE_BALC = [
+  [ 5.95,-15.10, 8.20,-14.55], [ 9.40,-15.10,11.75,-14.55],
+  [14.95,-15.10,17.25,-14.55], [18.30,-15.10,20.55,-14.55],
+  [-0.85, -4.55,-0.20, -2.34]
+];
+
+/* cubierta baja de las dos alas de dos plantas: cumbrera en y = −3,51 a
+   +2,09 sobre el pavimento de la bajocubierta, aleros en −0,56 y −6,46
+   (a05).  Sólo aparece sobre x < 1,53 y x > 25,19.                      */
+const WING_ROOF = { ridgeY: -3.51, top: 2.09, s: 0.709, eaveN: -0.16, eaveS: -6.86 };
+const WING_BAYS = [[-0.95, 1.53], [25.19, 27.55]];
+const wingRoofH = y => WING_ROOF.top - WING_ROOF.s * Math.abs(y - WING_ROOF.ridgeY);
+
+/* terreno: la calle queda al Sur y el terreno sube hacia el Norte y el
+   Este (línea de terreno natural de a07 y a08) */
+function groundZ(x, y) {
+  return -7.55 + 1.75 * Math.min(1, Math.max(0, (y + 16.2) / 16.2))
+               + 0.30 * Math.min(1, Math.max(0, (x + 1) / 28));
+}
 
 /* ------------------------- balcones (contexto) ----------------------- */
 const BALCONIES = [
@@ -1196,16 +1290,145 @@ function buildSky() {
   tex.magFilter = THREE.LinearFilter;
   const sky = new THREE.Mesh(new THREE.SphereGeometry(160, 24, 16),
     new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, depthWrite: false, fog: false }));
-  sky.position.set(13, 0, 8);
+  sky.position.set(13, -6.0, 8);
   return sky;
 }
+/* ------------------- plantas inferiores (contexto) --------------------
+   Dos plantas más el arranque del semisótano, con los huecos medidos en
+   a02/a03. La fábrica se dibuja como paños con hueco; detrás va un
+   prisma retranqueado 0,12 que hace de mocheta y deja los huecos oscuros.
+   ---------------------------------------------------------------------- */
+function buildBase() {
+  const group = new THREE.Group();
+  const TOP = 0.00, BOT = Z_SOT;
+  const REV = 0.12;
+
+  // --- macizo retranqueado (se ve por los huecos)
+  const Mr = new Mesher();
+  const solid = (r, z0, z1, in_) => {
+    const [x0, y0, x1, y1] = [r[0] + in_, r[1] + in_, r[2] - in_, r[3] - in_];
+    Mr.box([V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+           [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+  };
+  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.02, REV));
+  BASE_JOINT.forEach(r => solid(r, BOT, TOP - 0.03, 0));
+  const rev = new THREE.Mesh(Mr.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0x4a4640, side: THREE.DoubleSide }));
+  group.add(rev);
+
+  // --- paños de fachada con sus huecos, planta a planta
+  const Mf = new Mesher(), Mg = new Mesher();
+  const bands = [[Z_PB, Z_P1], [Z_P1, TOP]];          // planta baja y primera
+  BASE_FACES.forEach(f => {
+    const hor = f.d === 'h';
+    const P = (t, z) => hor ? V(t, f.c, z) : V(f.c, t, z);
+    const lo = Math.min(f.a, f.b), hi = Math.max(f.a, f.b);
+    // banda ciega bajo la planta baja (arranque enterrado)
+    quadStrip(Mf, P, lo, hi, BOT, Z_PB);
+    bands.forEach(([zf, zt]) => {
+      const zs = zf + BASE_SILL, zh = zf + BASE_HEAD;
+      const hs = f.holes.map(h => [Math.min(h[0], h[1]), Math.max(h[0], h[1])])
+                        .filter(h => h[1] > lo && h[0] < hi).sort((a, b) => a[0] - b[0]);
+      let t = lo;
+      hs.forEach(h => {
+        if (h[0] > t) quadStrip(Mf, P, t, h[0], zf, zt);
+        quadStrip(Mf, P, h[0], h[1], zf, zs);          // antepecho
+        quadStrip(Mf, P, h[0], h[1], zh, zt);          // dintel
+        Mg.quad(P(h[0], zs), P(h[1], zs), P(h[1], zh), P(h[0], zh));
+        t = h[1];
+      });
+      if (t < hi) quadStrip(Mf, P, t, hi, zf, zt);
+    });
+  });
+  // remate superior: 0,10 por debajo del pavimento de la vivienda, para no
+  // solaparse con sus solados (queda oculto bajo los faldones y el alero)
+  BASE_MASS.forEach(r => {
+    const [x0, y0, x1, y1] = r, z = TOP - 0.10;
+    Mf.quad(V(x0,y0,z), V(x1,y0,z), V(x1,y1,z), V(x0,y1,z));
+  });
+  // cornisa bajo el arranque de la vivienda
+  BASE_MASS.forEach(r => {
+    const [x0, y0, x1, y1] = [r[0]-0.11, r[1]-0.11, r[2]+0.11, r[3]+0.11];
+    Mf.box([V(x0,y0,-0.26),V(x1,y0,-0.26),V(x1,y1,-0.26),V(x0,y1,-0.26)],
+           [V(x0,y0,-0.05),V(x1,y0,-0.05),V(x1,y1,-0.05),V(x0,y1,-0.05)]);
+  });
+  // imposta de forjado
+  [Z_P1, Z_PB].forEach(z => BASE_MASS.forEach(r => {
+    const [x0, y0, x1, y1] = [r[0]-0.07, r[1]-0.07, r[2]+0.07, r[3]+0.07];
+    Mf.box([V(x0,y0,z-0.10),V(x1,y0,z-0.10),V(x1,y1,z-0.10),V(x0,y1,z-0.10)],
+           [V(x0,y0,z+0.06),V(x1,y0,z+0.06),V(x1,y1,z+0.06),V(x0,y1,z+0.06)]);
+  }));
+  const fac = new THREE.Mesh(Mf.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: THREE.DoubleSide }));
+  fac.castShadow = fac.receiveShadow = true;
+  group.add(fac);
+  group.add(new THREE.Mesh(Mg.geometry(), new THREE.MeshLambertMaterial({
+    color: 0x2b3138, side: THREE.DoubleSide })));
+
+  // --- balcones de las dos plantas
+  const Mb = new Mesher();
+  [Z_P1, Z_PB].forEach(z => BASE_BALC.forEach(b => balcony(Mb, b, z)));
+  const balc = new THREE.Mesh(Mb.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0xb4b0a8, side: THREE.DoubleSide }));
+  balc.castShadow = true; group.add(balc);
+
+  // --- cubierta baja de las dos alas de dos plantas
+  const Mw = new Mesher();
+  WING_BAYS.forEach(([x0, x1]) => {
+    const n = 12, ya = WING_ROOF.eaveN, yb = WING_ROOF.eaveS;
+    for (let i = 0; i < n; i++) {
+      const y0 = ya + (yb - ya) * i / n, y1 = ya + (yb - ya) * (i + 1) / n;
+      const h0 = wingRoofH(y0), h1 = wingRoofH(y1);
+      Mw.quad(V(x0,y0,h0), V(x1,y0,h0), V(x1,y1,h1), V(x0,y1,h1));
+    }
+    [x0, x1].forEach(x => Mw.tri(V(x,ya,wingRoofH(ya)), V(x,WING_ROOF.ridgeY,WING_ROOF.top),
+                                 V(x,yb,wingRoofH(yb))));
+  });
+  const wing = new THREE.Mesh(Mw.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0x7d7568, side: THREE.DoubleSide }));
+  wing.castShadow = wing.receiveShadow = true; group.add(wing);
+  return group;
+}
+/** paño rectangular vertical entre dos parámetros y dos cotas */
+function quadStrip(M, P, t0, t1, z0, z1) {
+  if (t1 - t0 < 1e-6 || z1 - z0 < 1e-6) return;
+  M.quad(P(t0, z0), P(t1, z0), P(t1, z1), P(t0, z1));
+}
+/** losa de balcón con su barandilla, a la cota z */
+function balcony(M, b, z) {
+  const [x0, y0, x1, y1] = b;
+  M.box([V(x0,y0,z-0.18),V(x1,y0,z-0.18),V(x1,y1,z-0.18),V(x0,y1,z-0.18)],
+        [V(x0,y0,z),V(x1,y0,z),V(x1,y1,z),V(x0,y1,z)]);
+  const rail = (ax, ay, bx, by) => {
+    const t = 0.05, L = Math.hypot(bx-ax, by-ay), dx = (bx-ax)/L, dy = (by-ay)/L;
+    const nx = -dy*t/2, ny = dx*t/2;
+    M.box([V(ax-nx,ay-ny,z+0.95),V(bx-nx,by-ny,z+0.95),V(bx+nx,by+ny,z+0.95),V(ax+nx,ay+ny,z+0.95)],
+          [V(ax-nx,ay-ny,z+1.05),V(bx-nx,by-ny,z+1.05),V(bx+nx,by+ny,z+1.05),V(ax+nx,ay+ny,z+1.05)]);
+    const n = Math.round(L/0.13);
+    for (let i = 1; i < n; i++) {
+      const u = L*i/n, px = ax+dx*u, py = ay+dy*u, e = 0.012;
+      M.box([V(px-e,py-e,z+0.02),V(px+e,py-e,z+0.02),V(px+e,py+e,z+0.02),V(px-e,py+e,z+0.02)],
+            [V(px-e,py-e,z+1.00),V(px+e,py-e,z+1.00),V(px+e,py+e,z+1.00),V(px-e,py+e,z+1.00)]);
+    }
+  };
+  // la barandilla va por los tres lados libres (el cuarto es la fachada)
+  const w = x1 - x0, d = y1 - y0;
+  if (w >= d) { rail(x0,y0,x1,y0); rail(x0,y0,x0,y1); rail(x1,y0,x1,y1); }
+  else        { rail(x0,y0,x0,y1); rail(x0,y0,x1,y0); rail(x0,y1,x1,y1); }
+}
+
 function buildGround() {
-  const g = new THREE.PlaneGeometry(320, 320);
-  const m = new THREE.MeshLambertMaterial({ color: 0x6e7a5c });
-  const mesh = new THREE.Mesh(g, m);
-  mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(13, -5.80, 8);
-  mesh.receiveShadow = false;
+  const N = 60, R = 130, cx = 13.3, cy = -7.5;
+  const M = new Mesher();
+  const h = (x, y) => groundZ(Math.max(-40, Math.min(67, x)), Math.max(-70, Math.min(50, y)));
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const xa = cx - R + 2*R*i/N, xb = cx - R + 2*R*(i+1)/N;
+    const ya = cy - R + 2*R*j/N, yb = cy - R + 2*R*(j+1)/N;
+    M.quad(V(xa,ya,h(xa,ya)), V(xb,ya,h(xb,ya)), V(xb,yb,h(xb,yb)), V(xa,yb,h(xa,yb)));
+  }
+  const mesh = new THREE.Mesh(M.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0x6e7a5c, side: THREE.DoubleSide }));
+  mesh.receiveShadow = true;
   return mesh;
 }
 
@@ -1239,7 +1462,7 @@ let measuring = false, marks = [], markGroup = null;
 let plafonding = false, zones = [], pending = null, zoneGroup = null;
 let mode = 'walk';
 const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
-const orb = { tx: 13.4, ty: -8.6, tz: 1.4, dist: 21, az: -0.62, el: 0.42 };
+const orb = { tx: 13.4, ty: -8.6, tz: -1.4, dist: 36, az: -0.62, el: 0.34 };
 const keys = Object.create(null);
 const RADIUS = 0.20;
 
@@ -1280,6 +1503,7 @@ function init() {
   const fill = new THREE.DirectionalLight(0xcfe0ee, 0.45);
   fill.position.set(-14, 10, -14); scene.add(fill);
 
+  scene.add(buildBase());
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -1393,7 +1617,7 @@ function bindControls() {
   c.addEventListener('contextmenu', e => e.preventDefault());
   c.addEventListener('wheel', e => {
     e.preventDefault();
-    if (mode === 'orbit') orb.dist = clamp(orb.dist * (1 + Math.sign(e.deltaY) * 0.12), 6, 70);
+    if (mode === 'orbit') orb.dist = clamp(orb.dist * (1 + Math.sign(e.deltaY) * 0.12), 6, 110);
     else camera.fov = clamp(camera.fov + Math.sign(e.deltaY) * 3, 35, 92), camera.updateProjectionMatrix();
   }, { passive: false });
 
