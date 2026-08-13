@@ -35,15 +35,16 @@ autocontenido (three.js incluido), sin dependencias externas.
   la rueda (o el pellizco) acerca, `esc` anula la esquina pendiente.
 - **Rótulos** — nombre y superficie útil de cada estancia (las del cuadro de a04).
 - **Estructura** — tiñe pilares y patinillos para localizarlos de un vistazo.
-- **Medir** — marca puntos con un clic en el suelo y copia sus coordenadas; dos
-  clics definen un rectángulo. Sirve para situar cualquier añadido sin tener que
-  describirlo con palabras.
+- **Pladur** — muestra u oculta las bandas de falso techo, para poder mirar la
+  maqueta sin ellas. Con la herramienta de *Falso techo* abierta se fuerzan
+  visibles, que si no se editaría a ciegas.
 - **Falso techo** — crea zonas de pladur (mejor desde **Planta**). Una estancia puede llevar varias
   alturas, así que la unidad es la **zona**: un rectángulo con *su* altura.
   Se escribe la altura libre (y una nota opcional), se dan dos clics en el suelo
   —o se pulsa *Toda la estancia*— y la banda aparece al momento en el modelo con
   el canto marcado. Donde dos zonas se solapan manda la más baja. El indicador de
   altura libre pasa a leer la del falso techo y la cámara se agacha bajo él.
+  El botón **Pladur** las muestra u oculta.
   *Copiar lista* exporta todas las zonas con coordenadas y alturas; se guardan
   en el navegador, de modo que se pueden ir metiendo por tandas.
   **Se pueden modificar**: un clic sobre una banda en la vista *Planta* la

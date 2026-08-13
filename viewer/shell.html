@@ -154,7 +154,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tp:active{background:var(--btn-on);color:var(--btn-on-fg)}
 @media (hover:none) and (pointer:coarse){ .touchpad{display:flex} }
 
-/* ---------- medición ---------- */
+/* ---------- panel flotante ---------- */
 .measure{
   position:fixed;right:14px;bottom:14px;z-index:6;width:300px;
   background:var(--chrome);backdrop-filter:blur(14px);
@@ -165,23 +165,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 .m-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
 .m-title{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);font-weight:700}
 .m-hint{font-size:10.5px;color:var(--muted)}
-.m-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;
-        max-height:190px;overflow-y:auto}
-.m-list li{
-  display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:baseline;
-  font-size:11.5px;color:var(--text-2);
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;
-}
-.m-list li b{color:var(--amber);font-weight:700}
-.m-list li span{color:var(--text);font-family:inherit}
-.m-empty{font-size:11.5px;color:var(--muted);font-family:inherit!important}
-.m-rect{
-  margin-top:8px;padding-top:8px;border-top:1px solid var(--chrome-line);
-  font-size:11.5px;color:var(--text);
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;
-}
-.m-rect[hidden]{display:none}
-.m-rect em{color:var(--amber);font-style:normal;font-weight:700}
 .m-actions{display:flex;gap:6px;margin-top:9px}
 .m-actions .btn{flex:1;text-align:center}
 
@@ -307,8 +290,8 @@ button{font:inherit;color:inherit;cursor:pointer}
       <button class="btn" id="mode-plan" type="button" aria-pressed="false">Planta</button>
     </div>
     <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
-    <button class="btn" id="t-measure" type="button" aria-pressed="false">Medir</button>
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
+    <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -352,18 +335,6 @@ button{font:inherit;color:inherit;cursor:pointer}
   <button class="tp" id="tp-back" type="button" aria-label="Retroceder">▼</button>
 </div>
 
-<section class="measure" id="measure" hidden aria-label="Medir">
-  <div class="m-head">
-    <span class="m-title">Medir</span>
-    <span class="m-hint">clic en el suelo para marcar puntos</span>
-  </div>
-  <ol class="m-list" id="m-list"></ol>
-  <div class="m-rect" id="m-rect" hidden></div>
-  <div class="m-actions">
-    <button class="btn" id="m-copy" type="button">Copiar</button>
-    <button class="btn" id="m-clear" type="button">Vaciar</button>
-  </div>
-</section>
 
 <section class="measure plafond" id="plafond" hidden aria-label="Falso techo">
   <div class="m-head">
@@ -520,7 +491,8 @@ button{font:inherit;color:inherit;cursor:pointer}
         dos zonas se solapan manda la más baja, que es la que se ve.</li>
     <li>La banda aparece al momento en el modelo, con el canto marcado, y el
         indicador de <b>altura libre</b> pasa a leer la del falso techo; en
-        <b>Recorrer</b> la cámara se agacha bajo ella.</li>
+        <b>Recorrer</b> la cámara se agacha bajo ella. El botón <b>Pladur</b>
+        las muestra u oculta, para poder mirar la maqueta sin ellas.</li>
     <li>Para <b>modificar</b> una banda, un clic encima en <b>Planta</b>: se
         selecciona y saca ocho tiradores (las cuatro esquinas y los cuatro
         puntos medios de lado). Arrastra un lado para alargarla o ensancharla,
@@ -629,9 +601,9 @@ button{font:inherit;color:inherit;cursor:pointer}
         como volúmenes simples, a modo de referencia de escala.</li>
     <li>El botón <b>Estructura</b> tiñe pilares y patinillos para localizarlos
         de un vistazo.</li>
-    <li>El botón <b>Medir</b> permite marcar puntos con un clic en el suelo y
-        copiar sus coordenadas; el botón <b>Falso techo</b> crea zonas de
-        pladur con su altura y las exporta.</li>
+    <li>El botón <b>Falso techo</b> crea y modifica las zonas de pladur con su
+        altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
+        mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
   </ul>
 </section>

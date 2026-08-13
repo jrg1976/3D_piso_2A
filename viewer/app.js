@@ -2,7 +2,7 @@
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
-let measuring = false, marks = [], markGroup = null;
+let pladurOn = true;
 let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
 let mode = 'walk';
 const cam = { x: 11.15, y: -10.05, yaw: Math.PI, pitch: 0.10, eye: 1.62 };
@@ -65,7 +65,6 @@ function init() {
   });
 
   planInit();
-  markGroup = new THREE.Group(); scene.add(markGroup);
   zoneGroup = new THREE.Group(); scene.add(zoneGroup);
   loadZones();
   buildPortals();
@@ -145,8 +144,7 @@ function bindControls() {
   c.addEventListener('pointerup', e => {
     drag = false; c.classList.remove('grabbing');
     if (e.button !== 0 || Math.hypot(e.clientX - downX, e.clientY - downY) >= 5) return;
-    if (measuring) pick(e);
-    else if (plafonding) pickZone(e);
+    if (plafonding) pickZone(e);
   });
   c.addEventListener('pointercancel', () => { drag = false; c.classList.remove('grabbing'); });
   c.addEventListener('pointermove', e => {
@@ -194,12 +192,8 @@ function bindControls() {
   document.getElementById('t-furn').onclick = e => toggle(e.currentTarget, v => {
     apt.furn.visible = v; apt.figs.visible = v;
   });
-  document.getElementById('t-measure').onclick = e => toggle(e.currentTarget, v => {
-    measuring = v;
-    if (v) setPlafond(false);
-    document.getElementById('measure').hidden = !v;
-    document.querySelector('.hint').hidden = v || plafonding;
-    if (v) renderMarks();
+  document.getElementById('t-pladur').onclick = e => toggle(e.currentTarget, v => {
+    pladurOn = v; syncZoneVis();
   });
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
@@ -225,8 +219,6 @@ function bindControls() {
   };
   ['p-h', 'p-name'].forEach(id => document.getElementById(id)
     .addEventListener('keydown', e => e.stopPropagation()));
-  document.getElementById('m-clear').onclick = () => { marks = []; renderMarks(); };
-  document.getElementById('m-copy').onclick = () => copyTo('m-copy', marksText());
   document.getElementById('t-struct').onclick = e => toggle(e.currentTarget, v => {
     apt.pillars.material.color.set(v ? 0xd08a2a : 0xdcd4c6);
     apt.shafts.material.color.set(v ? 0x9c6a2e : 0xb9ab97);
@@ -372,7 +364,7 @@ function onResize() {
 }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-/* -------------------------- medición --------------------------------- */
+/* --------------------- utilidades de puntero -------------------------- */
 const _ray = new THREE.Raycaster();
 const _plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);   // suelo, z = 0
 const _hit = new THREE.Vector3();
@@ -388,63 +380,8 @@ function floorHit(e) {
   return { x: +_hit.x.toFixed(2), y: +(-_hit.z).toFixed(2) };
 }
 
-function pick(e) {
-  const p = floorHit(e); if (!p) return;
-  const room = roomAt(p.x, p.y);
-  marks.push({ x: p.x, y: p.y, room: room ? room.name : '—', h: +ceilAt(p.x, p.y).toFixed(2) });
-  renderMarks();
-}
 
 const n2 = v => v.toFixed(2).replace('.', ',');
-
-function renderMarks() {
-  const ul = document.getElementById('m-list');
-  ul.innerHTML = marks.length ? '' : '<li class="m-empty">Sin puntos todavía.</li>';
-  marks.forEach((m, i) => {
-    const li = document.createElement('li');
-    li.innerHTML = '<b>' + (i + 1) + '</b><span>' + m.room + '</span>' +
-                   n2(m.x) + ' / ' + n2(m.y);
-    ul.appendChild(li);
-  });
-  ul.scrollTop = ul.scrollHeight;
-
-  const box = document.getElementById('m-rect');
-  if (marks.length >= 2) {
-    const a = marks[marks.length - 2], b = marks[marks.length - 1];
-    const x0 = Math.min(a.x, b.x), x1 = Math.max(a.x, b.x);
-    const y0 = Math.min(a.y, b.y), y1 = Math.max(a.y, b.y);
-    box.hidden = false;
-    box.innerHTML = '<em>▭</em> ' + n2(x0) + ' ' + n2(y0) + ' → ' + n2(x1) + ' ' + n2(y1) +
-                    '<br><em>&nbsp;&nbsp;</em> ' + n2(x1 - x0) + ' × ' + n2(y1 - y0) + ' m';
-  } else box.hidden = true;
-
-  // marcadores en la escena
-  while (markGroup.children.length) markGroup.remove(markGroup.children[0]);
-  const mat = new THREE.MeshBasicMaterial({ color: 0xd08a2a, depthTest: false });
-  marks.forEach(m => {
-    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 10), mat);
-    pin.position.set(m.x, 0.6, -m.y); pin.renderOrder = 5; markGroup.add(pin);
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.10, 10, 8), mat);
-    cap.position.set(m.x, 1.25, -m.y); cap.renderOrder = 5; markGroup.add(cap);
-  });
-}
-
-function marksText() {
-  const L = ['Puntos marcados (x / y en metros, sistema del plano a04;',
-             'z = 0 en el pavimento acabado, +118,00):'];
-  marks.forEach((m, i) => L.push(
-    (i + 1) + '. ' + m.room + '  x=' + n2(m.x) + '  y=' + n2(m.y) +
-    '  (techo actual ' + n2(m.h) + ' m)'));
-  for (let i = 0; i + 1 < marks.length; i += 2) {
-    const a = marks[i], b = marks[i + 1];
-    const x0 = Math.min(a.x, b.x), x1 = Math.max(a.x, b.x);
-    const y0 = Math.min(a.y, b.y), y1 = Math.max(a.y, b.y);
-    L.push('rect ' + (i / 2 + 1) + ': [' + n2(x0) + ', ' + n2(y0) + ', ' +
-           n2(x1) + ', ' + n2(y1) + ']   ' + n2(x1 - x0) + ' × ' + n2(y1 - y0) + ' m' +
-           '   falso techo a ___ m');
-  }
-  return L.join('\n');
-}
 
 /* ------------------------ falsos techos ------------------------------
    Cada zona es un rectángulo con su propia altura, así que una estancia
@@ -457,20 +394,15 @@ function setPlafond(v) {
   plafonding = v;
   document.getElementById('t-plafond').setAttribute('aria-pressed', v);
   document.getElementById('plafond').hidden = !v;
-  if (v && measuring) {
-    measuring = false;
-    document.getElementById('t-measure').setAttribute('aria-pressed', false);
-    document.getElementById('measure').hidden = true;
-  }
-  document.querySelector('.hint').hidden = v || measuring;
+  document.querySelector('.hint').hidden = v;
   syncZoneVis();
   if (v) { pending = null; renderZones(); }
 }
-/** las bandas de pladur forman parte del modelo y se ven siempre: en
-    maqueta son justo lo que se quiere repasar desde arriba */
+/** el botón «Pladur» muestra u oculta las bandas; con la herramienta de
+    falso techo abierta se fuerzan visibles, que si no se editaría a ciegas */
 function syncZoneVis() {
   if (!zoneGroup) return;
-  zoneGroup.visible = true;
+  zoneGroup.visible = pladurOn || plafonding;
 }
 
 /** altura del falso techo en (x,y), o null si no hay */
@@ -1133,11 +1065,6 @@ function bindPlan() {
     const [px, py] = rel(e);
     const p = planSnap(mX(px), mY(py));
     if (plafonding) planZoneClick(p);
-    else if (measuring) {
-      const r = roomAt(p.x, p.y);
-      marks.push({ x: p.x, y: p.y, room: r ? r.name : '—', h: +ceilAt(p.x, p.y).toFixed(2) });
-      renderMarks();
-    }
     plan.dirty = true;
   });
   c.addEventListener('pointercancel', e => { endTouch(e); drag = false; c.classList.remove('grabbing'); });
