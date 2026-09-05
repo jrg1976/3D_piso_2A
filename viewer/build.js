@@ -136,12 +136,15 @@ function buildCeiling(M) {
     x1 = Math.max(x1, q[2]); y1 = Math.max(y1, q[3]);
   });
   x0 -= CEIL_PAD; y0 -= CEIL_PAD; x1 += CEIL_PAD; y1 += CEIL_PAD;
-  const XS = gridEdges(x0, x1, [ROOF.endW, ROOF.endE, ROOF.gableNx, ROOF.gableSx]);
-  const YS = gridEdges(y0, y1, [ROOF.ridgeY, ROOF.ridgeY2]);
+  const hx = [ROOF.endW, ROOF.endE, ROOF.gableNx, ROOF.gableSx];
+  const hy = [ROOF.ridgeY, ROOF.ridgeY2];
+  VELUX.forEach(v => { hx.push(v.x0, v.x1); hy.push(v.y0, v.y1); });
+  const XS = gridEdges(x0, x1, hx);
+  const YS = gridEdges(y0, y1, hy);
   for (let i = 0; i < XS.length - 1; i++) for (let j = 0; j < YS.length - 1; j++) {
     const xa = XS[i], xb = XS[i + 1], ya = YS[j], yb = YS[j + 1];
     const cx = (xa + xb) / 2, cy = (ya + yb) / 2;
-    if (!roomCovers(cx, cy) || dormerAt(cx, cy)) continue;
+    if (!roomCovers(cx, cy) || dormerAt(cx, cy) || veluxAt(cx, cy)) continue;
     const p = (X, Y) => V(X, Y, roofH(X, Y, cx));   // cx fija el lado del peldaño
     M.quad(p(xa, yb), p(xb, yb), p(xb, ya), p(xa, ya));
   }
@@ -387,12 +390,46 @@ function buildCore() {
   // zanquín central («ojo» de la escalera)
   bx(Mw, K.xm0, K.y0, K.xm1, K.yLand, -2.90, 1.00);
 
+  // --- falso techo del rellano (cota dada por la propiedad) con el hueco
+  //     del lucernario, su cañón de luz y el vidrio del Velux
+  const P = CORE.plafond, Mp = new Mesher(), Mv = new Mesher();
+  CORE.floor.forEach(r => {
+    capHole(Mp, r[0], r[1], r[2], r[3], P.h, P.hole);
+    capHole(Mp, r[0], r[1], r[2], r[3], P.h + P.t, P.hole);
+  });
+  {
+    const [a, b, c, d] = P.hole;                       // brocal del hueco
+    Mp.quad(V(a,b,P.h), V(c,b,P.h), V(c,b,P.h+P.t), V(a,b,P.h+P.t));
+    Mp.quad(V(c,d,P.h), V(a,d,P.h), V(a,d,P.h+P.t), V(c,d,P.h+P.t));
+    Mp.quad(V(c,b,P.h), V(c,d,P.h), V(c,d,P.h+P.t), V(c,b,P.h+P.t));
+    Mp.quad(V(a,d,P.h), V(a,b,P.h), V(a,b,P.h+P.t), V(a,d,P.h+P.t));
+    // cañón de luz: del falso techo al faldón, siguiendo su pendiente
+    const zt = P.h + P.t;
+    const shaft = (x0, y0, x1, y1) => {
+      const n = 8;
+      for (let i = 0; i < n; i++) {
+        const ua = i / n, ub = (i + 1) / n;
+        const pax = x0 + (x1-x0)*ua, pay = y0 + (y1-y0)*ua;
+        const pbx = x0 + (x1-x0)*ub, pby = y0 + (y1-y0)*ub;
+        Mp.quad(V(pax,pay,zt), V(pbx,pby,zt),
+                V(pbx,pby,roofH(pbx,pby)), V(pax,pay,roofH(pax,pay)));
+      }
+    };
+    shaft(a, b, c, b); shaft(c, d, a, d); shaft(c, b, c, d); shaft(a, d, a, b);
+    // vidrio del Velux, en el plano del faldón
+    Mv.quad(V(a,b,roofH(a,b)+0.004), V(c,b,roofH(c,b)+0.004),
+            V(c,d,roofH(c,d)+0.004), V(a,d,roofH(a,d)+0.004));
+  }
+
   const add = (M, m, sh) => { if (M.empty) return;
     const o = new THREE.Mesh(M.geometry(), m);
     o.castShadow = o.receiveShadow = !!sh; group.add(o); return o; };
   add(Mw, matW, true); add(Mf, matF, true); add(Ms, matS, true); add(Ml, matL, true);
   add(Mfa, new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: S }), true);
-  return group;
+  const plafond = add(Mp, new THREE.MeshLambertMaterial({ color: 0xbdb8ae, side: S }), true);
+  const velux = add(Mv, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
+    transparent: true, opacity: 0.22, depthWrite: false }), false);
+  return { group, plafond, velux };
 }
 
 /* ------------------- envolvente de cubierta (modo maqueta) ------------

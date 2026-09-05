@@ -64,7 +64,9 @@ autocontenido (three.js incluido), sin dependencias externas.
   (9,30 m²), la caja de escalera con sus 17 peldaños bajando a la planta
   primera, el hueco del ascensor —abierto por arriba, con su puerta al rellano—,
   los armarios de contadores y el R.I.T.S., y el muro medianero que separa el
-  rellano de la vivienda A. Aparece también en la vista **Planta**.
+  rellano de la vivienda A. Lleva su falso techo a 2,35 m con el hueco de la
+  Velux y su cañón de luz hasta el faldón. Aparece también en la vista
+  **Planta**.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -302,6 +304,22 @@ mismo rectángulo, y **sin cerrar los cantos del hueco**: los paramentos grises
 que pone `buildCore()` coinciden justo con el borde del recorte, de modo que no
 quedan caras superpuestas que produzcan bandas de *z-fighting*.
 
+### Falso techo y lucernario
+
+El rellano lleva **falso techo a 2,35 m** (cota dada por la propiedad) con un
+**hueco para la Velux** que lo ilumina. El hueco es el rectángulo de
+0,75 × 0,98 m que `a04` dibuja en el centro del rellano en la capa de proyección
+—lo que queda por encima del plano de corte—: quedaba sin explicar hasta que la
+propiedad confirmó que ahí hay un lucernario.
+
+Cae en el faldón Oeste del hastial Norte (61 %), donde la cubierta está entre
+`4,29` y `4,75 m`, así que el **cañón de luz** baja 1,94–2,40 m desde el faldón
+hasta el falso techo. El hueco se recorta también en el faldón: las líneas del
+mallado de `buildCeiling()` se fuerzan a pasar por los cuatro bordes de cada
+lucernario (`VELUX`), de modo que el recorte es exacto y no queda dentado por el
+paso de 0,22 m de la retícula. El vidrio va en el plano de cubierta, 4 mm por
+fuera, y se oculta con el botón **Techo**; el falso techo, con **Pladur**.
+
 El ascensor abre **al Sur**, sobre el rellano; delante está trazado el círculo
 de maniobra de `Ø 1,50` y por eso el rellano se prolonga al Este hasta el muro
 de la vivienda A (`x = 16,30`). La caja se deja **abierta por arriba** para poder
@@ -310,8 +328,6 @@ pinta del color del resto del edificio para que el paño siga siendo continuo
 desde fuera; el resto del núcleo va en gris.
 
 No se modela la vivienda A: al Este del rellano sólo está el muro medianero.
-Tampoco el rectángulo gris de 0,77 × 0,99 que `a04` dibuja en el centro del
-rellano y que no aparece en `a03`, a falta de saber qué es.
 
 ## Comprobación del modelo
 

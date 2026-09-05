@@ -2,6 +2,7 @@
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
+let core = null;
 let pladurOn = true;
 let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
 let mode = 'walk';
@@ -56,7 +57,8 @@ function init() {
   fill.position.set(-14, 10, -14); scene.add(fill);
 
   scene.add(buildBase());
-  scene.add(buildCore());
+  core = buildCore();
+  scene.add(core.group);
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -228,7 +230,7 @@ function bindControls() {
     apt.shafts.material.color.set(v ? 0x9c6a2e : 0xb9ab97);
   });
   document.getElementById('t-ceil').onclick = e => toggle(e.currentTarget, v => {
-    apt.ceil.visible = v; syncZoneVis();
+    apt.ceil.visible = v; if (core.velux) core.velux.visible = v; syncZoneVis();
   });
   const hold = (id, k) => {
     const el = document.getElementById(id);
@@ -405,8 +407,10 @@ function setPlafond(v) {
 /** el botón «Pladur» muestra u oculta las bandas; con la herramienta de
     falso techo abierta se fuerzan visibles, que si no se editaría a ciegas */
 function syncZoneVis() {
+  const on = pladurOn || plafonding;
+  if (core && core.plafond) core.plafond.visible = on;
   if (!zoneGroup) return;
-  zoneGroup.visible = pladurOn || plafonding;
+  zoneGroup.visible = on;
 }
 
 /** altura del falso techo en (x,y), o null si no hay */
@@ -415,6 +419,9 @@ function plafondAt(x, y) {
   for (const z of zones)
     if (x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1)
       h = h === null ? z.h : Math.min(h, z.h);
+  if (h === null && !veluxAt(x, y))            // falso techo fijo del rellano
+    for (const r of CORE.floor)
+      if (x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]) { h = CORE.plafond.h; break; }
   return h;
 }
 /** altura libre real: faldón o falso techo, lo que quede más bajo */
@@ -858,12 +865,33 @@ function drawCore(g) {
   R([L2.x0+t, L2.y0, L2.door[0], L2.y0+t], 'rgba(90,88,84,0.85)');
   R([L2.door[1], L2.y0, L2.x1-t, L2.y0+t], 'rgba(90,88,84,0.85)');
   R([L2.x0+t, L2.y0+t, L2.x1-t, L2.y1-t], 'rgba(130,128,124,0.28)');
+  // falso techo del rellano (2,35) y hueco del lucernario
+  const P = CORE.plafond;
+  g.strokeStyle = 'rgba(224,150,40,0.75)'; g.lineWidth = 1.4; g.setLineDash([6, 4]);
+  CORE.floor.forEach(r => g.strokeRect(pX(r[0]), pY(r[3]),
+    (r[2]-r[0]) * plan.s, (r[3]-r[1]) * plan.s));
+  g.setLineDash([]);
+  VELUX.forEach(v => {
+    const x = pX(v.x0), y = pY(v.y1), w = (v.x1-v.x0) * plan.s, h = (v.y1-v.y0) * plan.s;
+    g.fillStyle = 'rgba(150,200,230,0.30)'; g.fillRect(x, y, w, h);
+    g.strokeStyle = 'rgba(60,120,170,0.85)'; g.lineWidth = 1.6; g.strokeRect(x, y, w, h);
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + w, y + h);
+    g.moveTo(x + w, y); g.lineTo(x, y + h); g.stroke();
+  });
   if (plan.s > 26) {
     g.fillStyle = 'rgba(90,88,84,0.9)'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.font = '600 11px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Ascensor', pX((L2.x0+L2.x1)/2), pY((L2.y0+L2.y1)/2));
     g.fillText('Escalera', pX((K.x0+K.x1)/2), pY(K.y1 - 0.55));
-    g.fillText('Rellano', pX(13.2), pY(-6.6));
+    g.fillText('Rellano', pX(12.9), pY(-6.9));
+    g.font = '700 11px ui-monospace,SFMono-Regular,Menlo,monospace';
+    g.fillStyle = 'rgba(190,120,20,0.95)';
+    g.fillText(n2(P.h) + ' m', pX(12.9), pY(-7.15));
+    if (plan.s > 40) {
+      g.fillStyle = 'rgba(40,90,140,0.95)';
+      g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
+      VELUX.forEach(v => g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.22)));
+    }
   }
 }
 

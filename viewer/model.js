@@ -273,6 +273,9 @@ const CORE = {
   facade: [
     { a:[11.955,-1.425], b:[14.600,-1.425], t:0.35, holes:[[0.965,1.725,0.90,2.20,'win']] }
   ],
+  /* falso techo del rellano, con el hueco del lucernario.  Cota dada por
+     la propiedad; el hueco sale del rectángulo proyectado en a04.       */
+  plafond: { h: 2.35, t: 0.05, hole: [13.44, -6.48, 14.19, -5.50] },
   /* macizo de armarios de contadores (A.F.S. y A.C.S.) al Oeste */
   serv: [11.156, -6.050, 12.212, -4.868],
   /* R.I.T.S. (telecomunicaciones), bajo el arranque del tramo Este */
@@ -295,6 +298,20 @@ CORE.stair.yLand  = CORE.stair.y0 + CORE.stair.nWt * CORE_TREAD;   // −2,881
 CORE.stair.yLand2 = CORE.stair.y0 + CORE.stair.nEt * CORE_TREAD;   // −2,598
 /* el techo del núcleo es el mismo faldón que el de la vivienda */
 const CORE_CEIL = [[11.30, -7.80, 16.42, -1.52]];
+
+/* ---------------------- lucernarios (Velux) --------------------------
+   a04 dibuja en el centro del rellano un rectángulo en la capa de
+   proyección —lo que queda por encima del plano de corte— de
+   0,75 × 0,98 m.  Es el lucernario que ilumina el rellano y el hueco que
+   se le deja en el falso techo.  Cae en el faldón Oeste del hastial
+   Norte (61 %), así que la cubierta está ahí entre 4,29 y 4,75 m y el
+   cañón de luz baja 1,94–2,40 m hasta el falso techo.
+   -------------------------------------------------------------------- */
+const VELUX = [
+  { id:'v-rell', zone:'rellano', x0:13.44, y0:-6.48, x1:14.19, y1:-5.50 }
+];
+const veluxAt = (x, y) => VELUX.find(v =>
+  x > v.x0 && x < v.x1 && y > v.y0 && y < v.y1) || null;
 
 /* ------------------ plantas inferiores (contexto) --------------------
    a02 (planta baja) y a03 (planta primera) están dibujados en el mismo
