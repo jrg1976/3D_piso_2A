@@ -38,7 +38,7 @@ class Mesher {
    sigue el faldón, y sólo se cierran los testeros de los extremos, de
    modo que no aparecen costuras entre tramos.
    --------------------------------------------------------------------- */
-function buildWall(w, M) {
+function buildWall(w, M, zmax) {
   const [ax, ay] = w.a, [bx, by] = w.b;
   const L = Math.hypot(bx - ax, by - ay);
   if (L < 1e-6) return;
@@ -67,7 +67,8 @@ function buildWall(w, M) {
       }
       spans = out;
     }
-    for (const [s, e] of spans) ribbon(M, ax, ay, dx, dy, nx, ny, u0, u1, s, e);
+    for (const [s, e] of spans)
+      ribbon(M, ax, ay, dx, dy, nx, ny, u0, u1, s, zmax === undefined ? e : Math.min(e, zmax));
   }
 }
 
@@ -200,11 +201,16 @@ function buildApartment() {
   const matFig = new THREE.MeshLambertMaterial({ color: 0x7b93a6, side: S });
 
   // --- muros
-  const Mw = new Mesher();
-  WALLS.forEach(w => buildWall(w, Mw));
+  const Mw = new Mesher(), Mcut = new Mesher();
+  WALLS.forEach(w => buildWall(w, w.cut ? Mcut : Mw));
   const walls = new THREE.Mesh(Mw.geometry(), matWall);
   walls.castShadow = walls.receiveShadow = true;
   group.add(walls);
+  /* tabiques que la propuesta de altillo derriba por encima del forjado:
+     van aparte para poder cambiarlos por su versión recortada             */
+  const cutWalls = new THREE.Mesh(Mcut.geometry(), matWall);
+  cutWalls.castShadow = cutWalls.receiveShadow = true;
+  group.add(cutWalls);
 
   // --- suelos, techos
   const Mf = new Mesher(), Mc = new Mesher();
@@ -321,7 +327,7 @@ function buildApartment() {
   });
   const figs = new THREE.Mesh(Mp.geometry(), matFig); figs.castShadow = true; group.add(figs);
 
-  return { group, walls, ceil, floor, furn, figs, glass, pillars, shafts };
+  return { group, walls, cutWalls, ceil, floor, furn, figs, glass, pillars, shafts };
 }
 
 /* ------------- núcleo común: rellano, escalera y ascensor -------------
@@ -417,8 +423,7 @@ function buildCore() {
     };
     shaft(a, b, c, b); shaft(c, d, a, d); shaft(c, b, c, d); shaft(a, d, a, b);
     // vidrio del Velux, en el plano del faldón
-    Mv.quad(V(a,b,roofH(a,b)+0.004), V(c,b,roofH(c,b)+0.004),
-            V(c,d,roofH(c,d)+0.004), V(a,d,roofH(a,d)+0.004));
+    veluxPane(Mv, VELUX.find(v => v.id === 'v-rell'));
   }
 
   const add = (M, m, sh) => { if (M.empty) return;
@@ -430,6 +435,100 @@ function buildCore() {
   const velux = add(Mv, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
     transparent: true, opacity: 0.22, depthWrite: false }), false);
   return { group, plafond, velux };
+}
+
+/** paño de vidrio de un lucernario, en el plano del faldón */
+function veluxPane(M, v, lift) {
+  const e = (lift === undefined ? 0.004 : lift);
+  M.quad(V(v.x0, v.y0, roofH(v.x0, v.y0) + e), V(v.x1, v.y0, roofH(v.x1, v.y0) + e),
+         V(v.x1, v.y1, roofH(v.x1, v.y1) + e), V(v.x0, v.y1, roofH(v.x0, v.y1) + e));
+}
+
+/* --------------------- altillo (propuesta) ---------------------------
+   Geometría del estudio de volumetría.  Se enciende y se apaga con el
+   botón «Altillo»; mientras está apagado, `patch` tapa el hueco que se
+   le ha recortado al faldón para el Velux nuevo.
+   --------------------------------------------------------------------- */
+function buildAltillo() {
+  const group = new THREE.Group();
+  const S = THREE.DoubleSide, A = ALTILLO;
+  const zb = A.z - A.t;                                   // cara inferior
+  const Md = new Mesher(), Mr = new Mesher(), Ms = new Mesher(), Mg = new Mesher();
+  const bx = (M, x0, y0, x1, y1, z0, z1) => M.box(
+    [V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+    [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+
+  // --- forjado: tablero arriba, techo abajo y cantos, con el hueco
+  A.deck.forEach(r => {
+    capHole(Md, r[0], r[1], r[2], r[3], A.z, A.hole);
+    capHole(Md, r[0], r[1], r[2], r[3], zb,  A.hole);
+  });
+  {
+    const [a, b, c, d] = A.hole;                           // canto del hueco
+    Md.quad(V(a,b,zb), V(c,b,zb), V(c,b,A.z), V(a,b,A.z));
+    Md.quad(V(c,d,zb), V(a,d,zb), V(a,d,A.z), V(c,d,A.z));
+    Md.quad(V(c,b,zb), V(c,d,zb), V(c,d,A.z), V(c,b,A.z));
+    Md.quad(V(a,d,zb), V(a,b,zb), V(a,b,A.z), V(a,d,A.z));
+  }
+  // cantos libres del forjado (los que no mueren contra un muro)
+  [[16.02,-9.35,16.02,-7.54], [18.97,-8.26,19.06,-8.26]].forEach(([x0,y0,x1,y1]) => {
+    Md.quad(V(x0,y0,zb), V(x1,y1,zb), V(x1,y1,A.z), V(x0,y0,A.z));
+  });
+
+  // --- barandilla de 1,00 m en los bordes libres
+  A.rail.forEach(([x0, y0, x1, y1]) => {
+    const L = Math.hypot(x1-x0, y1-y0), dx = (x1-x0)/L, dy = (y1-y0)/L;
+    const t = 0.04, nx = -dy*t/2, ny = dx*t/2;
+    const bar = (z0, z1) => Mr.box(
+      [V(x0-nx,y0-ny,z0),V(x1-nx,y1-ny,z0),V(x1+nx,y1+ny,z0),V(x0+nx,y0+ny,z0)],
+      [V(x0-nx,y0-ny,z1),V(x1-nx,y1-ny,z1),V(x1+nx,y1+ny,z1),V(x0+nx,y0+ny,z1)]);
+    bar(A.z + 0.95, A.z + 1.00);                            // pasamanos
+    bar(A.z + 0.45, A.z + 0.49);                            // travesaño
+    const n = Math.max(1, Math.round(L / 0.55));
+    for (let i = 0; i <= n; i++) {
+      const u = L * i / n, px = x0 + dx*u, py = y0 + dy*u, e = 0.025;
+      bx(Mr, px-e, py-e, px+e, py+e, A.z, A.z + 1.00);      // montantes
+    }
+  });
+
+  // --- escalera de gato bajo el hueco
+  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ta = A.z / K.n;
+  for (let i = 1; i <= K.n; i++)
+    bx(Ms, K.x0 + (i-1)*hu, K.y0, K.x0 + i*hu + 0.02, K.y1, i*ta - 0.05, i*ta);
+  [K.y0 + 0.03, K.y1 - 0.03].forEach(y => {                 // zancas
+    const n = 14;
+    for (let i = 0; i < n; i++) {
+      const ua = i/n, ub = (i+1)/n;
+      const xa = K.x0 + (K.x1-K.x0)*ua, xb = K.x0 + (K.x1-K.x0)*ub;
+      bx(Ms, xa, y-0.03, xb, y+0.03, A.z*ua - 0.14, A.z*ua + 0.02);
+    }
+  });
+
+  // --- tabiques del baño 2 recortados a la cota del forjado
+  const Mc = new Mesher();
+  WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
+
+  // --- Velux nuevo sobre el baño 2
+  const v = VELUX.find(k => k.id === A.velux);
+  veluxPane(Mg, v);
+
+  const add = (M, m, sh) => { if (M.empty) return null;
+    const o = new THREE.Mesh(M.geometry(), m);
+    o.castShadow = o.receiveShadow = !!sh; group.add(o); return o; };
+  add(Mc, new THREE.MeshLambertMaterial({ color: 0xf2ece1, side: S }), true);
+  add(Md, new THREE.MeshLambertMaterial({ color: 0xc9a97e, side: S }), true);
+  add(Mr, new THREE.MeshLambertMaterial({ color: 0x6e6a63, side: S }), true);
+  add(Ms, new THREE.MeshLambertMaterial({ color: 0x8d7660, side: S }), true);
+  add(Mg, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
+    transparent: true, opacity: 0.22, depthWrite: false }), false);
+
+  // parche del faldón mientras el altillo está apagado
+  const Mp = new Mesher();
+  veluxPane(Mp, v, 0.0);
+  const patch = new THREE.Mesh(Mp.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0xe4d9c4, side: S }));
+  group.visible = false;
+  return { group, patch };
 }
 
 /* ------------------- envolvente de cubierta (modo maqueta) ------------

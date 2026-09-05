@@ -155,10 +155,10 @@ const WALLS = [
   { a:[15.97,-7.44], b:[19.06,-7.44], t:W_INT },                   // testero Norte del distribuidor
   // baño 2 (medido sobre a04: 19,15–21,40 × −6,54/−8,26 interiores)
   { a:[19.06,-6.445], b:[21.475,-6.445], t:0.19 },
-  { a:[19.06,-6.445], b:[19.06,-8.38], t:0.18 },
+  { a:[19.06,-6.445], b:[19.06,-8.38], t:0.18, cut:true },
   { a:[21.475,-6.445], b:[21.475,-8.32], t:0.15 },
-  { a:[19.06,-8.32], b:[20.70,-8.32], t:0.12, holes:[[0.38,1.08,0.00,2.10,'door']] },  // puerta baño 2
-  { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38 },                    // machón de la jamba
+  { a:[19.06,-8.32], b:[20.70,-8.32], t:0.12, cut:true, holes:[[0.38,1.08,0.00,2.10,'door']] },  // puerta baño 2
+  { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38, cut:true },          // machón de la jamba
   { a:[20.70,-8.265], b:[21.55,-8.265], t:0.25 },                  // machón del pilar
   // habitación 1 (E)
   { a:[21.475,-7.585], b:[24.30,-7.585], t:0.23 },
@@ -308,7 +308,10 @@ const CORE_CEIL = [[11.30, -7.80, 16.42, -1.52]];
    cañón de luz baja 1,94–2,40 m hasta el falso techo.
    -------------------------------------------------------------------- */
 const VELUX = [
-  { id:'v-rell', zone:'rellano', x0:13.44, y0:-6.48, x1:14.19, y1:-5.50 }
+  { id:'v-rell', zone:'rellano', x0:13.44, y0:-6.48, x1:14.19, y1:-5.50 },
+  // propuesto con el altillo: faldón Norte sobre el baño 2, 0,30 libres
+  // hasta la medianera con la vivienda A
+  { id:'v-alt', zone:'altillo', prop:true, x0:19.60, y0:-7.74, x1:20.38, y1:-6.75 }
 ];
 const veluxAt = (x, y) => VELUX.find(v =>
   x > v.x0 && x < v.x1 && y > v.y0 && y < v.y1) || null;
@@ -416,6 +419,50 @@ const FURNITURE = [
   [20.35,-8.15,21.35,-6.70,0.55,'tub'], [19.25,-7.00,19.90,-6.60,0.85,'sink']
 ];
 
+/* ---------------------- altillo (propuesta) ---------------------------
+   Estudio de volumetría sobre el distribuidor y el baño 2, la zona que
+   marca la propiedad.  Es la mejor del piso para un altillo: la cumbrera
+   principal (y = −8,27, 5,00 m) la cruza de Este a Oeste, no hay ningún
+   patinillo dentro y el único pilar exento (17,75 / −8,27) cae justo en
+   el eje, de modo que sirve de apoyo en vez de estorbar.
+
+   Cubierta sobre la zona:  3,85 m en el borde Norte del baño 2
+                            5,00 m en la cumbrera
+                            4,30 m en el borde Sur del distribuidor
+
+   El falso techo NO puede reforzarse: va colgado del faldón y aguanta
+   20 kg/m².  Hace falta forjado nuevo — viguetas N–S de 1,85–1,95 m de
+   luz apoyadas en cargaderos (UPN o angular) atornillados a los muros
+   Norte y Sur, canto total 0,20 con el tablero.  Con esa luz no hacen
+   falta vigas ni pilares nuevos.
+
+   Cotas: tablero a 2,45 → 2,25 m libres debajo (mínimo de pasillo y baño
+   en casi toda la normativa; en sala habitable serían 2,50, pero debajo
+   sólo quedan distribuidor y baño).
+   -------------------------------------------------------------------- */
+const ALTILLO = {
+  z: 2.45,            // cara superior del tablero
+  t: 0.20,            // canto del forjado nuevo (viguetas + tablero)
+  /* huella: distribuidor + baño 2, pasando por encima del tabique */
+  deck: [[16.02, -9.35, 18.97, -7.54],
+         [18.97, -9.35, 20.755, -8.26],
+         [19.06, -8.26, 21.40, -6.54]],
+  /* hueco de acceso, contra el muro Norte, junto al pilar */
+  hole: [16.02, -8.26, 17.62, -7.54],
+  /* barandilla: sólo los bordes libres (el resto son muros) */
+  rail: [[16.02, -9.35, 16.02, -8.26],
+         [16.02, -8.26, 17.62, -8.26],
+         [17.62, -8.26, 17.62, -7.54]],
+  /* escalera de gato bajo el hueco, subiendo hacia el Este */
+  stair: { x0: 16.02, x1: 17.62, y0: -8.22, y1: -7.56, n: 11 },
+  velux: 'v-alt',
+  bands: [1.20, 1.50, 1.90, 2.20]
+};
+const inAltillo = (x, y) =>
+  ALTILLO.deck.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);
+const inAltilloHole = (x, y) => { const h = ALTILLO.hole;
+  return x > h[0] && x < h[2] && y > h[1] && y < h[3]; };
+
 /* --------------------- posiciones de cámara sugeridas ---------------- */
 const FIGURES = [[3.55,-4.40],[3.30,-9.10],[11.30,-13.30],[15.90,-12.30],[17.55,-10.90],[11.40,-3.20],[22.60,-10.85]];
 
@@ -429,5 +476,6 @@ const VIEWS = [
   { id:'hab2', name:'Habitación 2',   pos:[19.90,-10.20], look:[19.80,-13.90, 2.00] },
   { id:'dis',  name:'Distribuidor',   pos:[16.35, -8.75], look:[20.60, -8.60, 2.30] },
   { id:'hab3', name:'Habitación 1 E', pos:[23.70, -8.20], look:[21.10,-10.60, 1.50] },
-  { id:'ban2', name:'Baño 2',         pos:[19.79, -8.10], look:[21.20, -6.85, 1.30] }
+  { id:'ban2', name:'Baño 2',         pos:[19.79, -8.10], look:[21.20, -6.85, 1.30] },
+  { id:'alt',  name:'Altillo',        pos:[17.10, -8.60], look:[20.60, -7.20, 3.95], alt:true }
 ];

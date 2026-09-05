@@ -67,6 +67,11 @@ autocontenido (three.js incluido), sin dependencias externas.
   rellano de la vivienda A. Lleva su falso techo a 2,35 m con el hueco de la
   Velux y su cañón de luz hasta el faldón. Aparece también en la vista
   **Planta**.
+- **Altillo** (propuesta) — estudio de volumetría de un altillo sobre el
+  distribuidor y el baño 2: forjado nuevo a +2,45, hueco de escalera, barandilla,
+  Velux propuesto y los tabiques que habría que derribar por encima. En *Planta*
+  se sombrea por bandas de altura libre; la vista *Altillo* sube la cámara al
+  tablero y se anda por él.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -328,6 +333,74 @@ pinta del color del resto del edificio para que el paño siga siendo continuo
 desde fuera; el resto del núcleo va en gris.
 
 No se modela la vivienda A: al Este del rellano sólo está el muro medianero.
+
+## Altillo sobre el distribuidor y el baño 2 (propuesta)
+
+Estudio de volumetría, no estado actual: se enciende con el botón **Altillo**.
+Datos en `ALTILLO` (`model.js`), malla en `buildAltillo()` (`build.js`).
+
+La zona es la mejor del piso para un altillo: la **cumbrera principal**
+(`y = −8,27`, 5,00 m) la cruza de Este a Oeste, **no hay ningún patinillo**
+dentro, y el único **pilar exento** (`17,75 / −8,27`) cae justo en el eje, de
+modo que sirve de apoyo en vez de estorbar.
+
+| Cubierta sobre la zona | |
+|---|---|
+| Borde Norte del baño 2 | `3,85 m` |
+| Cumbrera | `5,00 m` |
+| Borde Sur del distribuidor | `4,30 m` |
+
+**El falso techo no se puede reforzar**: va colgado del faldón con varillas y
+aguanta ~20 kg/m²; un suelo pide 200 (300 si es trastero). Hace falta forjado
+nuevo — pero las luces son mínimas: viguetas **N–S de 1,85–1,95 m** apoyadas en
+cargaderos (UPN o angular) atornillados a los muros Norte y Sur, canto total
+`0,20` con el tablero. Con esa luz no hacen falta vigas ni pilares nuevos.
+
+Tablero a `2,45` → `2,25 m` libres debajo (mínimo habitual de pasillo y baño;
+debajo sólo quedan distribuidor y baño). Mantener 2,44 debajo obliga a subir el
+tablero a 2,62 y cuesta 1,8 m² de superficie de pie.
+
+| | tablero 2,45 | tablero 2,62 |
+|---|---|---|
+| Huella bruta | 11,28 m² | 11,28 m² |
+| Hueco de escalera | −1,15 m² | −1,15 m² |
+| Suelo pisable | 10,12 m² | 10,12 m² |
+| h ≥ 1,50 (computable) | **9,89 m²** | 9,28 m² |
+| h ≥ 1,90 (de pie) | **8,15 m²** | 6,31 m² |
+| h ≥ 2,20 | 4,65 m² | 2,29 m² |
+| Altura media / máxima | 2,13 / 2,55 m | 1,96 / 2,38 m |
+| Volumen | 21,6 m³ | 19,8 m³ |
+
+**Obras que implica.** Derribar por encima del forjado los dos tabiques del baño
+2 (`x = 19,06` y `y = −8,32`, con su machón de jamba) — son tabiquería, no
+estructura. Sin eso el altillo queda partido en dos. Van marcados con `cut:true`
+en `WALLS`: `buildApartment()` los mete en una malla aparte (`apt.cutWalls`) que
+se oculta al encender el altillo, y `buildAltillo()` levanta su versión recortada
+a la cota del tablero.
+
+**Acceso.** Hueco de `1,60 × 0,72` contra el muro Norte, terminando en el pilar,
+con escalera de gato; deja `1,09 m` de paso libre en el distribuidor. Una
+escalera de peldaños alternos a 45° sería más cómoda pero pide 2,45 m de
+desarrollo y costaría 1,8 m² de tablero.
+
+**Luz.** La única posición posible para un Velux es el faldón Norte sobre el baño
+2 (`19,60–20,38 × −6,75…−7,74`): ahí quedan 1,72 m de faldón propio antes de la
+medianera con la vivienda A. Sobre el distribuidor no cabe —al Norte la medianera
+está a 0,83 m de la cumbrera y al Sur sólo hay 1,08—. Queda a 1,57–2,21 m sobre
+el tablero, justo donde el faldón baja de 1,50, que es lo que hace utilizable esa
+franja.
+
+**A verificar.** Altura libre mínima admitida debajo y cómputo de la superficie
+del altillo (habitabilidad de Aragón y ordenanza de Benasque); autorización de la
+comunidad; capacidad de los muros Norte (0,20) y Sur (0,13) para recibir los
+cargaderos —si no dan, dos pies derechos junto al pilar—; y el paso de la
+extracción del baño 2 hasta el patinillo, que ahora va por el falso techo y
+tendrá que caber en el canto del forjado nuevo.
+
+En la vista **Planta** el altillo sale sombreado por bandas de altura libre
+(≥ 1,20 / 1,50 / 1,90 / 2,20) con sus curvas de nivel. La vista *Altillo* de la
+lista de estancias sube la cámara al tablero: `camBase()` desplaza el ojo a
+`ALTILLO.z` y `walkOk()` limita el paseo al tablero.
 
 ## Comprobación del modelo
 

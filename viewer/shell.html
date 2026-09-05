@@ -292,6 +292,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
     <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
+    <button class="btn" id="t-altillo" type="button" aria-pressed="false">Altillo</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -616,6 +617,64 @@ button{font:inherit;color:inherit;cursor:pointer}
      pinta del color del resto del edificio para que el paño siga siendo
      continuo desde fuera.</p>
 
+  <h3>Altillo sobre el distribuidor y el baño 2 — estudio de volumetría</h3>
+  <p>Propuesta, no estado actual: se enciende con el botón <b>Altillo</b>. La zona
+     marcada es la mejor del piso para un altillo, porque la <b>cumbrera principal</b>
+     (<span class="mono">y = −8,27</span>, 5,00 m) la cruza de Este a Oeste, no hay
+     <b>ningún patinillo</b> dentro y el único <b>pilar exento</b>
+     (<span class="mono">17,75 / −8,27</span>) cae justo en el eje, así que sirve de
+     apoyo en vez de estorbar.</p>
+  <table>
+    <tr><td>Cubierta · borde N del baño 2</td><td class="mono">3,85 m</td></tr>
+    <tr><td>Cubierta · cumbrera</td><td class="mono">5,00 m</td></tr>
+    <tr><td>Cubierta · borde S del distribuidor</td><td class="mono">4,30 m</td></tr>
+  </table>
+  <p><b>El falso techo no se puede reforzar.</b> Va colgado del faldón con varillas y
+     aguanta unos 20 kg/m²; un suelo pide 200 (300 si es trastero). Hace falta
+     <b>forjado nuevo</b>. Lo bueno es que las luces son mínimas: viguetas
+     <b>Norte–Sur de 1,85–1,95 m</b> apoyadas en cargaderos (UPN o angular)
+     atornillados a los muros Norte y Sur, canto total <span class="mono">0,20</span>
+     con el tablero. Con esa luz <b>no hacen falta vigas ni pilares nuevos</b>.</p>
+  <p><b>Cotas.</b> Tablero a <span class="mono">2,45</span> → quedan
+     <span class="mono">2,25 m</span> libres debajo, que es el mínimo habitual de
+     pasillo y baño (en sala habitable serían 2,50, pero debajo sólo quedan
+     distribuidor y baño). Dejar 2,44 debajo obliga a subir el tablero a 2,62 y
+     cuesta 1,8 m² de superficie de pie.</p>
+  <table>
+    <tr><td>Huella bruta</td><td class="mono">11,28 m²</td></tr>
+    <tr><td>Hueco de escalera</td><td class="mono">−1,15 m²</td></tr>
+    <tr><td>Suelo pisable</td><td class="mono">10,12 m²</td></tr>
+    <tr><td>Con h ≥ 1,50 (computable)</td><td class="mono">9,89 m²</td></tr>
+    <tr><td>Con h ≥ 1,90 (de pie)</td><td class="mono">8,15 m²</td></tr>
+    <tr><td>Con h ≥ 2,20</td><td class="mono">4,65 m²</td></tr>
+    <tr><td>Altura media / máxima</td><td class="mono">2,13 / 2,55 m</td></tr>
+    <tr><td>Volumen</td><td class="mono">21,6 m³</td></tr>
+  </table>
+  <p><b>Obras que implica.</b> Derribar por encima del forjado los dos tabiques del
+     baño 2 (el de <span class="mono">x = 19,06</span> y el de
+     <span class="mono">y = −8,32</span>, con su machón de jamba); son tabiquería, no
+     estructura. Sin eso el altillo queda partido en dos.</p>
+  <p><b>Acceso.</b> Hueco de <span class="mono">1,60 × 0,72</span> contra el muro
+     Norte, terminando en el pilar, con escalera de gato. Deja
+     <span class="mono">1,09 m</span> de paso libre en el distribuidor. Una escalera
+     de peldaños alternos a 45° sería más cómoda pero pide 2,45 m de desarrollo y
+     costaría 1,8 m² de tablero.</p>
+  <p><b>Luz.</b> Sin hueco, el altillo es un trastero. La única posición posible para
+     un Velux es el <b>faldón Norte sobre el baño 2</b>
+     (<span class="mono">19,60–20,38 × −6,75…−7,74</span>): ahí quedan 1,72 m de
+     faldón propio antes de la medianera con la vivienda A. Sobre el distribuidor no
+     cabe: al Norte la medianera está a 0,83 m de la cumbrera y al Sur sólo hay 1,08.
+     Queda a 1,57–2,21 m sobre el tablero, justo donde el faldón baja de 1,50, que es
+     lo que hace utilizable esa franja.</p>
+  <p><b>A verificar antes de nada.</b> Altura libre mínima admitida debajo y cómputo
+     de la superficie del altillo (normativa de habitabilidad de Aragón y ordenanza
+     de Benasque: si computa como superficie habitable puede consumir
+     edificabilidad); autorización de la comunidad si se toca algo común; capacidad
+     de los muros Norte y Sur para recibir los cargaderos —son de 0,20 y 0,13, y si
+     no dan, hay que meter dos pies derechos junto al pilar—; y el paso de la
+     extracción del baño 2 hasta el patinillo, que ahora va por el falso techo y
+     tendrá que caber en el canto del forjado nuevo.</p>
+
   <h3>Comprobación del modelo</h3>
   <p>Antes de empaquetar el visor se pasan dos pruebas sobre la geometría:</p>
   <ul>
@@ -651,6 +710,8 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
+    <li>El botón <b>Altillo</b> enciende la propuesta; la vista <i>Altillo</i> de la
+        lista de estancias sube la cámara al tablero y se anda por él.</li>
     <li>La vivienda A no se modela: al Este del rellano sólo está el muro
         medianero.</li>
   </ul>

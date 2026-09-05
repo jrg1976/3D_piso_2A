@@ -2,7 +2,7 @@
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
-let core = null;
+let core = null, altillo = null, altilloOn = false, onAltillo = false;
 let pladurOn = true;
 let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
 let mode = 'walk';
@@ -59,6 +59,8 @@ function init() {
   scene.add(buildBase());
   core = buildCore();
   scene.add(core.group);
+  altillo = buildAltillo();
+  scene.add(altillo.group); scene.add(altillo.patch);
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -202,6 +204,8 @@ function bindControls() {
     pladurOn = v; syncZoneVis();
   });
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
+  document.getElementById('t-altillo').onclick = e =>
+    setAltillo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -317,17 +321,33 @@ function step(dt) {
   const v = (keys['shift'] ? 3.4 : 1.6) * dt;
   const sx = Math.sin(cam.yaw), cy = Math.cos(cam.yaw);
   let dx = (-sx * f + cy * s) * v, dy = (cy * f + sx * s) * v;
-  if (allowed(cam.x + dx, cam.y + dy)) { cam.x += dx; cam.y += dy; }
-  else if (allowed(cam.x + dx, cam.y)) cam.x += dx;
-  else if (allowed(cam.x, cam.y + dy)) cam.y += dy;
+  if (walkOk(cam.x + dx, cam.y + dy)) { cam.x += dx; cam.y += dy; }
+  else if (walkOk(cam.x + dx, cam.y)) cam.x += dx;
+  else if (walkOk(cam.x, cam.y + dy)) cam.y += dy;
+}
+/** sobre el altillo sólo se anda por el tablero */
+function walkOk(x, y) {
+  if (onAltillo) return inAltillo(x, y) && !inAltilloHole(x, y);
+  return allowed(x, y);
+}
+function setAltillo(v) {
+  altilloOn = v;
+  altillo.group.visible = v;
+  altillo.patch.visible = !v;
+  if (apt) apt.cutWalls.visible = !v;
+  if (!v) onAltillo = false;
+  const b = document.getElementById('t-altillo');
+  if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
+  plan.dirty = true;
 }
 function place() {
   const wantFov = mode === 'orbit' ? ORBIT_FOV : walkFov;
   if (Math.abs(camera.fov - wantFov) > 0.01) { camera.fov = wantFov; camera.updateProjectionMatrix(); }
   if (mode === 'walk') {
-    const h = freeH(cam.x, cam.y);
+    const base = camBase();
+    const h = freeH(cam.x, cam.y) - base;
     const eye = Math.min(cam.eye, Math.max(0.85, h - 0.14));
-    camera.position.set(cam.x, eye, -cam.y);
+    camera.position.set(cam.x, base + eye, -cam.y);
     const dir = new THREE.Vector3(
       -Math.sin(cam.yaw) * Math.cos(cam.pitch), Math.sin(cam.pitch), -Math.cos(cam.yaw) * Math.cos(cam.pitch));
     camera.lookAt(camera.position.clone().add(dir));
@@ -427,7 +447,15 @@ function plafondAt(x, y) {
 /** altura libre real: faldón o falso techo, lo que quede más bajo */
 function freeH(x, y) {
   const s = ceilAt(x, y), p = plafondAt(x, y);
-  return p === null ? s : Math.min(s, p);
+  let h = p === null ? s : Math.min(s, p);
+  if (altilloOn && inAltillo(x, y) && !inAltilloHole(x, y))
+    h = onAltillo ? s : Math.min(h, ALTILLO.z - ALTILLO.t);
+  return h;
+}
+/** cota del suelo bajo la cámara: 0, o el tablero del altillo */
+function camBase() {
+  return (altilloOn && onAltillo && inAltillo(cam.x, cam.y) && !inAltilloHole(cam.x, cam.y))
+    ? ALTILLO.z : 0;
 }
 
 function pickZone(e) {
@@ -895,6 +923,87 @@ function drawCore(g) {
   }
 }
 
+/* --- altillo en la vista de planta, sombreado por altura libre --- */
+const ALT_COL = [[2.20,'rgba(191,105,12,0.58)'], [1.90,'rgba(206,140,40,0.40)'],
+                 [1.50,'rgba(214,175,95,0.26)'], [0.00,'rgba(120,118,112,0.24)']];
+function drawAltillo(g) {
+  const A = ALTILLO, st = 0.08;
+  A.deck.forEach(r => {
+    for (let x = r[0]; x < r[2] - 1e-6; x += st) for (let y = r[1]; y < r[3] - 1e-6; y += st) {
+      const cx = Math.min(x + st/2, r[2]), cy = Math.min(y + st/2, r[3]);
+      if (inAltilloHole(cx, cy)) continue;
+      const h = roofH(cx, cy) - A.z;
+      g.fillStyle = (ALT_COL.find(b => h >= b[0]) || ALT_COL[3])[1];
+      g.fillRect(pX(x), pY(Math.min(y + st, r[3])),
+                 (Math.min(x + st, r[2]) - x) * plan.s + 0.6,
+                 (Math.min(y + st, r[3]) - y) * plan.s + 0.6);
+    }
+  });
+  // curvas de nivel: dónde la altura libre cruza 1,50 / 1,90 / 2,20
+  const ys = [], y0 = -6.3, y1 = -9.6;
+  A.bands.forEach(H => {
+    let prev = roofH(18, y0) - A.z - H;
+    for (let y = y0; y > y1; y -= 0.01) {
+      const cur = roofH(18, y) - A.z - H;
+      if (prev > 0 !== cur > 0) ys.push([y, H]);
+      prev = cur;
+    }
+  });
+  g.setLineDash([5, 4]); g.lineWidth = 1.2;
+  g.strokeStyle = 'rgba(120,70,10,0.85)';
+  ys.forEach(([y, H]) => {
+    const seg = A.deck.filter(r => y > r[1] && y < r[3]);
+    if (!seg.length) return;
+    g.beginPath();
+    seg.forEach(r => { g.moveTo(pX(r[0]), pY(y)); g.lineTo(pX(r[2]), pY(y)); });
+    g.stroke();
+    if (plan.s > 34) {
+      const r = seg[seg.length - 1];
+      g.fillStyle = 'rgba(120,70,10,0.95)'; g.textAlign = 'right'; g.textBaseline = 'bottom';
+      g.font = '600 9px ui-monospace,SFMono-Regular,Menlo,monospace';
+      g.fillText(n2(H), pX(r[2]) - 4, pY(y) - 2);
+    }
+  });
+  g.setLineDash([]);
+  g.strokeStyle = 'rgba(150,90,10,0.95)'; g.lineWidth = 1.6;
+  A.deck.forEach(r => g.strokeRect(pX(r[0]), pY(r[3]),
+    (r[2]-r[0]) * plan.s, (r[3]-r[1]) * plan.s));
+  // hueco de escalera
+  const H = A.hole;
+  g.fillStyle = 'rgba(20,20,20,0.10)';
+  g.fillRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
+  g.strokeStyle = 'rgba(60,60,60,0.9)'; g.lineWidth = 1.3;
+  g.strokeRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
+  const K = A.stair, hu = (K.x1 - K.x0) / K.n;
+  g.beginPath();
+  for (let i = 0; i <= K.n; i++) { const x = K.x0 + i * hu;
+    g.moveTo(pX(x), pY(K.y0)); g.lineTo(pX(x), pY(K.y1)); }
+  g.stroke();
+  // barandilla
+  g.strokeStyle = 'rgba(40,40,40,0.95)'; g.lineWidth = 3;
+  g.beginPath();
+  A.rail.forEach(([x0,y0,x1,y1]) => { g.moveTo(pX(x0), pY(y0)); g.lineTo(pX(x1), pY(y1)); });
+  g.stroke();
+  // Velux propuesto
+  const v = VELUX.find(k => k.id === A.velux);
+  const vx = pX(v.x0), vy = pY(v.y1), vw = (v.x1-v.x0) * plan.s, vh = (v.y1-v.y0) * plan.s;
+  g.fillStyle = 'rgba(150,200,230,0.32)'; g.fillRect(vx, vy, vw, vh);
+  g.strokeStyle = 'rgba(60,120,170,0.9)'; g.lineWidth = 1.6; g.strokeRect(vx, vy, vw, vh);
+  g.beginPath(); g.moveTo(vx, vy); g.lineTo(vx+vw, vy+vh);
+  g.moveTo(vx+vw, vy); g.lineTo(vx, vy+vh); g.stroke();
+  if (plan.s > 30) {
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = 'rgba(150,90,10,0.95)';
+    g.font = '700 12px ui-sans-serif,system-ui,sans-serif';
+    g.fillText('ALTILLO  +2,45', pX(17.9), pY(-8.98));
+    g.font = '600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
+    g.fillText('9,89 m² con h ≥ 1,50', pX(17.9), pY(-9.18));
+    g.fillStyle = 'rgba(40,90,140,0.95)';
+    g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
+    g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.20));
+  }
+}
+
 function drawPlan() {
   const c = planCtx.canvas, g = planCtx;
   const W = c.clientWidth, H = c.clientHeight, dpr = Math.min(devicePixelRatio, 2);
@@ -938,6 +1047,7 @@ function drawPlan() {
 
   // --- núcleo común (rellano, escalera y ascensor): siempre en gris
   drawCore(g);
+  if (altilloOn) drawAltillo(g);
 
   // --- cumbreras y peldaños
   g.setLineDash([9, 6]); g.lineWidth = 1.2; g.strokeStyle = 'rgba(128,128,128,0.75)';
@@ -1208,11 +1318,14 @@ function crossMark(g, p, color, solid) {
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
+  if (v.alt && !altilloOn) setAltillo(true);
+  onAltillo = !!v.alt;
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;
   const d = Math.hypot(dx, dy) || 1;
-  const h = freeH(cam.x, cam.y);
-  const eye = Math.min(cam.eye, Math.max(0.85, h - 0.14));
+  const base = camBase();
+  const h = freeH(cam.x, cam.y) - base;
+  const eye = base + Math.min(cam.eye, Math.max(0.85, h - 0.14));
   cam.yaw = Math.atan2(-dx, dy);
   cam.pitch = clamp(Math.atan2(v.look[2] - eye, d), -0.9, 0.9);
 }
