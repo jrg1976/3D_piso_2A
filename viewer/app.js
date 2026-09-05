@@ -207,8 +207,6 @@ function bindControls() {
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
   document.getElementById('t-altillo').onclick = e =>
     setAltillo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
-  document.getElementById('t-solo').onclick = e =>
-    setSolo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -263,6 +261,7 @@ function toggle(el, fn) {
 function setMode(m) {
   const prev = mode;
   mode = m;
+  if (altillo) applyIso();
   ['walk','orbit','plan'].forEach(k =>
     document.getElementById('mode-' + k).setAttribute('aria-pressed', m === k));
   ['walk','orbit','plan'].forEach(k =>
@@ -280,7 +279,15 @@ function setMode(m) {
   cb.setAttribute('aria-pressed', on);
   apt.ceil.visible = on;
   syncZoneVis();
-  if (m === 'orbit') { orb.tx = cam.x; orb.ty = cam.y; if (!orbSeen) { orbSeen = true; orbView('fit'); } }
+  if (m === 'orbit') {
+    orb.tx = cam.x; orb.ty = cam.y;
+    if (soloAlt) frameAltillo();
+    else if (!orbSeen) { orbSeen = true; orbView('fit'); }
+  }
+  // se venía de mirar el altillo: al andar, se entra en él
+  if (m === 'walk' && soloAlt && !onAltillo) {
+    const v = VIEWS.find(k => k.alt); if (v) applyView(v);
+  }
 }
 function buildViewButtons() {
   const nav = document.getElementById('views');
@@ -354,39 +361,37 @@ function altClip() {
     new THREE.Plane(new V3(-1, 0, 0),   b.x1 + p),
     new THREE.Plane(new V3( 0, 0, 1),   b.y1 + p),
     new THREE.Plane(new V3( 0, 0,-1), -(b.y0 - p)),
-    new THREE.Plane(new V3( 0, 1, 0), -(b.z0 - 0.32)),
-    new THREE.Plane(new V3( 0,-1, 0),   b.z1 + 0.32)
+    new THREE.Plane(new V3( 0, 1, 0),   0.05),   // hasta el pavimento: la
+    new THREE.Plane(new V3( 0,-1, 0),   b.z1 + 0.32)   // escalera se ve entera
   ];
 }
-function setSolo(v) {
-  soloAlt = v;
-  const btn = document.getElementById('t-solo');
-  if (btn) btn.setAttribute('aria-pressed', v ? 'true' : 'false');
-  if (v && !altilloOn) setAltillo(true);
-  renderer.clippingPlanes = v ? altClip() : [];
-  scene.background = new THREE.Color(v ? 0xcdd2d6 : 0x8fb6d6);
-  /* muros y faldón en translúcido: así el volumen se lee desde cualquier
-     lado sin que un tabique tape la mitad */
+/* El aislado sólo tiene sentido mirando la maqueta: en Recorrer recortaba
+   todo lo que hay por debajo de la caja y no se veía nada, y con los muros
+   en translúcido tampoco se leían los techos desde dentro.                */
+function applyIso() {
+  const on = soloAlt && mode === 'orbit';
+  renderer.clippingPlanes = on ? altClip() : [];
+  scene.background = new THREE.Color(on ? 0xcdd2d6 : 0x8fb6d6);
   [apt.walls.material, apt.ceil.material].forEach(m => {
-    m.transparent = v; m.opacity = v ? 0.26 : 1; m.depthWrite = !v; m.needsUpdate = true;
+    m.transparent = on; m.opacity = on ? 0.26 : 1; m.depthWrite = !on; m.needsUpdate = true;
   });
-  if (v) {
-    if (mode !== 'orbit') setMode('orbit');
-    const b = altilloBox(), az = -0.62, el = 0.42;
-    orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
-              tz: (b.z0 + b.z1) / 2, dist: fitDist(b, az, el, 1.10) });
-  }
-  plan.dirty = true;
 }
-function setAltillo(v) {
-  altilloOn = v;
-  if (!v && soloAlt) setSolo(false);
+function frameAltillo() {
+  const b = altilloBox(), az = -0.62, el = 0.42;
+  orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
+            tz: (b.z0 + b.z1) / 2 + 0.35, dist: fitDist(b, az, el, 1.10) });
+}
+function setAltillo(v, quiet) {
+  altilloOn = v; soloAlt = v;
   altillo.group.visible = v;
   altillo.patch.visible = !v;
   if (apt) apt.cutWalls.visible = !v;
   if (!v) onAltillo = false;
   const b = document.getElementById('t-altillo');
   if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
+  if (!quiet && v && mode !== 'orbit') setMode('orbit');
+  applyIso();
+  if (!quiet && v) frameAltillo();
   plan.dirty = true;
 }
 function place() {
@@ -1390,7 +1395,7 @@ function crossMark(g, p, color, solid) {
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
-  if (v.alt && !altilloOn) setAltillo(true);
+  if (v.alt && !altilloOn) setAltillo(true, true);
   onAltillo = !!v.alt;
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;

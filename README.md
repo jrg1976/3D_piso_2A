@@ -72,8 +72,8 @@ autocontenido (three.js incluido), sin dependencias externas.
   Velux propuesto, mobiliario y los tabiques que habría que derribar por encima.
   En *Planta* se sombrea por bandas de altura libre; la vista *Altillo* sube la
   cámara al tablero y se anda por él.
-- **Aislar** — deja el altillo solo: recorta la escena a su caja y pasa muros y
-  faldón a translúcido, para poder mirar el volumen desde cualquier lado.
+  El botón lo aísla en Maqueta —recorta la escena a su caja y pasa muros y faldón
+  a translúcido— y en Recorrer devuelve todo a opaco y sube la cámara al tablero.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -440,11 +440,16 @@ para que al pasar por delante del pilar queden los 0,98 m enteros. Uno de 2,00
 sólo entraría contra el muro Norte, y ahí está la escalera. Con la escalera C del
 CTE ya no cabe.
 
-**Volumetría aislada.** El botón **Aislar** pone seis `THREE.Plane` de recorte
-global en el renderer alrededor de la caja del altillo y pasa muros y faldón a
-translúcido: queda sólo el volumen, con su suelo, su envolvente seccionada y el
-mobiliario. En *Recorrer*, dentro de 2,13 m de media y con los tabiques de la
-vivienda alrededor, el altillo no se entiende.
+**Volumetría aislada.** El botón **Altillo** levanta la propuesta y, en Maqueta,
+pone seis `THREE.Plane` de recorte global en el renderer alrededor de la caja del
+altillo —desde el pavimento del distribuidor hasta el faldón, para que la
+escalera se vea entera— y pasa muros y faldón a translúcido.
+
+`applyIso()` sólo aplica el recorte cuando `mode === 'orbit'`: en *Recorrer* el
+recorte dejaba fuera todo lo que hay por debajo de la caja y no se veía nada, y
+con los muros en translúcido tampoco se leían los techos desde dentro. Al pasar a
+*Recorrer* la cámara sube al tablero (`setMode` llama a la vista `alt`), y al
+volver a Maqueta se reencuadra el altillo.
 
 **A verificar.** Altura libre mínima admitida debajo y cómputo de la superficie
 del altillo (habitabilidad de Aragón y ordenanza de Benasque); autorización de la

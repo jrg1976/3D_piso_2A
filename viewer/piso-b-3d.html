@@ -293,7 +293,6 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
     <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
     <button class="btn" id="t-altillo" type="button" aria-pressed="false">Altillo</button>
-    <button class="btn" id="t-solo" type="button" aria-pressed="false">Aislar</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -710,11 +709,13 @@ button{font:inherit;color:inherit;cursor:pointer}
      <b>al Oeste del pilar</b>, para que al pasar por delante del pilar queden los
      0,98 m enteros. Uno de 2,00 sólo entraría contra el muro Norte, y ahí está la
      escalera. Con la escalera C del CTE ya no cabe.</p>
-  <p><b>Volumetría aislada.</b> El botón <b>Aislar</b> recorta la escena a una caja
-     alrededor del altillo y pasa muros y faldón a translúcido: queda sólo el
-     volumen, con su suelo, su envolvente seccionada y el mobiliario. Es la forma
-     de mirarlo; en <i>Recorrer</i>, dentro de 2,13 m de media y con los tabiques
-     de la vivienda alrededor, no se entiende.</p>
+  <p><b>El botón «Altillo»</b> levanta la propuesta y, en <b>Maqueta</b>, recorta la
+     escena a una caja alrededor de la zona —desde el pavimento del distribuidor
+     hasta el faldón, para que la escalera se vea entera— y pasa muros y faldón a
+     translúcido. El aislado <b>sólo se aplica en Maqueta</b>: al pasar a
+     <i>Recorrer</i> se quita el recorte, todo vuelve a ser opaco (se ven los techos
+     desde dentro) y la cámara sube al tablero; al volver a <b>Maqueta</b>, se
+     reencuadra el altillo.</p>
   <p><b>A verificar antes de nada.</b> Altura libre mínima admitida debajo y cómputo
      de la superficie del altillo (normativa de habitabilidad de Aragón y ordenanza
      de Benasque: si computa como superficie habitable puede consumir
@@ -759,9 +760,9 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>El botón <b>Altillo</b> enciende la propuesta y <b>Aislar</b> la deja sola;
-        la vista <i>Altillo</i> de la lista de estancias sube la cámara al tablero
-        y se anda por él.</li>
+    <li>El botón <b>Altillo</b> enciende la propuesta y la aísla en Maqueta; en
+        Recorrer se anda por el tablero. La vista <i>Altillo</i> de la lista de
+        estancias hace lo mismo sin tocar el resto.</li>
     <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
         sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta
         estorbaba.</li>
@@ -1805,14 +1806,18 @@ function buildAltillo() {
     const yb = K.alt ? (i % 2 ? ym : K.y1) : K.y1;
     bx(Ms, xa, ya, xb, yb, i*ta - 0.05, i*ta);
   }
-  [K.y0 + 0.03, K.y1 - 0.03].forEach(y => {                 // zancas
-    const n = 16;
-    for (let i = 0; i < n; i++) {
-      const ua = i/n, ub = (i+1)/n;
-      const xa = K.x0 + (K.x1-K.x0)*ua, xb = K.x0 + (K.x1-K.x0)*ub;
-      bx(Ms, xa, y-0.03, xb, y+0.03, A.z*ua - 0.16, A.z*ua + 0.02);
-    }
-  });
+  /* zancas y pasamanos: prismas inclinados de una pieza (los vértices
+     inferiores y superiores de Mesher.box pueden llevar z distinta) */
+  const band = (y, e, z0, z1) => Ms.box(
+    [V(K.x0, y-e, z0), V(K.x1, y-e, A.z+z0), V(K.x1, y+e, A.z+z0), V(K.x0, y+e, z0)],
+    [V(K.x0, y-e, z1), V(K.x1, y-e, A.z+z1), V(K.x1, y+e, A.z+z1), V(K.x0, y+e, z1)]);
+  band(K.y0 + 0.03, 0.03, -0.19, 0.01);                    // zanca Sur
+  band(K.y1 - 0.03, 0.03, -0.19, 0.01);                    // zanca Norte
+  band(K.y0 + 0.02, 0.022, 0.86, 0.92);                    // pasamanos
+  for (let i = 1; i < 4; i++) {                            // montantes
+    const u = i / 4, px = K.x0 + (K.x1 - K.x0) * u;
+    bx(Ms, px - 0.022, K.y0, px + 0.022, K.y0 + 0.044, A.z*u - 0.02, A.z*u + 0.92);
+  }
 
   // --- tabiques del baño 2 recortados a la cota del forjado
   const Mc = new Mesher();
@@ -1847,7 +1852,7 @@ function buildAltillo() {
   add(Mc, new THREE.MeshLambertMaterial({ color: 0xf2ece1, side: S }), true);
   add(Md, new THREE.MeshLambertMaterial({ color: 0xc9a97e, side: S }), true);
   add(Mr, new THREE.MeshLambertMaterial({ color: 0x6e6a63, side: S }), true);
-  add(Ms, new THREE.MeshLambertMaterial({ color: 0x8d7660, side: S }), true);
+  add(Ms, new THREE.MeshLambertMaterial({ color: 0x6f5741, side: S }), true);
   add(Mu, new THREE.MeshLambertMaterial({ color: 0x9c8468, side: S }), true);
   add(Mg, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
     transparent: true, opacity: 0.22, depthWrite: false }), false);
@@ -2305,8 +2310,6 @@ function bindControls() {
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
   document.getElementById('t-altillo').onclick = e =>
     setAltillo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
-  document.getElementById('t-solo').onclick = e =>
-    setSolo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -2361,6 +2364,7 @@ function toggle(el, fn) {
 function setMode(m) {
   const prev = mode;
   mode = m;
+  if (altillo) applyIso();
   ['walk','orbit','plan'].forEach(k =>
     document.getElementById('mode-' + k).setAttribute('aria-pressed', m === k));
   ['walk','orbit','plan'].forEach(k =>
@@ -2378,7 +2382,15 @@ function setMode(m) {
   cb.setAttribute('aria-pressed', on);
   apt.ceil.visible = on;
   syncZoneVis();
-  if (m === 'orbit') { orb.tx = cam.x; orb.ty = cam.y; if (!orbSeen) { orbSeen = true; orbView('fit'); } }
+  if (m === 'orbit') {
+    orb.tx = cam.x; orb.ty = cam.y;
+    if (soloAlt) frameAltillo();
+    else if (!orbSeen) { orbSeen = true; orbView('fit'); }
+  }
+  // se venía de mirar el altillo: al andar, se entra en él
+  if (m === 'walk' && soloAlt && !onAltillo) {
+    const v = VIEWS.find(k => k.alt); if (v) applyView(v);
+  }
 }
 function buildViewButtons() {
   const nav = document.getElementById('views');
@@ -2452,39 +2464,37 @@ function altClip() {
     new THREE.Plane(new V3(-1, 0, 0),   b.x1 + p),
     new THREE.Plane(new V3( 0, 0, 1),   b.y1 + p),
     new THREE.Plane(new V3( 0, 0,-1), -(b.y0 - p)),
-    new THREE.Plane(new V3( 0, 1, 0), -(b.z0 - 0.32)),
-    new THREE.Plane(new V3( 0,-1, 0),   b.z1 + 0.32)
+    new THREE.Plane(new V3( 0, 1, 0),   0.05),   // hasta el pavimento: la
+    new THREE.Plane(new V3( 0,-1, 0),   b.z1 + 0.32)   // escalera se ve entera
   ];
 }
-function setSolo(v) {
-  soloAlt = v;
-  const btn = document.getElementById('t-solo');
-  if (btn) btn.setAttribute('aria-pressed', v ? 'true' : 'false');
-  if (v && !altilloOn) setAltillo(true);
-  renderer.clippingPlanes = v ? altClip() : [];
-  scene.background = new THREE.Color(v ? 0xcdd2d6 : 0x8fb6d6);
-  /* muros y faldón en translúcido: así el volumen se lee desde cualquier
-     lado sin que un tabique tape la mitad */
+/* El aislado sólo tiene sentido mirando la maqueta: en Recorrer recortaba
+   todo lo que hay por debajo de la caja y no se veía nada, y con los muros
+   en translúcido tampoco se leían los techos desde dentro.                */
+function applyIso() {
+  const on = soloAlt && mode === 'orbit';
+  renderer.clippingPlanes = on ? altClip() : [];
+  scene.background = new THREE.Color(on ? 0xcdd2d6 : 0x8fb6d6);
   [apt.walls.material, apt.ceil.material].forEach(m => {
-    m.transparent = v; m.opacity = v ? 0.26 : 1; m.depthWrite = !v; m.needsUpdate = true;
+    m.transparent = on; m.opacity = on ? 0.26 : 1; m.depthWrite = !on; m.needsUpdate = true;
   });
-  if (v) {
-    if (mode !== 'orbit') setMode('orbit');
-    const b = altilloBox(), az = -0.62, el = 0.42;
-    orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
-              tz: (b.z0 + b.z1) / 2, dist: fitDist(b, az, el, 1.10) });
-  }
-  plan.dirty = true;
 }
-function setAltillo(v) {
-  altilloOn = v;
-  if (!v && soloAlt) setSolo(false);
+function frameAltillo() {
+  const b = altilloBox(), az = -0.62, el = 0.42;
+  orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
+            tz: (b.z0 + b.z1) / 2 + 0.35, dist: fitDist(b, az, el, 1.10) });
+}
+function setAltillo(v, quiet) {
+  altilloOn = v; soloAlt = v;
   altillo.group.visible = v;
   altillo.patch.visible = !v;
   if (apt) apt.cutWalls.visible = !v;
   if (!v) onAltillo = false;
   const b = document.getElementById('t-altillo');
   if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
+  if (!quiet && v && mode !== 'orbit') setMode('orbit');
+  applyIso();
+  if (!quiet && v) frameAltillo();
   plan.dirty = true;
 }
 function place() {
@@ -3488,7 +3498,7 @@ function crossMark(g, p, color, solid) {
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
-  if (v.alt && !altilloOn) setAltillo(true);
+  if (v.alt && !altilloOn) setAltillo(true, true);
   onAltillo = !!v.alt;
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;

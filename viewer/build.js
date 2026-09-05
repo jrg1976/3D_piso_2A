@@ -505,14 +505,18 @@ function buildAltillo() {
     const yb = K.alt ? (i % 2 ? ym : K.y1) : K.y1;
     bx(Ms, xa, ya, xb, yb, i*ta - 0.05, i*ta);
   }
-  [K.y0 + 0.03, K.y1 - 0.03].forEach(y => {                 // zancas
-    const n = 16;
-    for (let i = 0; i < n; i++) {
-      const ua = i/n, ub = (i+1)/n;
-      const xa = K.x0 + (K.x1-K.x0)*ua, xb = K.x0 + (K.x1-K.x0)*ub;
-      bx(Ms, xa, y-0.03, xb, y+0.03, A.z*ua - 0.16, A.z*ua + 0.02);
-    }
-  });
+  /* zancas y pasamanos: prismas inclinados de una pieza (los vértices
+     inferiores y superiores de Mesher.box pueden llevar z distinta) */
+  const band = (y, e, z0, z1) => Ms.box(
+    [V(K.x0, y-e, z0), V(K.x1, y-e, A.z+z0), V(K.x1, y+e, A.z+z0), V(K.x0, y+e, z0)],
+    [V(K.x0, y-e, z1), V(K.x1, y-e, A.z+z1), V(K.x1, y+e, A.z+z1), V(K.x0, y+e, z1)]);
+  band(K.y0 + 0.03, 0.03, -0.19, 0.01);                    // zanca Sur
+  band(K.y1 - 0.03, 0.03, -0.19, 0.01);                    // zanca Norte
+  band(K.y0 + 0.02, 0.022, 0.86, 0.92);                    // pasamanos
+  for (let i = 1; i < 4; i++) {                            // montantes
+    const u = i / 4, px = K.x0 + (K.x1 - K.x0) * u;
+    bx(Ms, px - 0.022, K.y0, px + 0.022, K.y0 + 0.044, A.z*u - 0.02, A.z*u + 0.92);
+  }
 
   // --- tabiques del baño 2 recortados a la cota del forjado
   const Mc = new Mesher();
@@ -547,7 +551,7 @@ function buildAltillo() {
   add(Mc, new THREE.MeshLambertMaterial({ color: 0xf2ece1, side: S }), true);
   add(Md, new THREE.MeshLambertMaterial({ color: 0xc9a97e, side: S }), true);
   add(Mr, new THREE.MeshLambertMaterial({ color: 0x6e6a63, side: S }), true);
-  add(Ms, new THREE.MeshLambertMaterial({ color: 0x8d7660, side: S }), true);
+  add(Ms, new THREE.MeshLambertMaterial({ color: 0x6f5741, side: S }), true);
   add(Mu, new THREE.MeshLambertMaterial({ color: 0x9c8468, side: S }), true);
   add(Mg, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
     transparent: true, opacity: 0.22, depthWrite: false }), false);

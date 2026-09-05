@@ -293,7 +293,6 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
     <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
     <button class="btn" id="t-altillo" type="button" aria-pressed="false">Altillo</button>
-    <button class="btn" id="t-solo" type="button" aria-pressed="false">Aislar</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -710,11 +709,13 @@ button{font:inherit;color:inherit;cursor:pointer}
      <b>al Oeste del pilar</b>, para que al pasar por delante del pilar queden los
      0,98 m enteros. Uno de 2,00 sólo entraría contra el muro Norte, y ahí está la
      escalera. Con la escalera C del CTE ya no cabe.</p>
-  <p><b>Volumetría aislada.</b> El botón <b>Aislar</b> recorta la escena a una caja
-     alrededor del altillo y pasa muros y faldón a translúcido: queda sólo el
-     volumen, con su suelo, su envolvente seccionada y el mobiliario. Es la forma
-     de mirarlo; en <i>Recorrer</i>, dentro de 2,13 m de media y con los tabiques
-     de la vivienda alrededor, no se entiende.</p>
+  <p><b>El botón «Altillo»</b> levanta la propuesta y, en <b>Maqueta</b>, recorta la
+     escena a una caja alrededor de la zona —desde el pavimento del distribuidor
+     hasta el faldón, para que la escalera se vea entera— y pasa muros y faldón a
+     translúcido. El aislado <b>sólo se aplica en Maqueta</b>: al pasar a
+     <i>Recorrer</i> se quita el recorte, todo vuelve a ser opaco (se ven los techos
+     desde dentro) y la cámara sube al tablero; al volver a <b>Maqueta</b>, se
+     reencuadra el altillo.</p>
   <p><b>A verificar antes de nada.</b> Altura libre mínima admitida debajo y cómputo
      de la superficie del altillo (normativa de habitabilidad de Aragón y ordenanza
      de Benasque: si computa como superficie habitable puede consumir
@@ -759,9 +760,9 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>El botón <b>Altillo</b> enciende la propuesta y <b>Aislar</b> la deja sola;
-        la vista <i>Altillo</i> de la lista de estancias sube la cámara al tablero
-        y se anda por él.</li>
+    <li>El botón <b>Altillo</b> enciende la propuesta y la aísla en Maqueta; en
+        Recorrer se anda por el tablero. La vista <i>Altillo</i> de la lista de
+        estancias hace lo mismo sin tocar el resto.</li>
     <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
         sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta
         estorbaba.</li>
