@@ -228,6 +228,74 @@ const CEILINGS = [
   // { x0: 5.95, y0: -7.40, x1: 9.40, y1: -5.75, h: 2.40, name: 'Baño 1' },
 ];
 
+/* --------------- núcleo común: rellano, escalera y ascensor -----------
+   Todo lo que queda FUERA de la puerta de entrada.  Medido sobre a04 en
+   el mismo marco que la vivienda y contrastado con a03 (planta primera)
+   y a01 (semisótano, donde el hueco del ascensor aparece rotulado
+   «Previsión Hueco Ascensor» con la misma huella).
+
+     · Escalera        S: 7,15 m²   12,21–14,38 × −1,60…−4,87  (7,11 medidos)
+     · Espacio común   S: 9,30 m²   el rellano propiamente dicho
+     · Ascensor        14,40–16,40 × −3,85…−5,90, puerta al Sur al rellano
+
+   La escalera es de ida y vuelta con 17 peldaños entre la planta primera
+   (−2,90) y la bajocubierta: 8 tabicas en el tramo Oeste (de la planta a
+   la meseta) y 9 en el tramo Este (de la meseta a la planta primera).
+   Tabica 2,90/17 = 0,1706 ; huella 0,286 (2·0,171+0,286 = 0,63).
+   El tramo Este baja hacia el Sur y desemboca en el rellano de 1º, de ahí
+   el antepecho en y = −4,87 entre x = 13,36 y 14,38.
+   -------------------------------------------------------------------- */
+const CORE_RISER = 2.90 / 17, CORE_TREAD = 0.2838;
+
+const CORE = {
+  /* pavimento del rellano (z = 0); el resto de la caja es hueco.
+     El rellano se prolonga al Este por delante de la puerta del ascensor
+     —ahí está trazado el círculo de Ø 1,50 de maniobra— hasta el muro de
+     la vivienda A.                                                       */
+  floor: [
+    [11.336, -7.666, 12.212, -5.960],
+    [12.212, -7.666, 12.460, -4.868],
+    [12.460, -7.350, 14.588, -4.868],
+    [14.588, -7.350, 16.210, -5.857]
+  ],
+  /* muros propios del núcleo.  Los que dan a la vivienda B (tabique del
+     estudio, armario del contador y puerta de entrada) ya están en WALLS */
+  walls: [
+    // medianera con la vivienda A: caja de escalera.  Se prolonga 0,15 al
+    // Sur para que su testero quede embebido en el muro del ascensor
+    { a:[14.490,-1.425], b:[14.490,-4.000], t:0.221 },
+    // medianera con la vivienda A: prolongación al Sur del muro Este del
+    // ascensor, hasta el muro que separa el rellano de la vivienda B
+    { a:[16.300,-5.857], b:[16.300,-7.350], t:0.18 }
+  ],
+  /* fachada Norte de la caja de escalera, con su ventanal.  Arranca 0,12
+     dentro del muro de la vivienda para que no coincidan los testeros    */
+  facade: [
+    { a:[11.955,-1.425], b:[14.600,-1.425], t:0.35, holes:[[0.965,1.725,0.90,2.20,'win']] }
+  ],
+  /* macizo de armarios de contadores (A.F.S. y A.C.S.) al Oeste */
+  serv: [11.156, -6.050, 12.212, -4.868],
+  /* R.I.T.S. (telecomunicaciones), bajo el arranque del tramo Este */
+  rits: [13.304, -5.408, 14.384, -4.868],
+  /* hueco de ascensor: caja de 0,20 con la puerta al Sur */
+  lift: { x0:14.402, y0:-5.905, x1:16.400, y1:-3.850, t:0.20, top:2.90,
+          door:[14.700, 15.750], head:2.10 },
+  /* escalera de ida y vuelta.  El tramo Oeste (de la planta a la meseta)
+     tiene 8 tabicas y 7 huellas vistas; el Este (de la meseta a la planta
+     primera) 9 tabicas y 8 huellas.  Al ser distintos, la meseta queda
+     escalonada: el borde Sur del lado Este cae 1 huella más al Sur.      */
+  stair: {
+    x0:12.212, y0:-4.868, x1:14.384, y1:-1.598,   // caja (S: 7,11 m²)
+    xm0:13.234, xm1:13.364,                       // zanquín central («ojo»)
+    nWt: 7, nEt: 8,                               // huellas vistas de cada tramo
+    zMid: -8 * CORE_RISER                         // cota de la meseta (−1,365)
+  }
+};
+CORE.stair.yLand  = CORE.stair.y0 + CORE.stair.nWt * CORE_TREAD;   // −2,881
+CORE.stair.yLand2 = CORE.stair.y0 + CORE.stair.nEt * CORE_TREAD;   // −2,598
+/* el techo del núcleo es el mismo faldón que el de la vivienda */
+const CORE_CEIL = [[11.30, -7.80, 16.42, -1.52]];
+
 /* ------------------ plantas inferiores (contexto) --------------------
    a02 (planta baja) y a03 (planta primera) están dibujados en el mismo
    marco que a04, así que su geometría se lee sin registrar nada: se

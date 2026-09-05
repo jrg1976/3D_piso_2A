@@ -570,6 +570,42 @@ button{font:inherit;color:inherit;cursor:pointer}
      terreno natural de a07 y a08: la calle queda al Sur y sube hacia el Norte,
      con el semisótano del garaje visto por delante y enterrado por detrás.</p>
 
+  <h3>El rellano, la escalera y el ascensor</h3>
+  <p>Todo lo que queda fuera de la puerta de entrada se modela en <b>gris</b>,
+     como el resto del edificio: no es de la vivienda y por eso queda fuera de
+     las estancias y de las comprobaciones. Está medido sobre a04 y contrastado
+     con a03 y con a01, donde el hueco del ascensor aparece rotulado
+     <i>«Previsión Hueco Ascensor»</i> con la misma huella.</p>
+  <table>
+    <tr><td>Escalera · <span class="mono">S: 7,15 m²</span></td><td class="mono">12,21…14,38 × −1,60…−4,87</td></tr>
+    <tr><td>Espacio común (rellano) · <span class="mono">S: 9,30 m²</span></td><td class="mono">11,34…16,21 × −4,87…−7,35</td></tr>
+    <tr><td>Hueco de ascensor</td><td class="mono">14,40…16,40 × −3,85…−5,90</td></tr>
+    <tr><td>R.I.T.S.</td><td class="mono">13,30…14,38 × −4,87…−5,41</td></tr>
+    <tr><td>Contadores A.F.S. y A.C.S.</td><td class="mono">11,16…12,21 × −4,87…−6,05</td></tr>
+  </table>
+  <p>La escalera es de <b>ida y vuelta</b>, con <b>17 peldaños</b> entre la
+     planta primera (<span class="mono">−2,90</span>) y la bajocubierta: tabica
+     <span class="mono">2,90/17 = 0,171</span> y huella
+     <span class="mono">0,284</span> (2·t + h = 0,63). El tramo Oeste baja del
+     rellano a la meseta con 8 tabicas y el Este sigue hasta la primera planta
+     con 9, de modo que la meseta queda escalonada: por eso en a04 el peldaño 9
+     está una huella más al Norte que el 10. Los dos tramos desembocan en la
+     misma línea <span class="mono">y = −4,87</span>, uno a cada lado del
+     zanquín central (<span class="mono">x = 13,23–13,36</span>).</p>
+  <p>El <b>hueco de la escalera</b> obliga a recortar todas las losas
+     horizontales del zócalo que lo cruzan —macizo, remate, cornisa, imposta de
+     la planta primera y canto de forjado—; los paramentos grises del hueco
+     coinciden justo con el borde del recorte, así que no hay caras superpuestas
+     que produzcan bandas de <i>z-fighting</i>.</p>
+  <p>El ascensor abre <b>al Sur</b>, sobre el rellano, entre
+     <span class="mono">x = 14,70 y 15,75</span>; delante está trazado el
+     círculo de maniobra de <span class="mono">Ø 1,50</span>, y por eso el
+     rellano se prolonga al Este hasta el muro de la vivienda A
+     (<span class="mono">x = 16,30</span>). La fachada Norte de la caja de
+     escalera, con su ventanal (<span class="mono">x = 12,92–13,68</span>), se
+     pinta del color del resto del edificio para que el paño siga siendo
+     continuo desde fuera.</p>
+
   <h3>Comprobación del modelo</h3>
   <p>Antes de empaquetar el visor se pasan dos pruebas sobre la geometría:</p>
   <ul>
@@ -605,6 +641,10 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
+    <li>La vivienda A no se modela: al Este del rellano sólo está el muro
+        medianero. El rectángulo gris de 0,77 × 0,99 que a04 dibuja en el
+        centro del rellano —y que no aparece en a03— tampoco se modela, a
+        falta de saber qué es.</li>
   </ul>
 </section>
 
@@ -849,6 +889,74 @@ const CEILINGS = [
   // { x0: 5.95, y0: -7.40, x1: 9.40, y1: -5.75, h: 2.40, name: 'Baño 1' },
 ];
 
+/* --------------- núcleo común: rellano, escalera y ascensor -----------
+   Todo lo que queda FUERA de la puerta de entrada.  Medido sobre a04 en
+   el mismo marco que la vivienda y contrastado con a03 (planta primera)
+   y a01 (semisótano, donde el hueco del ascensor aparece rotulado
+   «Previsión Hueco Ascensor» con la misma huella).
+
+     · Escalera        S: 7,15 m²   12,21–14,38 × −1,60…−4,87  (7,11 medidos)
+     · Espacio común   S: 9,30 m²   el rellano propiamente dicho
+     · Ascensor        14,40–16,40 × −3,85…−5,90, puerta al Sur al rellano
+
+   La escalera es de ida y vuelta con 17 peldaños entre la planta primera
+   (−2,90) y la bajocubierta: 8 tabicas en el tramo Oeste (de la planta a
+   la meseta) y 9 en el tramo Este (de la meseta a la planta primera).
+   Tabica 2,90/17 = 0,1706 ; huella 0,286 (2·0,171+0,286 = 0,63).
+   El tramo Este baja hacia el Sur y desemboca en el rellano de 1º, de ahí
+   el antepecho en y = −4,87 entre x = 13,36 y 14,38.
+   -------------------------------------------------------------------- */
+const CORE_RISER = 2.90 / 17, CORE_TREAD = 0.2838;
+
+const CORE = {
+  /* pavimento del rellano (z = 0); el resto de la caja es hueco.
+     El rellano se prolonga al Este por delante de la puerta del ascensor
+     —ahí está trazado el círculo de Ø 1,50 de maniobra— hasta el muro de
+     la vivienda A.                                                       */
+  floor: [
+    [11.336, -7.666, 12.212, -5.960],
+    [12.212, -7.666, 12.460, -4.868],
+    [12.460, -7.350, 14.588, -4.868],
+    [14.588, -7.350, 16.210, -5.857]
+  ],
+  /* muros propios del núcleo.  Los que dan a la vivienda B (tabique del
+     estudio, armario del contador y puerta de entrada) ya están en WALLS */
+  walls: [
+    // medianera con la vivienda A: caja de escalera.  Se prolonga 0,15 al
+    // Sur para que su testero quede embebido en el muro del ascensor
+    { a:[14.490,-1.425], b:[14.490,-4.000], t:0.221 },
+    // medianera con la vivienda A: prolongación al Sur del muro Este del
+    // ascensor, hasta el muro que separa el rellano de la vivienda B
+    { a:[16.300,-5.857], b:[16.300,-7.350], t:0.18 }
+  ],
+  /* fachada Norte de la caja de escalera, con su ventanal.  Arranca 0,12
+     dentro del muro de la vivienda para que no coincidan los testeros    */
+  facade: [
+    { a:[11.955,-1.425], b:[14.600,-1.425], t:0.35, holes:[[0.965,1.725,0.90,2.20,'win']] }
+  ],
+  /* macizo de armarios de contadores (A.F.S. y A.C.S.) al Oeste */
+  serv: [11.156, -6.050, 12.212, -4.868],
+  /* R.I.T.S. (telecomunicaciones), bajo el arranque del tramo Este */
+  rits: [13.304, -5.408, 14.384, -4.868],
+  /* hueco de ascensor: caja de 0,20 con la puerta al Sur */
+  lift: { x0:14.402, y0:-5.905, x1:16.400, y1:-3.850, t:0.20, top:2.90,
+          door:[14.700, 15.750], head:2.10 },
+  /* escalera de ida y vuelta.  El tramo Oeste (de la planta a la meseta)
+     tiene 8 tabicas y 7 huellas vistas; el Este (de la meseta a la planta
+     primera) 9 tabicas y 8 huellas.  Al ser distintos, la meseta queda
+     escalonada: el borde Sur del lado Este cae 1 huella más al Sur.      */
+  stair: {
+    x0:12.212, y0:-4.868, x1:14.384, y1:-1.598,   // caja (S: 7,11 m²)
+    xm0:13.234, xm1:13.364,                       // zanquín central («ojo»)
+    nWt: 7, nEt: 8,                               // huellas vistas de cada tramo
+    zMid: -8 * CORE_RISER                         // cota de la meseta (−1,365)
+  }
+};
+CORE.stair.yLand  = CORE.stair.y0 + CORE.stair.nWt * CORE_TREAD;   // −2,881
+CORE.stair.yLand2 = CORE.stair.y0 + CORE.stair.nEt * CORE_TREAD;   // −2,598
+/* el techo del núcleo es el mismo faldón que el de la vivienda */
+const CORE_CEIL = [[11.30, -7.80, 16.42, -1.52]];
+
 /* ------------------ plantas inferiores (contexto) --------------------
    a02 (planta baja) y a03 (planta primera) están dibujados en el mismo
    marco que a04, así que su geometría se lee sin registrar nada: se
@@ -1084,6 +1192,10 @@ function roomCovers(x, y) {
   for (const r of ROOMS) for (const q of r.rects)
     if (x > q[0] - CEIL_PAD && x < q[2] + CEIL_PAD &&
         y > q[1] - CEIL_PAD && y < q[3] + CEIL_PAD) return true;
+  // el núcleo común comparte faldón con la vivienda: se malla de una pieza
+  for (const q of CORE_CEIL)
+    if (x > q[0] - CEIL_PAD && x < q[2] + CEIL_PAD &&
+        y > q[1] - CEIL_PAD && y < q[3] + CEIL_PAD) return true;
   return false;
 }
 /** líneas de corte: aristas de cumbrera y peldaños entre las dos cubiertas */
@@ -1096,10 +1208,13 @@ function gridEdges(a, b, hard) {
 }
 function buildCeiling(M) {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
-  ROOMS.forEach(r => r.rects.forEach(q => {
+  const boxes = [];
+  ROOMS.forEach(r => r.rects.forEach(q => boxes.push(q)));
+  CORE_CEIL.forEach(q => boxes.push(q));
+  boxes.forEach(q => {
     x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]);
     x1 = Math.max(x1, q[2]); y1 = Math.max(y1, q[3]);
-  }));
+  });
   x0 -= CEIL_PAD; y0 -= CEIL_PAD; x1 += CEIL_PAD; y1 += CEIL_PAD;
   const XS = gridEdges(x0, x1, [ROOF.endW, ROOF.endE, ROOF.gableNx, ROOF.gableSx]);
   const YS = gridEdges(y0, y1, [ROOF.ridgeY, ROOF.ridgeY2]);
@@ -1195,7 +1310,9 @@ function buildApartment() {
   // --- canto del forjado (contexto exterior)
   const Ms = new Mesher();
   const OUT = [[2.20,-11.25,10.30,-3.30],[9.35,-14.60,16.85,-1.35],[16.55,-12.70,24.60,-3.30]];
-  OUT.forEach(r => { buildSlab(r, -0.02, Ms, true); buildSlab(r, -0.38, Ms, false);
+  const WELL = [CORE.stair.x0, CORE.stair.y0, CORE.stair.x1, CORE.stair.y1];
+  OUT.forEach(r => { capHole(Ms, r[0], r[1], r[2], r[3], -0.02, WELL);
+    capHole(Ms, r[0], r[1], r[2], r[3], -0.38, WELL);
     const [x0,y0,x1,y1]=r;
     Ms.quad(V(x0,y0,-0.02),V(x1,y0,-0.02),V(x1,y0,-0.38),V(x0,y0,-0.38));
     Ms.quad(V(x1,y1,-0.02),V(x0,y1,-0.02),V(x0,y1,-0.38),V(x1,y1,-0.38));
@@ -1284,6 +1401,80 @@ function buildApartment() {
   return { group, walls, ceil, floor, furn, figs, glass, pillars, shafts };
 }
 
+/* ------------- núcleo común: rellano, escalera y ascensor -------------
+   Geometría de contexto, en gris: no forma parte de la vivienda y por eso
+   queda fuera de ROOMS/WALLS (y de las comprobaciones de check.js).  Se ve
+   por el hueco de la puerta de entrada y desde la maqueta.
+   --------------------------------------------------------------------- */
+function buildCore() {
+  const group = new THREE.Group();
+  const S = THREE.DoubleSide;
+  const matW = new THREE.MeshLambertMaterial({ color: 0x9d988e, side: S });   // fábrica
+  const matF = new THREE.MeshLambertMaterial({ color: 0x827e77, side: S });   // pavimento
+  const matS = new THREE.MeshLambertMaterial({ color: 0xb0aaa1, side: S });   // peldaños
+  const matL = new THREE.MeshLambertMaterial({ color: 0x76726b, side: S });   // caja del ascensor
+
+  const Mw = new Mesher(), Mf = new Mesher(), Ms = new Mesher(), Ml = new Mesher();
+  const bx = (M, x0, y0, x1, y1, z0, z1) => M.box(
+    [V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+    [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+
+  // --- pavimento del rellano
+  CORE.floor.forEach(r => buildSlab(r, 0.00, Mf, true));
+
+  // --- muros del núcleo (suben hasta el faldón, como los de la vivienda).
+  //     La fachada Norte se pinta del color del resto del edificio para que
+  //     desde fuera el paño siga siendo continuo.
+  CORE.walls.forEach(w => buildWall(w, Mw));
+  const Mfa = new Mesher();
+  CORE.facade.forEach(w => buildWall(w, Mfa));
+
+  // --- hueco de la escalera: paramentos y solado del rellano de 1ª planta
+  const W = CORE.stair;
+  const wall = (x0, y0, x1, y1) => Mw.quad(V(x0,y0,-2.90), V(x1,y1,-2.90),
+                                           V(x1,y1,0.00),  V(x0,y0,0.00));
+  wall(W.x0, W.y0, W.x1, W.y0); wall(W.x1, W.y1, W.x0, W.y1);
+  wall(W.x1, W.y0, W.x1, W.y1); wall(W.x0, W.y1, W.x0, W.y0);
+  buildSlab([W.x0, W.y0, W.x1, W.y1], -2.90, Mf, true);
+
+  // --- armarios de contadores y R.I.T.S.
+  bx(Mw, CORE.serv[0], CORE.serv[1], CORE.serv[2], CORE.serv[3], 0, 2.20);
+  bx(Mw, CORE.rits[0], CORE.rits[1], CORE.rits[2], CORE.rits[3], 0, 2.30);
+
+  // --- hueco de ascensor: caja abierta por arriba, con la puerta al Sur
+  const L = CORE.lift, t = L.t, T = L.top;
+  bx(Ml, L.x0,     L.y1 - t, L.x1,     L.y1,     0, T);           // Norte
+  bx(Ml, L.x1 - t, L.y0,     L.x1,     L.y1 - t, 0, T);           // Este
+  bx(Ml, L.x0,     L.y0,     L.x0 + t, L.y1 - t, 0, T);           // Oeste
+  bx(Ml, L.x0 + t, L.y0,     L.door[0], L.y0 + t, 0, T);          // machón Oeste
+  bx(Ml, L.door[1], L.y0,    L.x1 - t, L.y0 + t, 0, T);           // machón Este
+  bx(Ml, L.door[0], L.y0,    L.door[1], L.y0 + t, L.head, T);     // dintel
+  buildSlab([L.x0 + t, L.y0 + t, L.x1 - t, L.y1 - t], -0.10, Ml, true);   // foso
+  buildSlab([L.door[0], L.y0, L.door[1], L.y0 + t], 0.00, Mf, true);      // umbral
+
+  // --- escalera de ida y vuelta
+  const K = CORE.stair, R = CORE_RISER, hu = CORE_TREAD;
+  // tramo Oeste: de la planta a la meseta, bajando hacia el Norte
+  for (let k = 1; k <= K.nWt; k++)
+    bx(Ms, K.x0, K.y0 + (k - 1) * hu, K.xm0, K.y0 + k * hu, -k * R - 0.16, -k * R);
+  // tramo Este: de la meseta a la planta primera, bajando hacia el Sur
+  for (let j = 1; j <= K.nEt; j++)
+    bx(Ms, K.xm1, K.yLand2 - j * hu, K.x1, K.yLand2 - (j - 1) * hu,
+       K.zMid - j * R - 0.16, K.zMid - j * R);
+  // meseta (escalonada: los dos tramos no tienen el mismo número de huellas)
+  bx(Ms, K.x0,  K.yLand,  K.xm1, K.y1, K.zMid - 0.16, K.zMid);
+  bx(Ms, K.xm1, K.yLand2, K.x1,  K.y1, K.zMid - 0.16, K.zMid);
+  // zanquín central («ojo» de la escalera)
+  bx(Mw, K.xm0, K.y0, K.xm1, K.yLand, -2.90, 1.00);
+
+  const add = (M, m, sh) => { if (M.empty) return;
+    const o = new THREE.Mesh(M.geometry(), m);
+    o.castShadow = o.receiveShadow = !!sh; group.add(o); return o; };
+  add(Mw, matW, true); add(Mf, matF, true); add(Ms, matS, true); add(Ml, matL, true);
+  add(Mfa, new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: S }), true);
+  return group;
+}
+
 /* ------------------- envolvente de cubierta (modo maqueta) ------------
    Plano de cubierta a 0,30 m sobre la cara interior, con 0,70 m de vuelo
    de alero (cota anotada en a05).
@@ -1350,15 +1541,18 @@ function buildBase() {
 
   // --- macizo retranqueado (se ve por los huecos)
   const Mr = new Mesher();
-  const solid = (r, z0, z1, in_) => {
-    const [x0, y0, x1, y1] = [r[0] + in_, r[1] + in_, r[2] - in_, r[3] - in_];
-    Mr.box([V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
-           [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+  /* El hueco de la escalera baja hasta la planta primera: hay que recortar
+     todas las tapas horizontales del zócalo que lo cruzan.  Sólo se recortan
+     las tapas —no se cierran los cantos del hueco— porque los paramentos
+     grises que pone buildCore() coinciden justo con su borde.             */
+  const solid = (r, z0, z1, in_, hole) => {
+    boxHole(Mr, r[0] + in_, r[1] + in_, r[2] - in_, r[3] - in_, z0, z1, hole);
   };
   /* el macizo se queda 0,30 por debajo del remate: si sube más, su cara
      superior compite con la del remate y con la de la cornisa —tres losas
      horizontales a pocos centímetros— y aparecen las bandas grises */
-  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.30, REV));
+  const WELL = [CORE.stair.x0, CORE.stair.y0, CORE.stair.x1, CORE.stair.y1];
+  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.30, REV, WELL));
   BASE_JOINT.forEach(r => solid(r, BOT, TOP - 0.32, 0));
   const rev = new THREE.Mesh(Mr.geometry(),
     new THREE.MeshLambertMaterial({ color: 0x4a4640, side: THREE.DoubleSide }));
@@ -1390,22 +1584,14 @@ function buildBase() {
   });
   // remate superior: única cara horizontal visible del zócalo, 6 cm por
   // debajo del pavimento de la vivienda para no competir con sus solados
-  BASE_MASS.forEach(r => {
-    const [x0, y0, x1, y1] = r, z = TOP - 0.06;
-    Mf.quad(V(x0,y0,z), V(x1,y0,z), V(x1,y1,z), V(x0,y1,z));
-  });
+  BASE_MASS.forEach(r => capHole(Mf, r[0], r[1], r[2], r[3], TOP - 0.06, WELL));
   // cornisa: por debajo del remate, para que sólo asome el vuelo de 0,11
-  BASE_MASS.forEach(r => {
-    const [x0, y0, x1, y1] = [r[0]-0.11, r[1]-0.11, r[2]+0.11, r[3]+0.11];
-    Mf.box([V(x0,y0,-0.30),V(x1,y0,-0.30),V(x1,y1,-0.30),V(x0,y1,-0.30)],
-           [V(x0,y0,-0.12),V(x1,y0,-0.12),V(x1,y1,-0.12),V(x0,y1,-0.12)]);
-  });
+  BASE_MASS.forEach(r =>
+    boxHole(Mf, r[0]-0.11, r[1]-0.11, r[2]+0.11, r[3]+0.11, -0.30, -0.12, WELL));
   // imposta de forjado
-  [Z_P1, Z_PB].forEach(z => BASE_MASS.forEach(r => {
-    const [x0, y0, x1, y1] = [r[0]-0.07, r[1]-0.07, r[2]+0.07, r[3]+0.07];
-    Mf.box([V(x0,y0,z-0.10),V(x1,y0,z-0.10),V(x1,y1,z-0.10),V(x0,y1,z-0.10)],
-           [V(x0,y0,z+0.06),V(x1,y0,z+0.06),V(x1,y1,z+0.06),V(x0,y1,z+0.06)]);
-  }));
+  [Z_P1, Z_PB].forEach(z => BASE_MASS.forEach(r =>
+    boxHole(Mf, r[0]-0.07, r[1]-0.07, r[2]+0.07, r[3]+0.07, z-0.10, z+0.06,
+            z > Z_P1 - 0.5 ? WELL : null)));
   const fac = new THREE.Mesh(Mf.geometry(),
     new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: THREE.DoubleSide }));
   fac.castShadow = fac.receiveShadow = true;
@@ -1436,6 +1622,28 @@ function buildBase() {
     new THREE.MeshLambertMaterial({ color: 0x7d7568, side: THREE.DoubleSide }));
   wing.castShadow = wing.receiveShadow = true; group.add(wing);
   return group;
+}
+/** tapa horizontal con un hueco rectangular recortado */
+function capHole(M, x0, y0, x1, y1, z, h) {
+  const q = (u0, v0, u1, v1) => { if (u1 - u0 > 1e-6 && v1 - v0 > 1e-6)
+    M.quad(V(u0,v0,z), V(u1,v0,z), V(u1,v1,z), V(u0,v1,z)); };
+  if (!h || h[0] <= x0 || h[2] >= x1 || h[1] <= y0 || h[3] >= y1) { q(x0,y0,x1,y1); return; }
+  q(x0, y0, x1, h[1]); q(x0, h[3], x1, y1);
+  q(x0, h[1], h[0], h[3]); q(h[2], h[1], x1, h[3]);
+}
+/** prisma con las dos tapas recortadas por el mismo hueco (sin cantos) */
+function boxHole(M, x0, y0, x1, y1, z0, z1, h) {
+  if (!h || h[0] <= x0 || h[2] >= x1 || h[1] <= y0 || h[3] >= y1) {
+    M.box([V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+          [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+    return;
+  }
+  capHole(M, x0, y0, x1, y1, z1, h);
+  capHole(M, x0, y0, x1, y1, z0, h);
+  M.quad(V(x0,y0,z0), V(x1,y0,z0), V(x1,y0,z1), V(x0,y0,z1));
+  M.quad(V(x1,y1,z0), V(x0,y1,z0), V(x0,y1,z1), V(x1,y1,z1));
+  M.quad(V(x1,y0,z0), V(x1,y1,z0), V(x1,y1,z1), V(x1,y0,z1));
+  M.quad(V(x0,y1,z0), V(x0,y0,z0), V(x0,y0,z1), V(x0,y1,z1));
 }
 /** paño rectangular vertical entre dos parámetros y dos cotas */
 function quadStrip(M, P, t0, t1, z0, z1) {
@@ -1560,6 +1768,7 @@ function init() {
   fill.position.set(-14, 10, -14); scene.add(fill);
 
   scene.add(buildBase());
+  scene.add(buildCore());
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -2320,6 +2529,56 @@ function wallPolys() {
 }
 let PLAN_POLYS = null;
 
+/* --- núcleo común en la vista de planta (gris, no editable) --- */
+function drawCore(g) {
+  const R = (r, f) => { g.fillStyle = f;
+    g.fillRect(pX(r[0]), pY(r[3]), (r[2]-r[0]) * plan.s, (r[3]-r[1]) * plan.s); };
+  CORE.floor.forEach(r => R(r, 'rgba(130,128,124,0.20)'));
+  R([CORE.stair.x0, CORE.stair.y0, CORE.stair.x1, CORE.stair.y1], 'rgba(130,128,124,0.13)');
+  // peldaños
+  const K = CORE.stair, hu = CORE_TREAD;
+  g.strokeStyle = 'rgba(90,88,84,0.75)'; g.lineWidth = 1;
+  g.beginPath();
+  for (let k = 0; k <= K.nWt; k++) {
+    const y = K.y0 + k * hu;
+    g.moveTo(pX(K.x0), pY(y)); g.lineTo(pX(K.xm0), pY(y));
+  }
+  for (let j = 0; j <= K.nEt; j++) {
+    const y = K.yLand2 - j * hu;
+    g.moveTo(pX(K.xm1), pY(y)); g.lineTo(pX(K.x1), pY(y));
+  }
+  g.stroke();
+  // fábrica del núcleo
+  g.fillStyle = 'rgba(90,88,84,0.85)';
+  CORE.walls.concat(CORE.facade).forEach(w => {
+    const [ax, ay] = w.a, [bx, by] = w.b, L = Math.hypot(bx-ax, by-ay);
+    const dx = (bx-ax)/L, dy = (by-ay)/L, nx = -dy*w.t/2, ny = dx*w.t/2;
+    g.beginPath();
+    g.moveTo(pX(ax+nx), pY(ay+ny)); g.lineTo(pX(bx+nx), pY(by+ny));
+    g.lineTo(pX(bx-nx), pY(by-ny)); g.lineTo(pX(ax-nx), pY(ay-ny));
+    g.closePath(); g.fill();
+  });
+  R([K.xm0, K.y0, K.xm1, K.yLand], 'rgba(90,88,84,0.85)');
+  R(CORE.serv, 'rgba(90,88,84,0.55)');
+  R(CORE.rits, 'rgba(90,88,84,0.55)');
+  // caja del ascensor
+  const L2 = CORE.lift, t = L2.t;
+  g.fillStyle = 'rgba(90,88,84,0.85)';
+  R([L2.x0, L2.y1-t, L2.x1, L2.y1], 'rgba(90,88,84,0.85)');
+  R([L2.x0, L2.y0, L2.x0+t, L2.y1-t], 'rgba(90,88,84,0.85)');
+  R([L2.x1-t, L2.y0, L2.x1, L2.y1-t], 'rgba(90,88,84,0.85)');
+  R([L2.x0+t, L2.y0, L2.door[0], L2.y0+t], 'rgba(90,88,84,0.85)');
+  R([L2.door[1], L2.y0, L2.x1-t, L2.y0+t], 'rgba(90,88,84,0.85)');
+  R([L2.x0+t, L2.y0+t, L2.x1-t, L2.y1-t], 'rgba(130,128,124,0.28)');
+  if (plan.s > 26) {
+    g.fillStyle = 'rgba(90,88,84,0.9)'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '600 11px ui-sans-serif,system-ui,sans-serif';
+    g.fillText('Ascensor', pX((L2.x0+L2.x1)/2), pY((L2.y0+L2.y1)/2));
+    g.fillText('Escalera', pX((K.x0+K.x1)/2), pY(K.y1 - 0.55));
+    g.fillText('Rellano', pX(13.2), pY(-6.6));
+  }
+}
+
 function drawPlan() {
   const c = planCtx.canvas, g = planCtx;
   const W = c.clientWidth, H = c.clientHeight, dpr = Math.min(devicePixelRatio, 2);
@@ -2360,6 +2619,9 @@ function drawPlan() {
           g.fillRect(pX(x), pY(y + st), st * plan.s + 1, st * plan.s + 1);
     }));
   }
+
+  // --- núcleo común (rellano, escalera y ascensor): siempre en gris
+  drawCore(g);
 
   // --- cumbreras y peldaños
   g.setLineDash([9, 6]); g.lineWidth = 1.2; g.strokeStyle = 'rgba(128,128,128,0.75)';

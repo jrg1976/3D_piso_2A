@@ -112,6 +112,10 @@ function roomCovers(x, y) {
   for (const r of ROOMS) for (const q of r.rects)
     if (x > q[0] - CEIL_PAD && x < q[2] + CEIL_PAD &&
         y > q[1] - CEIL_PAD && y < q[3] + CEIL_PAD) return true;
+  // el núcleo común comparte faldón con la vivienda: se malla de una pieza
+  for (const q of CORE_CEIL)
+    if (x > q[0] - CEIL_PAD && x < q[2] + CEIL_PAD &&
+        y > q[1] - CEIL_PAD && y < q[3] + CEIL_PAD) return true;
   return false;
 }
 /** líneas de corte: aristas de cumbrera y peldaños entre las dos cubiertas */
@@ -124,10 +128,13 @@ function gridEdges(a, b, hard) {
 }
 function buildCeiling(M) {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
-  ROOMS.forEach(r => r.rects.forEach(q => {
+  const boxes = [];
+  ROOMS.forEach(r => r.rects.forEach(q => boxes.push(q)));
+  CORE_CEIL.forEach(q => boxes.push(q));
+  boxes.forEach(q => {
     x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]);
     x1 = Math.max(x1, q[2]); y1 = Math.max(y1, q[3]);
-  }));
+  });
   x0 -= CEIL_PAD; y0 -= CEIL_PAD; x1 += CEIL_PAD; y1 += CEIL_PAD;
   const XS = gridEdges(x0, x1, [ROOF.endW, ROOF.endE, ROOF.gableNx, ROOF.gableSx]);
   const YS = gridEdges(y0, y1, [ROOF.ridgeY, ROOF.ridgeY2]);
@@ -223,7 +230,9 @@ function buildApartment() {
   // --- canto del forjado (contexto exterior)
   const Ms = new Mesher();
   const OUT = [[2.20,-11.25,10.30,-3.30],[9.35,-14.60,16.85,-1.35],[16.55,-12.70,24.60,-3.30]];
-  OUT.forEach(r => { buildSlab(r, -0.02, Ms, true); buildSlab(r, -0.38, Ms, false);
+  const WELL = [CORE.stair.x0, CORE.stair.y0, CORE.stair.x1, CORE.stair.y1];
+  OUT.forEach(r => { capHole(Ms, r[0], r[1], r[2], r[3], -0.02, WELL);
+    capHole(Ms, r[0], r[1], r[2], r[3], -0.38, WELL);
     const [x0,y0,x1,y1]=r;
     Ms.quad(V(x0,y0,-0.02),V(x1,y0,-0.02),V(x1,y0,-0.38),V(x0,y0,-0.38));
     Ms.quad(V(x1,y1,-0.02),V(x0,y1,-0.02),V(x0,y1,-0.38),V(x1,y1,-0.38));
@@ -312,6 +321,80 @@ function buildApartment() {
   return { group, walls, ceil, floor, furn, figs, glass, pillars, shafts };
 }
 
+/* ------------- núcleo común: rellano, escalera y ascensor -------------
+   Geometría de contexto, en gris: no forma parte de la vivienda y por eso
+   queda fuera de ROOMS/WALLS (y de las comprobaciones de check.js).  Se ve
+   por el hueco de la puerta de entrada y desde la maqueta.
+   --------------------------------------------------------------------- */
+function buildCore() {
+  const group = new THREE.Group();
+  const S = THREE.DoubleSide;
+  const matW = new THREE.MeshLambertMaterial({ color: 0x9d988e, side: S });   // fábrica
+  const matF = new THREE.MeshLambertMaterial({ color: 0x827e77, side: S });   // pavimento
+  const matS = new THREE.MeshLambertMaterial({ color: 0xb0aaa1, side: S });   // peldaños
+  const matL = new THREE.MeshLambertMaterial({ color: 0x76726b, side: S });   // caja del ascensor
+
+  const Mw = new Mesher(), Mf = new Mesher(), Ms = new Mesher(), Ml = new Mesher();
+  const bx = (M, x0, y0, x1, y1, z0, z1) => M.box(
+    [V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+    [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+
+  // --- pavimento del rellano
+  CORE.floor.forEach(r => buildSlab(r, 0.00, Mf, true));
+
+  // --- muros del núcleo (suben hasta el faldón, como los de la vivienda).
+  //     La fachada Norte se pinta del color del resto del edificio para que
+  //     desde fuera el paño siga siendo continuo.
+  CORE.walls.forEach(w => buildWall(w, Mw));
+  const Mfa = new Mesher();
+  CORE.facade.forEach(w => buildWall(w, Mfa));
+
+  // --- hueco de la escalera: paramentos y solado del rellano de 1ª planta
+  const W = CORE.stair;
+  const wall = (x0, y0, x1, y1) => Mw.quad(V(x0,y0,-2.90), V(x1,y1,-2.90),
+                                           V(x1,y1,0.00),  V(x0,y0,0.00));
+  wall(W.x0, W.y0, W.x1, W.y0); wall(W.x1, W.y1, W.x0, W.y1);
+  wall(W.x1, W.y0, W.x1, W.y1); wall(W.x0, W.y1, W.x0, W.y0);
+  buildSlab([W.x0, W.y0, W.x1, W.y1], -2.90, Mf, true);
+
+  // --- armarios de contadores y R.I.T.S.
+  bx(Mw, CORE.serv[0], CORE.serv[1], CORE.serv[2], CORE.serv[3], 0, 2.20);
+  bx(Mw, CORE.rits[0], CORE.rits[1], CORE.rits[2], CORE.rits[3], 0, 2.30);
+
+  // --- hueco de ascensor: caja abierta por arriba, con la puerta al Sur
+  const L = CORE.lift, t = L.t, T = L.top;
+  bx(Ml, L.x0,     L.y1 - t, L.x1,     L.y1,     0, T);           // Norte
+  bx(Ml, L.x1 - t, L.y0,     L.x1,     L.y1 - t, 0, T);           // Este
+  bx(Ml, L.x0,     L.y0,     L.x0 + t, L.y1 - t, 0, T);           // Oeste
+  bx(Ml, L.x0 + t, L.y0,     L.door[0], L.y0 + t, 0, T);          // machón Oeste
+  bx(Ml, L.door[1], L.y0,    L.x1 - t, L.y0 + t, 0, T);           // machón Este
+  bx(Ml, L.door[0], L.y0,    L.door[1], L.y0 + t, L.head, T);     // dintel
+  buildSlab([L.x0 + t, L.y0 + t, L.x1 - t, L.y1 - t], -0.10, Ml, true);   // foso
+  buildSlab([L.door[0], L.y0, L.door[1], L.y0 + t], 0.00, Mf, true);      // umbral
+
+  // --- escalera de ida y vuelta
+  const K = CORE.stair, R = CORE_RISER, hu = CORE_TREAD;
+  // tramo Oeste: de la planta a la meseta, bajando hacia el Norte
+  for (let k = 1; k <= K.nWt; k++)
+    bx(Ms, K.x0, K.y0 + (k - 1) * hu, K.xm0, K.y0 + k * hu, -k * R - 0.16, -k * R);
+  // tramo Este: de la meseta a la planta primera, bajando hacia el Sur
+  for (let j = 1; j <= K.nEt; j++)
+    bx(Ms, K.xm1, K.yLand2 - j * hu, K.x1, K.yLand2 - (j - 1) * hu,
+       K.zMid - j * R - 0.16, K.zMid - j * R);
+  // meseta (escalonada: los dos tramos no tienen el mismo número de huellas)
+  bx(Ms, K.x0,  K.yLand,  K.xm1, K.y1, K.zMid - 0.16, K.zMid);
+  bx(Ms, K.xm1, K.yLand2, K.x1,  K.y1, K.zMid - 0.16, K.zMid);
+  // zanquín central («ojo» de la escalera)
+  bx(Mw, K.xm0, K.y0, K.xm1, K.yLand, -2.90, 1.00);
+
+  const add = (M, m, sh) => { if (M.empty) return;
+    const o = new THREE.Mesh(M.geometry(), m);
+    o.castShadow = o.receiveShadow = !!sh; group.add(o); return o; };
+  add(Mw, matW, true); add(Mf, matF, true); add(Ms, matS, true); add(Ml, matL, true);
+  add(Mfa, new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: S }), true);
+  return group;
+}
+
 /* ------------------- envolvente de cubierta (modo maqueta) ------------
    Plano de cubierta a 0,30 m sobre la cara interior, con 0,70 m de vuelo
    de alero (cota anotada en a05).
@@ -378,15 +461,18 @@ function buildBase() {
 
   // --- macizo retranqueado (se ve por los huecos)
   const Mr = new Mesher();
-  const solid = (r, z0, z1, in_) => {
-    const [x0, y0, x1, y1] = [r[0] + in_, r[1] + in_, r[2] - in_, r[3] - in_];
-    Mr.box([V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
-           [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+  /* El hueco de la escalera baja hasta la planta primera: hay que recortar
+     todas las tapas horizontales del zócalo que lo cruzan.  Sólo se recortan
+     las tapas —no se cierran los cantos del hueco— porque los paramentos
+     grises que pone buildCore() coinciden justo con su borde.             */
+  const solid = (r, z0, z1, in_, hole) => {
+    boxHole(Mr, r[0] + in_, r[1] + in_, r[2] - in_, r[3] - in_, z0, z1, hole);
   };
   /* el macizo se queda 0,30 por debajo del remate: si sube más, su cara
      superior compite con la del remate y con la de la cornisa —tres losas
      horizontales a pocos centímetros— y aparecen las bandas grises */
-  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.30, REV));
+  const WELL = [CORE.stair.x0, CORE.stair.y0, CORE.stair.x1, CORE.stair.y1];
+  BASE_MASS.forEach(r => solid(r, BOT, TOP - 0.30, REV, WELL));
   BASE_JOINT.forEach(r => solid(r, BOT, TOP - 0.32, 0));
   const rev = new THREE.Mesh(Mr.geometry(),
     new THREE.MeshLambertMaterial({ color: 0x4a4640, side: THREE.DoubleSide }));
@@ -418,22 +504,14 @@ function buildBase() {
   });
   // remate superior: única cara horizontal visible del zócalo, 6 cm por
   // debajo del pavimento de la vivienda para no competir con sus solados
-  BASE_MASS.forEach(r => {
-    const [x0, y0, x1, y1] = r, z = TOP - 0.06;
-    Mf.quad(V(x0,y0,z), V(x1,y0,z), V(x1,y1,z), V(x0,y1,z));
-  });
+  BASE_MASS.forEach(r => capHole(Mf, r[0], r[1], r[2], r[3], TOP - 0.06, WELL));
   // cornisa: por debajo del remate, para que sólo asome el vuelo de 0,11
-  BASE_MASS.forEach(r => {
-    const [x0, y0, x1, y1] = [r[0]-0.11, r[1]-0.11, r[2]+0.11, r[3]+0.11];
-    Mf.box([V(x0,y0,-0.30),V(x1,y0,-0.30),V(x1,y1,-0.30),V(x0,y1,-0.30)],
-           [V(x0,y0,-0.12),V(x1,y0,-0.12),V(x1,y1,-0.12),V(x0,y1,-0.12)]);
-  });
+  BASE_MASS.forEach(r =>
+    boxHole(Mf, r[0]-0.11, r[1]-0.11, r[2]+0.11, r[3]+0.11, -0.30, -0.12, WELL));
   // imposta de forjado
-  [Z_P1, Z_PB].forEach(z => BASE_MASS.forEach(r => {
-    const [x0, y0, x1, y1] = [r[0]-0.07, r[1]-0.07, r[2]+0.07, r[3]+0.07];
-    Mf.box([V(x0,y0,z-0.10),V(x1,y0,z-0.10),V(x1,y1,z-0.10),V(x0,y1,z-0.10)],
-           [V(x0,y0,z+0.06),V(x1,y0,z+0.06),V(x1,y1,z+0.06),V(x0,y1,z+0.06)]);
-  }));
+  [Z_P1, Z_PB].forEach(z => BASE_MASS.forEach(r =>
+    boxHole(Mf, r[0]-0.07, r[1]-0.07, r[2]+0.07, r[3]+0.07, z-0.10, z+0.06,
+            z > Z_P1 - 0.5 ? WELL : null)));
   const fac = new THREE.Mesh(Mf.geometry(),
     new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: THREE.DoubleSide }));
   fac.castShadow = fac.receiveShadow = true;
@@ -464,6 +542,28 @@ function buildBase() {
     new THREE.MeshLambertMaterial({ color: 0x7d7568, side: THREE.DoubleSide }));
   wing.castShadow = wing.receiveShadow = true; group.add(wing);
   return group;
+}
+/** tapa horizontal con un hueco rectangular recortado */
+function capHole(M, x0, y0, x1, y1, z, h) {
+  const q = (u0, v0, u1, v1) => { if (u1 - u0 > 1e-6 && v1 - v0 > 1e-6)
+    M.quad(V(u0,v0,z), V(u1,v0,z), V(u1,v1,z), V(u0,v1,z)); };
+  if (!h || h[0] <= x0 || h[2] >= x1 || h[1] <= y0 || h[3] >= y1) { q(x0,y0,x1,y1); return; }
+  q(x0, y0, x1, h[1]); q(x0, h[3], x1, y1);
+  q(x0, h[1], h[0], h[3]); q(h[2], h[1], x1, h[3]);
+}
+/** prisma con las dos tapas recortadas por el mismo hueco (sin cantos) */
+function boxHole(M, x0, y0, x1, y1, z0, z1, h) {
+  if (!h || h[0] <= x0 || h[2] >= x1 || h[1] <= y0 || h[3] >= y1) {
+    M.box([V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
+          [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+    return;
+  }
+  capHole(M, x0, y0, x1, y1, z1, h);
+  capHole(M, x0, y0, x1, y1, z0, h);
+  M.quad(V(x0,y0,z0), V(x1,y0,z0), V(x1,y0,z1), V(x0,y0,z1));
+  M.quad(V(x1,y1,z0), V(x0,y1,z0), V(x0,y1,z1), V(x1,y1,z1));
+  M.quad(V(x1,y0,z0), V(x1,y1,z0), V(x1,y1,z1), V(x1,y0,z1));
+  M.quad(V(x0,y1,z0), V(x0,y0,z0), V(x0,y0,z1), V(x0,y1,z1));
 }
 /** paño rectangular vertical entre dos parámetros y dos cotas */
 function quadStrip(M, P, t0, t1, z0, z1) {

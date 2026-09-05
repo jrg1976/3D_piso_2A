@@ -570,6 +570,42 @@ button{font:inherit;color:inherit;cursor:pointer}
      terreno natural de a07 y a08: la calle queda al Sur y sube hacia el Norte,
      con el semisótano del garaje visto por delante y enterrado por detrás.</p>
 
+  <h3>El rellano, la escalera y el ascensor</h3>
+  <p>Todo lo que queda fuera de la puerta de entrada se modela en <b>gris</b>,
+     como el resto del edificio: no es de la vivienda y por eso queda fuera de
+     las estancias y de las comprobaciones. Está medido sobre a04 y contrastado
+     con a03 y con a01, donde el hueco del ascensor aparece rotulado
+     <i>«Previsión Hueco Ascensor»</i> con la misma huella.</p>
+  <table>
+    <tr><td>Escalera · <span class="mono">S: 7,15 m²</span></td><td class="mono">12,21…14,38 × −1,60…−4,87</td></tr>
+    <tr><td>Espacio común (rellano) · <span class="mono">S: 9,30 m²</span></td><td class="mono">11,34…16,21 × −4,87…−7,35</td></tr>
+    <tr><td>Hueco de ascensor</td><td class="mono">14,40…16,40 × −3,85…−5,90</td></tr>
+    <tr><td>R.I.T.S.</td><td class="mono">13,30…14,38 × −4,87…−5,41</td></tr>
+    <tr><td>Contadores A.F.S. y A.C.S.</td><td class="mono">11,16…12,21 × −4,87…−6,05</td></tr>
+  </table>
+  <p>La escalera es de <b>ida y vuelta</b>, con <b>17 peldaños</b> entre la
+     planta primera (<span class="mono">−2,90</span>) y la bajocubierta: tabica
+     <span class="mono">2,90/17 = 0,171</span> y huella
+     <span class="mono">0,284</span> (2·t + h = 0,63). El tramo Oeste baja del
+     rellano a la meseta con 8 tabicas y el Este sigue hasta la primera planta
+     con 9, de modo que la meseta queda escalonada: por eso en a04 el peldaño 9
+     está una huella más al Norte que el 10. Los dos tramos desembocan en la
+     misma línea <span class="mono">y = −4,87</span>, uno a cada lado del
+     zanquín central (<span class="mono">x = 13,23–13,36</span>).</p>
+  <p>El <b>hueco de la escalera</b> obliga a recortar todas las losas
+     horizontales del zócalo que lo cruzan —macizo, remate, cornisa, imposta de
+     la planta primera y canto de forjado—; los paramentos grises del hueco
+     coinciden justo con el borde del recorte, así que no hay caras superpuestas
+     que produzcan bandas de <i>z-fighting</i>.</p>
+  <p>El ascensor abre <b>al Sur</b>, sobre el rellano, entre
+     <span class="mono">x = 14,70 y 15,75</span>; delante está trazado el
+     círculo de maniobra de <span class="mono">Ø 1,50</span>, y por eso el
+     rellano se prolonga al Este hasta el muro de la vivienda A
+     (<span class="mono">x = 16,30</span>). La fachada Norte de la caja de
+     escalera, con su ventanal (<span class="mono">x = 12,92–13,68</span>), se
+     pinta del color del resto del edificio para que el paño siga siendo
+     continuo desde fuera.</p>
+
   <h3>Comprobación del modelo</h3>
   <p>Antes de empaquetar el visor se pasan dos pruebas sobre la geometría:</p>
   <ul>
@@ -605,5 +641,9 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
+    <li>La vivienda A no se modela: al Este del rellano sólo está el muro
+        medianero. El rectángulo gris de 0,77 × 0,99 que a04 dibuja en el
+        centro del rellano —y que no aparece en a03— tampoco se modela, a
+        falta de saber qué es.</li>
   </ul>
 </section>

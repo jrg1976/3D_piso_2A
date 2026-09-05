@@ -60,6 +60,11 @@ autocontenido (three.js incluido), sin dependencias externas.
   huecos y balcones, las alas de dos plantas de los extremos con su cubierta
   baja, y el terreno a la cota que le corresponde. La vivienda es una tercera
   planta y se ve como tal.
+- **El rellano** al otro lado de la puerta de entrada, en gris: el espacio común
+  (9,30 m²), la caja de escalera con sus 17 peldaños bajando a la planta
+  primera, el hueco del ascensor —abierto por arriba, con su puerta al rellano—,
+  los armarios de contadores y el R.I.T.S., y el muro medianero que separa el
+  rellano de la vivienda A. Aparece también en la vista **Planta**.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -258,6 +263,55 @@ en `−0,56` y `−6,46`— que en `a05` sólo aparece sobre `x < 1,53` y `x > 2
 El **terreno** sigue la línea de terreno natural de `a07` y `a08`: la calle
 queda al Sur y sube hacia el Norte y el Este, de modo que el semisótano del
 garaje (solera +109,13) queda visto por delante y enterrado por detrás.
+
+## El rellano, la escalera y el ascensor
+
+Todo lo que queda fuera de la puerta de entrada se modela en **gris**, igual que
+el resto del edificio: no forma parte de la vivienda y por eso queda fuera de
+`ROOMS`/`WALLS` y de las comprobaciones de `check.js`. Los datos están en
+`CORE` (`model.js`) y la malla la levanta `buildCore()` (`build.js`).
+
+Está medido sobre `a04` y contrastado con `a03`; en `a01` el hueco del ascensor
+aparece rotulado **«Previsión Hueco Ascensor»** con la misma huella (ese plano
+va desplazado ≈ +0,44 m en x respecto del marco de `a04`, desfase que se detecta
+alineando el muro Oeste de la caja de escalera y el propio hueco).
+
+| Recinto | Huella |
+|---|---|
+| Escalera · `S: 7,15 m²` | `12,21 … 14,38` × `−1,60 … −4,87` (7,11 medidos) |
+| Espacio común, el rellano · `S: 9,30 m²` | `11,34 … 16,21` × `−4,87 … −7,35` |
+| Hueco de ascensor | `14,40 … 16,40` × `−3,85 … −5,90`, muros de 0,20 |
+| Puerta del ascensor (al Sur) | `x = 14,70 … 15,75` |
+| R.I.T.S. | `13,30 … 14,38` × `−4,87 … −5,41` |
+| Contadores A.F.S. y A.C.S. | `11,16 … 12,21` × `−4,87 … −6,05` |
+| Ventanal de la escalera | `x = 12,92 … 13,68`, `z = 0,90 … 2,20` |
+
+La escalera es de **ida y vuelta**, con **17 peldaños** entre la planta primera
+(`−2,90`) y la bajocubierta: tabica `2,90/17 = 0,1706` y huella `0,2838`
+(2·t + h = 0,63). El tramo Oeste baja del rellano a la meseta con 8 tabicas y el
+Este sigue hasta la primera planta con 9; al ser distintos, la **meseta queda
+escalonada** —por eso en `a04` el peldaño 9 está una huella más al Norte que el
+10— y los dos tramos desembocan en la misma línea `y = −4,87`, uno a cada lado
+del zanquín central (`x = 13,23 … 13,36`). El arranque del tramo Este queda
+protegido por el propio armario del R.I.T.S., que cierra ese borde del rellano.
+
+El **hueco de la escalera** baja 2,90 m, así que atraviesa todas las losas
+horizontales del zócalo: macizo retranqueado, remate, cornisa, imposta de la
+planta primera y canto de forjado. `capHole()` y `boxHole()` las recortan con el
+mismo rectángulo, y **sin cerrar los cantos del hueco**: los paramentos grises
+que pone `buildCore()` coinciden justo con el borde del recorte, de modo que no
+quedan caras superpuestas que produzcan bandas de *z-fighting*.
+
+El ascensor abre **al Sur**, sobre el rellano; delante está trazado el círculo
+de maniobra de `Ø 1,50` y por eso el rellano se prolonga al Este hasta el muro
+de la vivienda A (`x = 16,30`). La caja se deja **abierta por arriba** para poder
+mirar el hueco desde la maqueta. La fachada Norte de la caja de escalera se
+pinta del color del resto del edificio para que el paño siga siendo continuo
+desde fuera; el resto del núcleo va en gris.
+
+No se modela la vivienda A: al Este del rellano sólo está el muro medianero.
+Tampoco el rectángulo gris de 0,77 × 0,99 que `a04` dibuja en el centro del
+rellano y que no aparece en `a03`, a falta de saber qué es.
 
 ## Comprobación del modelo
 

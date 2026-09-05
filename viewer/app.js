@@ -56,6 +56,7 @@ function init() {
   fill.position.set(-14, 10, -14); scene.add(fill);
 
   scene.add(buildBase());
+  scene.add(buildCore());
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -816,6 +817,56 @@ function wallPolys() {
 }
 let PLAN_POLYS = null;
 
+/* --- núcleo común en la vista de planta (gris, no editable) --- */
+function drawCore(g) {
+  const R = (r, f) => { g.fillStyle = f;
+    g.fillRect(pX(r[0]), pY(r[3]), (r[2]-r[0]) * plan.s, (r[3]-r[1]) * plan.s); };
+  CORE.floor.forEach(r => R(r, 'rgba(130,128,124,0.20)'));
+  R([CORE.stair.x0, CORE.stair.y0, CORE.stair.x1, CORE.stair.y1], 'rgba(130,128,124,0.13)');
+  // peldaños
+  const K = CORE.stair, hu = CORE_TREAD;
+  g.strokeStyle = 'rgba(90,88,84,0.75)'; g.lineWidth = 1;
+  g.beginPath();
+  for (let k = 0; k <= K.nWt; k++) {
+    const y = K.y0 + k * hu;
+    g.moveTo(pX(K.x0), pY(y)); g.lineTo(pX(K.xm0), pY(y));
+  }
+  for (let j = 0; j <= K.nEt; j++) {
+    const y = K.yLand2 - j * hu;
+    g.moveTo(pX(K.xm1), pY(y)); g.lineTo(pX(K.x1), pY(y));
+  }
+  g.stroke();
+  // fábrica del núcleo
+  g.fillStyle = 'rgba(90,88,84,0.85)';
+  CORE.walls.concat(CORE.facade).forEach(w => {
+    const [ax, ay] = w.a, [bx, by] = w.b, L = Math.hypot(bx-ax, by-ay);
+    const dx = (bx-ax)/L, dy = (by-ay)/L, nx = -dy*w.t/2, ny = dx*w.t/2;
+    g.beginPath();
+    g.moveTo(pX(ax+nx), pY(ay+ny)); g.lineTo(pX(bx+nx), pY(by+ny));
+    g.lineTo(pX(bx-nx), pY(by-ny)); g.lineTo(pX(ax-nx), pY(ay-ny));
+    g.closePath(); g.fill();
+  });
+  R([K.xm0, K.y0, K.xm1, K.yLand], 'rgba(90,88,84,0.85)');
+  R(CORE.serv, 'rgba(90,88,84,0.55)');
+  R(CORE.rits, 'rgba(90,88,84,0.55)');
+  // caja del ascensor
+  const L2 = CORE.lift, t = L2.t;
+  g.fillStyle = 'rgba(90,88,84,0.85)';
+  R([L2.x0, L2.y1-t, L2.x1, L2.y1], 'rgba(90,88,84,0.85)');
+  R([L2.x0, L2.y0, L2.x0+t, L2.y1-t], 'rgba(90,88,84,0.85)');
+  R([L2.x1-t, L2.y0, L2.x1, L2.y1-t], 'rgba(90,88,84,0.85)');
+  R([L2.x0+t, L2.y0, L2.door[0], L2.y0+t], 'rgba(90,88,84,0.85)');
+  R([L2.door[1], L2.y0, L2.x1-t, L2.y0+t], 'rgba(90,88,84,0.85)');
+  R([L2.x0+t, L2.y0+t, L2.x1-t, L2.y1-t], 'rgba(130,128,124,0.28)');
+  if (plan.s > 26) {
+    g.fillStyle = 'rgba(90,88,84,0.9)'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '600 11px ui-sans-serif,system-ui,sans-serif';
+    g.fillText('Ascensor', pX((L2.x0+L2.x1)/2), pY((L2.y0+L2.y1)/2));
+    g.fillText('Escalera', pX((K.x0+K.x1)/2), pY(K.y1 - 0.55));
+    g.fillText('Rellano', pX(13.2), pY(-6.6));
+  }
+}
+
 function drawPlan() {
   const c = planCtx.canvas, g = planCtx;
   const W = c.clientWidth, H = c.clientHeight, dpr = Math.min(devicePixelRatio, 2);
@@ -856,6 +907,9 @@ function drawPlan() {
           g.fillRect(pX(x), pY(y + st), st * plan.s + 1, st * plan.s + 1);
     }));
   }
+
+  // --- núcleo común (rellano, escalera y ascensor): siempre en gris
+  drawCore(g);
 
   // --- cumbreras y peldaños
   g.setLineDash([9, 6]); g.lineWidth = 1.2; g.strokeStyle = 'rgba(128,128,128,0.75)';
