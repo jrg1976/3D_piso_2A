@@ -2,7 +2,8 @@
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
-let core = null, altillo = null, altilloOn = false, onAltillo = false;
+let core = null, altillo = null, altilloOn = false, onAltillo = false, soloAlt = false;
+let zoneEdges = null;
 let pladurOn = true;
 let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
 let mode = 'walk';
@@ -206,6 +207,8 @@ function bindControls() {
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
   document.getElementById('t-altillo').onclick = e =>
     setAltillo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
+  document.getElementById('t-solo').onclick = e =>
+    setSolo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -330,8 +333,54 @@ function walkOk(x, y) {
   if (onAltillo) return inAltillo(x, y) && !inAltilloHole(x, y);
   return allowed(x, y);
 }
+/* --- volumetría aislada: se recorta la escena a una caja alrededor del
+       altillo, de modo que sólo queda su volumen con los muros y el faldón
+       que lo delimitan, seccionados.  --------------------------------- */
+function altilloBox() {
+  const A = ALTILLO;
+  let b = { x0: 1e9, y0: 1e9, z0: A.z - A.t, x1: -1e9, y1: -1e9, z1: -1e9 };
+  A.deck.forEach(r => {
+    b.x0 = Math.min(b.x0, r[0]); b.x1 = Math.max(b.x1, r[2]);
+    b.y0 = Math.min(b.y0, r[1]); b.y1 = Math.max(b.y1, r[3]);
+    b.z1 = Math.max(b.z1, roofH(r[0], r[1]), roofH(r[2], r[3]),
+                    roofH(r[0], r[3]), roofH(r[2], r[1]));
+  });
+  return b;
+}
+function altClip() {
+  const b = altilloBox(), p = 0.07, V3 = THREE.Vector3;
+  return [
+    new THREE.Plane(new V3( 1, 0, 0), -(b.x0 - p)),
+    new THREE.Plane(new V3(-1, 0, 0),   b.x1 + p),
+    new THREE.Plane(new V3( 0, 0, 1),   b.y1 + p),
+    new THREE.Plane(new V3( 0, 0,-1), -(b.y0 - p)),
+    new THREE.Plane(new V3( 0, 1, 0), -(b.z0 - 0.32)),
+    new THREE.Plane(new V3( 0,-1, 0),   b.z1 + 0.32)
+  ];
+}
+function setSolo(v) {
+  soloAlt = v;
+  const btn = document.getElementById('t-solo');
+  if (btn) btn.setAttribute('aria-pressed', v ? 'true' : 'false');
+  if (v && !altilloOn) setAltillo(true);
+  renderer.clippingPlanes = v ? altClip() : [];
+  scene.background = new THREE.Color(v ? 0xcdd2d6 : 0x8fb6d6);
+  /* muros y faldón en translúcido: así el volumen se lee desde cualquier
+     lado sin que un tabique tape la mitad */
+  [apt.walls.material, apt.ceil.material].forEach(m => {
+    m.transparent = v; m.opacity = v ? 0.26 : 1; m.depthWrite = !v; m.needsUpdate = true;
+  });
+  if (v) {
+    if (mode !== 'orbit') setMode('orbit');
+    const b = altilloBox(), az = -0.62, el = 0.42;
+    orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
+              tz: (b.z0 + b.z1) / 2, dist: fitDist(b, az, el, 1.10) });
+  }
+  plan.dirty = true;
+}
 function setAltillo(v) {
   altilloOn = v;
+  if (!v && soloAlt) setSolo(false);
   altillo.group.visible = v;
   altillo.patch.visible = !v;
   if (apt) apt.cutWalls.visible = !v;
@@ -428,6 +477,7 @@ function setPlafond(v) {
     falso techo abierta se fuerzan visibles, que si no se editaría a ciegas */
 function syncZoneVis() {
   const on = pladurOn || plafonding;
+  if (zoneEdges) zoneEdges.visible = plafonding;
   if (core && core.plafond) core.plafond.visible = on;
   if (!zoneGroup) return;
   zoneGroup.visible = on;
@@ -589,8 +639,13 @@ function drawZones() {
       new THREE.MeshLambertMaterial({ color: 0xf0e6d2, side: THREE.DoubleSide }));
     m.castShadow = m.receiveShadow = true; zoneGroup.add(m);
   }
-  if (!Me.empty) zoneGroup.add(new THREE.Mesh(Me.geometry(),
-    new THREE.MeshLambertMaterial({ color: 0xd8a25c, side: THREE.DoubleSide })));
+  if (!Me.empty) {
+    /* el canto ámbar es una ayuda para editar: en la maqueta sólo estorba,
+       así que sale únicamente con la herramienta de falso techo abierta */
+    const e = new THREE.Mesh(Me.geometry(),
+      new THREE.MeshLambertMaterial({ color: 0xd8a25c, side: THREE.DoubleSide }));
+    e.visible = plafonding; zoneEdges = e; zoneGroup.add(e);
+  } else zoneEdges = null;
   if (pending) {
     const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 10),
                                new THREE.MeshBasicMaterial({ color: 0xd08a2a, depthTest: false }));
@@ -984,6 +1039,20 @@ function drawAltillo(g) {
   g.beginPath();
   A.rail.forEach(([x0,y0,x1,y1]) => { g.moveTo(pX(x0), pY(y0)); g.lineTo(pX(x1), pY(y1)); });
   g.stroke();
+  // mobiliario
+  const FL = { bed:'Cama 120×190', closet:'Armario', desk:'Escritorio',
+               chair:'Silla', shelf:'Balda', head:'' };
+  A.furn.forEach(([x0,y0,x1,y1,hh,tipo]) => {
+    const x = pX(x0), y = pY(y1), w = (x1-x0) * plan.s, h = (y1-y0) * plan.s;
+    g.fillStyle = tipo === 'head' ? 'rgba(90,74,52,0.55)' : 'rgba(120,98,68,0.38)';
+    g.fillRect(x, y, w, h);
+    g.strokeStyle = 'rgba(70,55,35,0.85)'; g.lineWidth = 1.2; g.strokeRect(x, y, w, h);
+    if (plan.s > 40 && FL[tipo] && w > 40) {
+      g.fillStyle = 'rgba(60,46,28,0.95)'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '600 9px ui-sans-serif,system-ui,sans-serif';
+      g.fillText(FL[tipo], x + w/2, y + h/2);
+    }
+  });
   // Velux propuesto
   const v = VELUX.find(k => k.id === A.velux);
   const vx = pX(v.x0), vy = pY(v.y1), vw = (v.x1-v.x0) * plan.s, vh = (v.y1-v.y0) * plan.s;
@@ -995,9 +1064,9 @@ function drawAltillo(g) {
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = 'rgba(150,90,10,0.95)';
     g.font = '700 12px ui-sans-serif,system-ui,sans-serif';
-    g.fillText('ALTILLO  +2,45', pX(17.9), pY(-8.98));
+    g.fillText('ALTILLO  +2,45', pX(16.62), pY(-8.72));
     g.font = '600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
-    g.fillText('9,89 m² con h ≥ 1,50', pX(17.9), pY(-9.18));
+    g.fillText('9,89 m² con h ≥ 1,50', pX(16.62), pY(-8.92));
     g.fillStyle = 'rgba(40,90,140,0.95)';
     g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.20));

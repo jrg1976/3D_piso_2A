@@ -293,6 +293,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
     <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
     <button class="btn" id="t-altillo" type="button" aria-pressed="false">Altillo</button>
+    <button class="btn" id="t-solo" type="button" aria-pressed="false">Aislar</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -666,6 +667,29 @@ button{font:inherit;color:inherit;cursor:pointer}
      cabe: al Norte la medianera está a 0,83 m de la cumbrera y al Sur sólo hay 1,08.
      Queda a 1,57–2,21 m sobre el tablero, justo donde el faldón baja de 1,50, que es
      lo que hace utilizable esa franja.</p>
+  <p><b>Amueblado.</b> El faldón manda: lo que necesita altura va al eje de la
+     cumbrera y lo que se usa tumbado o sentado, bajo el alero.</p>
+  <table>
+    <tr><td>Cama 1,20 × 1,90 · E–O bajo el alero Norte y bajo la Velux</td><td class="mono">1,48 → 2,26 m</td></tr>
+    <tr><td>Armario 1,35 × 0,60 × 1,75 · muro Sur del brazo Oeste</td><td class="mono">1,85 → 2,24 m</td></tr>
+    <tr><td>Escritorio 1,20 × 0,55 · muro Sur del brazo central</td><td class="mono">1,85 → 2,21 m</td></tr>
+    <tr><td>Silla · frente al escritorio, sobre la cumbrera</td><td class="mono">2,24 → 2,53 m</td></tr>
+    <tr><td>Balda 0,40 × 0,35 × 0,45 · a la cabecera de la cama</td><td class="mono">2,26 → 2,49 m</td></tr>
+  </table>
+  <p>La cama va <b>tumbada de Este a Oeste</b>, no de Norte a Sur: el brazo del baño
+     sólo tiene <span class="mono">1,72 m</span> de fondo y un colchón de 1,90 no
+     cabe sin invadir el paso. Puesta así entra entera, con el respaldo contra el
+     alero (1,48 m, suficiente para incorporarse) y 2,26 m en el borde por el que
+     se entra. La Velux le cae justo encima.</p>
+  <p><b>Sí cabe armario</b>, pero de altillo: 1,35 × 0,60 × <b>1,75</b> de alto
+     —1,4 m³, unos 1,35 m de barra—, contra el muro Sur del brazo Oeste, que es
+     donde el faldón deja 1,85 m. Uno de 2,00 sólo entraría contra el muro Norte
+     del brazo Oeste, y ahí taparía el único paso al brazo del baño.</p>
+  <p><b>Volumetría aislada.</b> El botón <b>Aislar</b> recorta la escena a una caja
+     alrededor del altillo y pasa muros y faldón a translúcido: queda sólo el
+     volumen, con su suelo, su envolvente seccionada y el mobiliario. Es la forma
+     de mirarlo; en <i>Recorrer</i>, dentro de 2,13 m de media y con los tabiques
+     de la vivienda alrededor, no se entiende.</p>
   <p><b>A verificar antes de nada.</b> Altura libre mínima admitida debajo y cómputo
      de la superficie del altillo (normativa de habitabilidad de Aragón y ordenanza
      de Benasque: si computa como superficie habitable puede consumir
@@ -710,8 +734,12 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>El botón <b>Altillo</b> enciende la propuesta; la vista <i>Altillo</i> de la
-        lista de estancias sube la cámara al tablero y se anda por él.</li>
+    <li>El botón <b>Altillo</b> enciende la propuesta y <b>Aislar</b> la deja sola;
+        la vista <i>Altillo</i> de la lista de estancias sube la cámara al tablero
+        y se anda por él.</li>
+    <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
+        sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta
+        estorbaba.</li>
     <li>La vivienda A no se modela: al Este del rellano sólo está el muro
         medianero.</li>
   </ul>

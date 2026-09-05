@@ -508,6 +508,25 @@ function buildAltillo() {
   const Mc = new Mesher();
   WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
 
+  // --- mobiliario, apoyado en el tablero
+  const Mu = new Mesher();
+  A.furn.forEach(([x0, y0, x1, y1, hh, tipo]) => {
+    if (tipo === 'chair') {                                 // asiento + respaldo
+      bx(Mu, x0, y0, x1, y1, A.z + 0.40, A.z + 0.45);
+      bx(Mu, x0, y1 - 0.05, x1, y1, A.z + 0.45, A.z + hh);
+      [[x0,y0],[x1-0.05,y0],[x0,y1-0.05],[x1-0.05,y1-0.05]].forEach(([px,py]) =>
+        bx(Mu, px, py, px+0.05, py+0.05, A.z, A.z + 0.40));
+      return;
+    }
+    if (tipo === 'desk') {                                  // tablero + patas
+      bx(Mu, x0, y0, x1, y1, A.z + hh - 0.04, A.z + hh);
+      [[x0,y0],[x1-0.06,y0],[x0,y1-0.06],[x1-0.06,y1-0.06]].forEach(([px,py]) =>
+        bx(Mu, px, py, px+0.06, py+0.06, A.z, A.z + hh - 0.04));
+      return;
+    }
+    bx(Mu, x0, y0, x1, y1, A.z + 0.02, A.z + hh);
+  });
+
   // --- Velux nuevo sobre el baño 2
   const v = VELUX.find(k => k.id === A.velux);
   veluxPane(Mg, v);
@@ -519,6 +538,7 @@ function buildAltillo() {
   add(Md, new THREE.MeshLambertMaterial({ color: 0xc9a97e, side: S }), true);
   add(Mr, new THREE.MeshLambertMaterial({ color: 0x6e6a63, side: S }), true);
   add(Ms, new THREE.MeshLambertMaterial({ color: 0x8d7660, side: S }), true);
+  add(Mu, new THREE.MeshLambertMaterial({ color: 0x9c8468, side: S }), true);
   add(Mg, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
     transparent: true, opacity: 0.22, depthWrite: false }), false);
 

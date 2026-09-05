@@ -293,6 +293,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
     <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
     <button class="btn" id="t-altillo" type="button" aria-pressed="false">Altillo</button>
+    <button class="btn" id="t-solo" type="button" aria-pressed="false">Aislar</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -666,6 +667,29 @@ button{font:inherit;color:inherit;cursor:pointer}
      cabe: al Norte la medianera está a 0,83 m de la cumbrera y al Sur sólo hay 1,08.
      Queda a 1,57–2,21 m sobre el tablero, justo donde el faldón baja de 1,50, que es
      lo que hace utilizable esa franja.</p>
+  <p><b>Amueblado.</b> El faldón manda: lo que necesita altura va al eje de la
+     cumbrera y lo que se usa tumbado o sentado, bajo el alero.</p>
+  <table>
+    <tr><td>Cama 1,20 × 1,90 · E–O bajo el alero Norte y bajo la Velux</td><td class="mono">1,48 → 2,26 m</td></tr>
+    <tr><td>Armario 1,35 × 0,60 × 1,75 · muro Sur del brazo Oeste</td><td class="mono">1,85 → 2,24 m</td></tr>
+    <tr><td>Escritorio 1,20 × 0,55 · muro Sur del brazo central</td><td class="mono">1,85 → 2,21 m</td></tr>
+    <tr><td>Silla · frente al escritorio, sobre la cumbrera</td><td class="mono">2,24 → 2,53 m</td></tr>
+    <tr><td>Balda 0,40 × 0,35 × 0,45 · a la cabecera de la cama</td><td class="mono">2,26 → 2,49 m</td></tr>
+  </table>
+  <p>La cama va <b>tumbada de Este a Oeste</b>, no de Norte a Sur: el brazo del baño
+     sólo tiene <span class="mono">1,72 m</span> de fondo y un colchón de 1,90 no
+     cabe sin invadir el paso. Puesta así entra entera, con el respaldo contra el
+     alero (1,48 m, suficiente para incorporarse) y 2,26 m en el borde por el que
+     se entra. La Velux le cae justo encima.</p>
+  <p><b>Sí cabe armario</b>, pero de altillo: 1,35 × 0,60 × <b>1,75</b> de alto
+     —1,4 m³, unos 1,35 m de barra—, contra el muro Sur del brazo Oeste, que es
+     donde el faldón deja 1,85 m. Uno de 2,00 sólo entraría contra el muro Norte
+     del brazo Oeste, y ahí taparía el único paso al brazo del baño.</p>
+  <p><b>Volumetría aislada.</b> El botón <b>Aislar</b> recorta la escena a una caja
+     alrededor del altillo y pasa muros y faldón a translúcido: queda sólo el
+     volumen, con su suelo, su envolvente seccionada y el mobiliario. Es la forma
+     de mirarlo; en <i>Recorrer</i>, dentro de 2,13 m de media y con los tabiques
+     de la vivienda alrededor, no se entiende.</p>
   <p><b>A verificar antes de nada.</b> Altura libre mínima admitida debajo y cómputo
      de la superficie del altillo (normativa de habitabilidad de Aragón y ordenanza
      de Benasque: si computa como superficie habitable puede consumir
@@ -710,8 +734,12 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>El botón <b>Altillo</b> enciende la propuesta; la vista <i>Altillo</i> de la
-        lista de estancias sube la cámara al tablero y se anda por él.</li>
+    <li>El botón <b>Altillo</b> enciende la propuesta y <b>Aislar</b> la deja sola;
+        la vista <i>Altillo</i> de la lista de estancias sube la cámara al tablero
+        y se anda por él.</li>
+    <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
+        sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta
+        estorbaba.</li>
     <li>La vivienda A no se modela: al Este del rellano sólo está el muro
         medianero.</li>
   </ul>
@@ -885,7 +913,8 @@ const WALLS = [
   { a:[15.97,-7.44], b:[19.06,-7.44], t:W_INT },                   // testero Norte del distribuidor
   // baño 2 (medido sobre a04: 19,15–21,40 × −6,54/−8,26 interiores)
   { a:[19.06,-6.445], b:[21.475,-6.445], t:0.19 },
-  { a:[19.06,-6.445], b:[19.06,-8.38], t:0.18, cut:true },
+  { a:[19.06,-6.445], b:[19.06,-7.44], t:0.18 },                   // medianera: NO se toca
+  { a:[19.06,-7.44], b:[19.06,-8.38], t:0.18, cut:true },          // tabique baño 2 / distribuidor
   { a:[21.475,-6.445], b:[21.475,-8.32], t:0.15 },
   { a:[19.06,-8.32], b:[20.70,-8.32], t:0.12, cut:true, holes:[[0.38,1.08,0.00,2.10,'door']] },  // puerta baño 2
   { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38, cut:true },          // machón de la jamba
@@ -1186,7 +1215,25 @@ const ALTILLO = {
   /* escalera de gato bajo el hueco, subiendo hacia el Este */
   stair: { x0: 16.02, x1: 17.62, y0: -8.22, y1: -7.56, n: 11 },
   velux: 'v-alt',
-  bands: [1.20, 1.50, 1.90, 2.20]
+  bands: [1.20, 1.50, 1.90, 2.20],
+  /* mobiliario que cabe, colocado según la altura libre de cada franja.
+     [x0, y0, x1, y1, alto, tipo]  ·  alto medido desde el tablero        */
+  furn: [
+    // cama de 1,20 × 1,90 tumbada E–O contra el alero Norte, que es la
+    // franja baja: bajo el Velux y con 2,22 m en el borde por el que se
+    // entra.  N–S no cabe: el brazo sólo tiene 1,72 m de fondo.
+    [19.45, -7.82, 21.35, -6.62, 0.50, 'bed'],
+    [19.45, -6.82, 21.35, -6.62, 0.85, 'head'],
+    // armario de altillo, 1,35 × 0,60, contra el muro Sur del brazo Oeste
+    // (allí el faldón deja 1,85 m: entra un cuerpo de 1,75)
+    [17.30, -9.35, 18.65, -8.75, 1.75, 'closet'],
+    // escritorio y silla en el brazo central, el punto más alto (2,45 m
+    // sobre la silla) y fuera del paso
+    [19.35, -9.35, 20.55, -8.80, 0.74, 'desk'],
+    [19.72, -8.75, 20.17, -8.30, 0.90, 'chair'],
+    // balda baja bajo el alero, al pie de la cama
+    [20.95, -8.17, 21.35, -7.82, 0.45, 'shelf']
+  ]
 };
 const inAltillo = (x, y) =>
   ALTILLO.deck.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);
@@ -1722,6 +1769,25 @@ function buildAltillo() {
   const Mc = new Mesher();
   WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
 
+  // --- mobiliario, apoyado en el tablero
+  const Mu = new Mesher();
+  A.furn.forEach(([x0, y0, x1, y1, hh, tipo]) => {
+    if (tipo === 'chair') {                                 // asiento + respaldo
+      bx(Mu, x0, y0, x1, y1, A.z + 0.40, A.z + 0.45);
+      bx(Mu, x0, y1 - 0.05, x1, y1, A.z + 0.45, A.z + hh);
+      [[x0,y0],[x1-0.05,y0],[x0,y1-0.05],[x1-0.05,y1-0.05]].forEach(([px,py]) =>
+        bx(Mu, px, py, px+0.05, py+0.05, A.z, A.z + 0.40));
+      return;
+    }
+    if (tipo === 'desk') {                                  // tablero + patas
+      bx(Mu, x0, y0, x1, y1, A.z + hh - 0.04, A.z + hh);
+      [[x0,y0],[x1-0.06,y0],[x0,y1-0.06],[x1-0.06,y1-0.06]].forEach(([px,py]) =>
+        bx(Mu, px, py, px+0.06, py+0.06, A.z, A.z + hh - 0.04));
+      return;
+    }
+    bx(Mu, x0, y0, x1, y1, A.z + 0.02, A.z + hh);
+  });
+
   // --- Velux nuevo sobre el baño 2
   const v = VELUX.find(k => k.id === A.velux);
   veluxPane(Mg, v);
@@ -1733,6 +1799,7 @@ function buildAltillo() {
   add(Md, new THREE.MeshLambertMaterial({ color: 0xc9a97e, side: S }), true);
   add(Mr, new THREE.MeshLambertMaterial({ color: 0x6e6a63, side: S }), true);
   add(Ms, new THREE.MeshLambertMaterial({ color: 0x8d7660, side: S }), true);
+  add(Mu, new THREE.MeshLambertMaterial({ color: 0x9c8468, side: S }), true);
   add(Mg, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
     transparent: true, opacity: 0.22, depthWrite: false }), false);
 
@@ -1984,7 +2051,8 @@ function roundRect(g, x, y, w, h, r) {
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
-let core = null, altillo = null, altilloOn = false, onAltillo = false;
+let core = null, altillo = null, altilloOn = false, onAltillo = false, soloAlt = false;
+let zoneEdges = null;
 let pladurOn = true;
 let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
 let mode = 'walk';
@@ -2188,6 +2256,8 @@ function bindControls() {
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
   document.getElementById('t-altillo').onclick = e =>
     setAltillo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
+  document.getElementById('t-solo').onclick = e =>
+    setSolo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -2312,8 +2382,54 @@ function walkOk(x, y) {
   if (onAltillo) return inAltillo(x, y) && !inAltilloHole(x, y);
   return allowed(x, y);
 }
+/* --- volumetría aislada: se recorta la escena a una caja alrededor del
+       altillo, de modo que sólo queda su volumen con los muros y el faldón
+       que lo delimitan, seccionados.  --------------------------------- */
+function altilloBox() {
+  const A = ALTILLO;
+  let b = { x0: 1e9, y0: 1e9, z0: A.z - A.t, x1: -1e9, y1: -1e9, z1: -1e9 };
+  A.deck.forEach(r => {
+    b.x0 = Math.min(b.x0, r[0]); b.x1 = Math.max(b.x1, r[2]);
+    b.y0 = Math.min(b.y0, r[1]); b.y1 = Math.max(b.y1, r[3]);
+    b.z1 = Math.max(b.z1, roofH(r[0], r[1]), roofH(r[2], r[3]),
+                    roofH(r[0], r[3]), roofH(r[2], r[1]));
+  });
+  return b;
+}
+function altClip() {
+  const b = altilloBox(), p = 0.07, V3 = THREE.Vector3;
+  return [
+    new THREE.Plane(new V3( 1, 0, 0), -(b.x0 - p)),
+    new THREE.Plane(new V3(-1, 0, 0),   b.x1 + p),
+    new THREE.Plane(new V3( 0, 0, 1),   b.y1 + p),
+    new THREE.Plane(new V3( 0, 0,-1), -(b.y0 - p)),
+    new THREE.Plane(new V3( 0, 1, 0), -(b.z0 - 0.32)),
+    new THREE.Plane(new V3( 0,-1, 0),   b.z1 + 0.32)
+  ];
+}
+function setSolo(v) {
+  soloAlt = v;
+  const btn = document.getElementById('t-solo');
+  if (btn) btn.setAttribute('aria-pressed', v ? 'true' : 'false');
+  if (v && !altilloOn) setAltillo(true);
+  renderer.clippingPlanes = v ? altClip() : [];
+  scene.background = new THREE.Color(v ? 0xcdd2d6 : 0x8fb6d6);
+  /* muros y faldón en translúcido: así el volumen se lee desde cualquier
+     lado sin que un tabique tape la mitad */
+  [apt.walls.material, apt.ceil.material].forEach(m => {
+    m.transparent = v; m.opacity = v ? 0.26 : 1; m.depthWrite = !v; m.needsUpdate = true;
+  });
+  if (v) {
+    if (mode !== 'orbit') setMode('orbit');
+    const b = altilloBox(), az = -0.62, el = 0.42;
+    orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
+              tz: (b.z0 + b.z1) / 2, dist: fitDist(b, az, el, 1.10) });
+  }
+  plan.dirty = true;
+}
 function setAltillo(v) {
   altilloOn = v;
+  if (!v && soloAlt) setSolo(false);
   altillo.group.visible = v;
   altillo.patch.visible = !v;
   if (apt) apt.cutWalls.visible = !v;
@@ -2410,6 +2526,7 @@ function setPlafond(v) {
     falso techo abierta se fuerzan visibles, que si no se editaría a ciegas */
 function syncZoneVis() {
   const on = pladurOn || plafonding;
+  if (zoneEdges) zoneEdges.visible = plafonding;
   if (core && core.plafond) core.plafond.visible = on;
   if (!zoneGroup) return;
   zoneGroup.visible = on;
@@ -2571,8 +2688,13 @@ function drawZones() {
       new THREE.MeshLambertMaterial({ color: 0xf0e6d2, side: THREE.DoubleSide }));
     m.castShadow = m.receiveShadow = true; zoneGroup.add(m);
   }
-  if (!Me.empty) zoneGroup.add(new THREE.Mesh(Me.geometry(),
-    new THREE.MeshLambertMaterial({ color: 0xd8a25c, side: THREE.DoubleSide })));
+  if (!Me.empty) {
+    /* el canto ámbar es una ayuda para editar: en la maqueta sólo estorba,
+       así que sale únicamente con la herramienta de falso techo abierta */
+    const e = new THREE.Mesh(Me.geometry(),
+      new THREE.MeshLambertMaterial({ color: 0xd8a25c, side: THREE.DoubleSide }));
+    e.visible = plafonding; zoneEdges = e; zoneGroup.add(e);
+  } else zoneEdges = null;
   if (pending) {
     const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 10),
                                new THREE.MeshBasicMaterial({ color: 0xd08a2a, depthTest: false }));
@@ -2966,6 +3088,20 @@ function drawAltillo(g) {
   g.beginPath();
   A.rail.forEach(([x0,y0,x1,y1]) => { g.moveTo(pX(x0), pY(y0)); g.lineTo(pX(x1), pY(y1)); });
   g.stroke();
+  // mobiliario
+  const FL = { bed:'Cama 120×190', closet:'Armario', desk:'Escritorio',
+               chair:'Silla', shelf:'Balda', head:'' };
+  A.furn.forEach(([x0,y0,x1,y1,hh,tipo]) => {
+    const x = pX(x0), y = pY(y1), w = (x1-x0) * plan.s, h = (y1-y0) * plan.s;
+    g.fillStyle = tipo === 'head' ? 'rgba(90,74,52,0.55)' : 'rgba(120,98,68,0.38)';
+    g.fillRect(x, y, w, h);
+    g.strokeStyle = 'rgba(70,55,35,0.85)'; g.lineWidth = 1.2; g.strokeRect(x, y, w, h);
+    if (plan.s > 40 && FL[tipo] && w > 40) {
+      g.fillStyle = 'rgba(60,46,28,0.95)'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '600 9px ui-sans-serif,system-ui,sans-serif';
+      g.fillText(FL[tipo], x + w/2, y + h/2);
+    }
+  });
   // Velux propuesto
   const v = VELUX.find(k => k.id === A.velux);
   const vx = pX(v.x0), vy = pY(v.y1), vw = (v.x1-v.x0) * plan.s, vh = (v.y1-v.y0) * plan.s;
@@ -2977,9 +3113,9 @@ function drawAltillo(g) {
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = 'rgba(150,90,10,0.95)';
     g.font = '700 12px ui-sans-serif,system-ui,sans-serif';
-    g.fillText('ALTILLO  +2,45', pX(17.9), pY(-8.98));
+    g.fillText('ALTILLO  +2,45', pX(16.62), pY(-8.72));
     g.font = '600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
-    g.fillText('9,89 m² con h ≥ 1,50', pX(17.9), pY(-9.18));
+    g.fillText('9,89 m² con h ≥ 1,50', pX(16.62), pY(-8.92));
     g.fillStyle = 'rgba(40,90,140,0.95)';
     g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.20));

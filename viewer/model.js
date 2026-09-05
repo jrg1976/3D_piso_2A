@@ -155,7 +155,8 @@ const WALLS = [
   { a:[15.97,-7.44], b:[19.06,-7.44], t:W_INT },                   // testero Norte del distribuidor
   // baño 2 (medido sobre a04: 19,15–21,40 × −6,54/−8,26 interiores)
   { a:[19.06,-6.445], b:[21.475,-6.445], t:0.19 },
-  { a:[19.06,-6.445], b:[19.06,-8.38], t:0.18, cut:true },
+  { a:[19.06,-6.445], b:[19.06,-7.44], t:0.18 },                   // medianera: NO se toca
+  { a:[19.06,-7.44], b:[19.06,-8.38], t:0.18, cut:true },          // tabique baño 2 / distribuidor
   { a:[21.475,-6.445], b:[21.475,-8.32], t:0.15 },
   { a:[19.06,-8.32], b:[20.70,-8.32], t:0.12, cut:true, holes:[[0.38,1.08,0.00,2.10,'door']] },  // puerta baño 2
   { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38, cut:true },          // machón de la jamba
@@ -456,7 +457,25 @@ const ALTILLO = {
   /* escalera de gato bajo el hueco, subiendo hacia el Este */
   stair: { x0: 16.02, x1: 17.62, y0: -8.22, y1: -7.56, n: 11 },
   velux: 'v-alt',
-  bands: [1.20, 1.50, 1.90, 2.20]
+  bands: [1.20, 1.50, 1.90, 2.20],
+  /* mobiliario que cabe, colocado según la altura libre de cada franja.
+     [x0, y0, x1, y1, alto, tipo]  ·  alto medido desde el tablero        */
+  furn: [
+    // cama de 1,20 × 1,90 tumbada E–O contra el alero Norte, que es la
+    // franja baja: bajo el Velux y con 2,22 m en el borde por el que se
+    // entra.  N–S no cabe: el brazo sólo tiene 1,72 m de fondo.
+    [19.45, -7.82, 21.35, -6.62, 0.50, 'bed'],
+    [19.45, -6.82, 21.35, -6.62, 0.85, 'head'],
+    // armario de altillo, 1,35 × 0,60, contra el muro Sur del brazo Oeste
+    // (allí el faldón deja 1,85 m: entra un cuerpo de 1,75)
+    [17.30, -9.35, 18.65, -8.75, 1.75, 'closet'],
+    // escritorio y silla en el brazo central, el punto más alto (2,45 m
+    // sobre la silla) y fuera del paso
+    [19.35, -9.35, 20.55, -8.80, 0.74, 'desk'],
+    [19.72, -8.75, 20.17, -8.30, 0.90, 'chair'],
+    // balda baja bajo el alero, al pie de la cama
+    [20.95, -8.17, 21.35, -7.82, 0.45, 'shelf']
+  ]
 };
 const inAltillo = (x, y) =>
   ALTILLO.deck.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);

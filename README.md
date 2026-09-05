@@ -69,9 +69,11 @@ autocontenido (three.js incluido), sin dependencias externas.
   **Planta**.
 - **Altillo** (propuesta) — estudio de volumetría de un altillo sobre el
   distribuidor y el baño 2: forjado nuevo a +2,45, hueco de escalera, barandilla,
-  Velux propuesto y los tabiques que habría que derribar por encima. En *Planta*
-  se sombrea por bandas de altura libre; la vista *Altillo* sube la cámara al
-  tablero y se anda por él.
+  Velux propuesto, mobiliario y los tabiques que habría que derribar por encima.
+  En *Planta* se sombrea por bandas de altura libre; la vista *Altillo* sube la
+  cámara al tablero y se anda por él.
+- **Aislar** — deja el altillo solo: recorta la escena a su caja y pasa muros y
+  faldón a translúcido, para poder mirar el volumen desde cualquier lado.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -389,6 +391,33 @@ medianera con la vivienda A. Sobre el distribuidor no cabe —al Norte la median
 está a 0,83 m de la cumbrera y al Sur sólo hay 1,08—. Queda a 1,57–2,21 m sobre
 el tablero, justo donde el faldón baja de 1,50, que es lo que hace utilizable esa
 franja.
+
+**Amueblado.** El faldón manda: lo que necesita altura va al eje de la cumbrera y
+lo que se usa tumbado o sentado, bajo el alero.
+
+| Mueble | Altura libre encima |
+|---|---|
+| Cama 1,20 × 1,90 · E–O bajo el alero Norte y bajo la Velux | `1,48 → 2,26 m` |
+| Armario 1,35 × 0,60 × 1,75 · muro Sur del brazo Oeste | `1,85 → 2,24 m` |
+| Escritorio 1,20 × 0,55 · muro Sur del brazo central | `1,85 → 2,21 m` |
+| Silla · frente al escritorio, sobre la cumbrera | `2,24 → 2,53 m` |
+| Balda 0,40 × 0,35 × 0,45 · a la cabecera de la cama | `2,26 → 2,49 m` |
+
+La cama va **tumbada de Este a Oeste**, no de Norte a Sur: el brazo del baño sólo
+tiene `1,72 m` de fondo y un colchón de 1,90 no cabe sin invadir el paso. Puesta
+así entra entera, con el respaldo contra el alero (1,48 m, suficiente para
+incorporarse) y 2,26 m en el borde por el que se entra. La Velux le cae encima.
+
+**Sí cabe armario**, pero de altillo: 1,35 × 0,60 × **1,75** de alto (1,4 m³, unos
+1,35 m de barra), contra el muro Sur del brazo Oeste, que es donde el faldón deja
+1,85 m. Uno de 2,00 sólo entraría contra el muro Norte del brazo Oeste, y ahí
+taparía el único paso al brazo del baño.
+
+**Volumetría aislada.** El botón **Aislar** pone seis `THREE.Plane` de recorte
+global en el renderer alrededor de la caja del altillo y pasa muros y faldón a
+translúcido: queda sólo el volumen, con su suelo, su envolvente seccionada y el
+mobiliario. En *Recorrer*, dentro de 2,13 m de media y con los tabiques de la
+vivienda alrededor, el altillo no se entiende.
 
 **A verificar.** Altura libre mínima admitida debajo y cómputo de la superficie
 del altillo (habitabilidad de Aragón y ordenanza de Benasque); autorización de la
