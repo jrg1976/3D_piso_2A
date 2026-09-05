@@ -643,23 +643,47 @@ button{font:inherit;color:inherit;cursor:pointer}
      cuesta 1,8 m² de superficie de pie.</p>
   <table>
     <tr><td>Huella bruta</td><td class="mono">11,28 m²</td></tr>
-    <tr><td>Hueco de escalera</td><td class="mono">−1,15 m²</td></tr>
-    <tr><td>Suelo pisable</td><td class="mono">10,12 m²</td></tr>
-    <tr><td>Con h ≥ 1,50 (computable)</td><td class="mono">9,89 m²</td></tr>
-    <tr><td>Con h ≥ 1,90 (de pie)</td><td class="mono">8,15 m²</td></tr>
-    <tr><td>Con h ≥ 2,20</td><td class="mono">4,65 m²</td></tr>
-    <tr><td>Altura media / máxima</td><td class="mono">2,13 / 2,55 m</td></tr>
-    <tr><td>Volumen</td><td class="mono">21,6 m³</td></tr>
+    <tr><td>Pilar exento y machón de la bajante</td><td class="mono">−0,19 m²</td></tr>
+    <tr><td>Hueco de escalera</td><td class="mono">−1,52 m²</td></tr>
+    <tr><td>Suelo pisable</td><td class="mono">9,57 m²</td></tr>
+    <tr><td>Con h ≥ 1,50 (computable)</td><td class="mono">9,34 m²</td></tr>
+    <tr><td>Con h ≥ 1,90 (de pie)</td><td class="mono">7,60 m²</td></tr>
+    <tr><td>Con h ≥ 2,20</td><td class="mono">4,25 m²</td></tr>
+    <tr><td>Altura media / máxima</td><td class="mono">2,12 / 2,55 m</td></tr>
+    <tr><td>Volumen</td><td class="mono">20,3 m³</td></tr>
   </table>
-  <p><b>Obras que implica.</b> Derribar por encima del forjado los dos tabiques del
-     baño 2 (el de <span class="mono">x = 19,06</span> y el de
-     <span class="mono">y = −8,32</span>, con su machón de jamba); son tabiquería, no
-     estructura. Sin eso el altillo queda partido en dos.</p>
-  <p><b>Acceso.</b> Hueco de <span class="mono">1,60 × 0,72</span> contra el muro
-     Norte, terminando en el pilar, con escalera de gato. Deja
-     <span class="mono">1,09 m</span> de paso libre en el distribuidor. Una escalera
-     de peldaños alternos a 45° sería más cómoda pero pide 2,45 m de desarrollo y
-     costaría 1,8 m² de tablero.</p>
+  <p><b>La bajante del baño 2.</b> En a04, dentro del machón de 0,38 de la jamba
+     del baño, hay un círculo de 0,11 en un recuadro de 0,13
+     (<span class="mono">19,13–19,26 × −8,14…−8,26</span>). <b>No es un pilar</b>:
+     los dos pilares de la zona —<span class="mono">17,75</span> y
+     <span class="mono">20,85</span>— van rayados en cruz y con la marca de eje
+     estructural, y éste no. Es la bajante del baño. En a05 no asoma por cubierta,
+     así que o baja sin ventilación primaria o ésta no está dibujada; se modela
+     subiendo hasta el faldón, que es el caso malo. <b>El machón no se derriba</b>
+     —encierra la bajante— y atraviesa el tablero, dejando el paso Norte entre los
+     dos brazos en <span class="mono">0,46 m</span>: se rodea por el Sur, donde hay
+     <span class="mono">0,97</span>.</p>
+  <p><b>Obras que implica.</b> Derribar por encima del forjado el tabique
+     <span class="mono">x = 19,06</span> entre <span class="mono">y = −7,44</span>
+     y <span class="mono">−8,38</span> —el tramo al Norte de −7,44 es medianera y
+     se queda— y el de <span class="mono">y = −8,32</span> con la puerta del baño.
+     Son tabiquería, no estructura. Sin eso el altillo queda partido en dos.</p>
+  <p><b>Acceso: 1,60 m no da el desarrollo.</b> Con 11 tabicas de
+     <span class="mono">0,223</span> en 1,60 m la huella sale de
+     <span class="mono">0,145</span> y la pendiente de 57°: eso es una escala de
+     gato, válida para un trastero y poco más. Se adopta la de
+     <b>peldaños alternos a 45°</b>, que con la misma tabica da huella de
+     <span class="mono">0,223</span> y sólo cuesta 0,37 m² más de tablero:</p>
+  <table>
+    <tr><td>A · escala de gato · 1,60 × 0,72 · 57°</td><td class="mono">9,94 m² · 7,97 de pie</td></tr>
+    <tr><td>B · peldaños alternos · 2,45 × 0,62 · 45°</td><td class="mono">9,57 m² · 7,60 de pie</td></tr>
+    <tr><td>C · escalera CTE · 2,64 × 0,80</td><td class="mono">9,02 m² · 7,05 de pie</td></tr>
+  </table>
+  <p>La C es la única que cumple <i>escalera de uso restringido</i> (ancho 0,80,
+     tabica ≤ 0,20, huella ≥ 0,22), pero se come 2,11 m² y deja al altillo sin
+     armario. Va contra el muro <b>Norte</b> del brazo Oeste para que el paso
+     quede por el <b>Sur del pilar</b>, que da <span class="mono">0,98 m</span>;
+     al revés sólo quedarían <span class="mono">0,63</span>.</p>
   <p><b>Luz.</b> Sin hueco, el altillo es un trastero. La única posición posible para
      un Velux es el <b>faldón Norte sobre el baño 2</b>
      (<span class="mono">19,60–20,38 × −6,75…−7,74</span>): ahí quedan 1,72 m de
@@ -671,7 +695,7 @@ button{font:inherit;color:inherit;cursor:pointer}
      cumbrera y lo que se usa tumbado o sentado, bajo el alero.</p>
   <table>
     <tr><td>Cama 1,20 × 1,90 · E–O bajo el alero Norte y bajo la Velux</td><td class="mono">1,48 → 2,26 m</td></tr>
-    <tr><td>Armario 1,35 × 0,60 × 1,75 · muro Sur del brazo Oeste</td><td class="mono">1,85 → 2,24 m</td></tr>
+    <tr><td>Armario 1,48 × 0,55 × 1,75 · muro Sur del brazo Oeste</td><td class="mono">1,85 → 2,21 m</td></tr>
     <tr><td>Escritorio 1,20 × 0,55 · muro Sur del brazo central</td><td class="mono">1,85 → 2,21 m</td></tr>
     <tr><td>Silla · frente al escritorio, sobre la cumbrera</td><td class="mono">2,24 → 2,53 m</td></tr>
     <tr><td>Balda 0,40 × 0,35 × 0,45 · a la cabecera de la cama</td><td class="mono">2,26 → 2,49 m</td></tr>
@@ -681,10 +705,11 @@ button{font:inherit;color:inherit;cursor:pointer}
      cabe sin invadir el paso. Puesta así entra entera, con el respaldo contra el
      alero (1,48 m, suficiente para incorporarse) y 2,26 m en el borde por el que
      se entra. La Velux le cae justo encima.</p>
-  <p><b>Sí cabe armario</b>, pero de altillo: 1,35 × 0,60 × <b>1,75</b> de alto
-     —1,4 m³, unos 1,35 m de barra—, contra el muro Sur del brazo Oeste, que es
-     donde el faldón deja 1,85 m. Uno de 2,00 sólo entraría contra el muro Norte
-     del brazo Oeste, y ahí taparía el único paso al brazo del baño.</p>
+  <p><b>Sí cabe armario</b>, pero de altillo: 1,48 × 0,55 × <b>1,75</b> de alto
+     —1,4 m³, casi 1,50 m de barra—, contra el muro Sur del brazo Oeste y
+     <b>al Oeste del pilar</b>, para que al pasar por delante del pilar queden los
+     0,98 m enteros. Uno de 2,00 sólo entraría contra el muro Norte, y ahí está la
+     escalera. Con la escalera C del CTE ya no cabe.</p>
   <p><b>Volumetría aislada.</b> El botón <b>Aislar</b> recorta la escena a una caja
      alrededor del altillo y pasa muros y faldón a translúcido: queda sólo el
      volumen, con su suelo, su envolvente seccionada y el mobiliario. Es la forma
@@ -917,7 +942,7 @@ const WALLS = [
   { a:[19.06,-7.44], b:[19.06,-8.38], t:0.18, cut:true },          // tabique baño 2 / distribuidor
   { a:[21.475,-6.445], b:[21.475,-8.32], t:0.15 },
   { a:[19.06,-8.32], b:[20.70,-8.32], t:0.12, cut:true, holes:[[0.38,1.08,0.00,2.10,'door']] },  // puerta baño 2
-  { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38, cut:true },          // machón de la jamba
+  { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38 },                     // machón: encierra la bajante del baño 2
   { a:[20.70,-8.265], b:[21.55,-8.265], t:0.25 },                  // machón del pilar
   // habitación 1 (E)
   { a:[21.475,-7.585], b:[24.30,-7.585], t:0.23 },
@@ -971,6 +996,13 @@ const SHAFTS = [
   // extracción de campana y ventilación de 1ºE, 2ºB y 3ºB
   { x0:20.70, y0:-10.04, x1:21.55, y1: -9.26, room:'hab2', free:false,
     note:'Extracción de campana y ventilación 1ºE · 2ºB · 3ºB' },
+  // bajante del baño 2, embebida en el machón de la jamba: círculo de 0,11
+  // dentro de un recuadro de 0,13 en a04.  No lleva la cruz de ejes que sí
+  // llevan los pilares, así que no es estructura; y en a05 no asoma por
+  // cubierta, de modo que o baja sin ventilación primaria o ésta no está
+  // dibujada.  Se modela subiendo hasta el faldón, que es el caso malo.
+  { x0:19.13, y0:-8.26, x1:19.26, y1:-8.14, room:'ban2', free:false, roof:true,
+    note:'Bajante del baño 2' },
   // conducto rotulado «V. GARAJE» en a04; aparece también en la cubierta (a05)
   { x0:14.46, y0: -8.37, x1:16.02, y1: -7.42, room:'rec', free:false,
     note:'Ventilación del garaje (V. GARAJE) + bajante' }
@@ -1206,32 +1238,39 @@ const ALTILLO = {
   deck: [[16.02, -9.35, 18.97, -7.54],
          [18.97, -9.35, 20.755, -8.26],
          [19.06, -8.26, 21.40, -6.54]],
-  /* hueco de acceso, contra el muro Norte, junto al pilar */
-  hole: [16.02, -8.26, 17.62, -7.54],
+  /* Hueco de acceso contra el muro Norte del brazo Oeste.  Una escala de
+     gato de 1,60 (57°) sólo vale para trastero: con 11 tabicas de 0,223 la
+     huella sale de 0,145.  Con peldaños alternos a 45° el desarrollo es de
+     2,45 m —11 tabicas de 0,223 y huella de 0,223— y cuesta sólo 0,37 m²
+     más de tablero.  Va al Norte para dejar el paso por el Sur del pilar
+     exento (0,98 m); al revés sólo quedarían 0,63.
+     Una escalera de uso restringido del CTE (ancho 0,80, tabica ≤ 0,20,
+     huella ≥ 0,22) pediría 2,64 m y 2,11 m² de hueco.                     */
+  hole: [16.02, -8.16, 18.47, -7.54],
   /* barandilla: sólo los bordes libres (el resto son muros) */
-  rail: [[16.02, -9.35, 16.02, -8.26],
-         [16.02, -8.26, 17.62, -8.26],
-         [17.62, -8.26, 17.62, -7.54]],
-  /* escalera de gato bajo el hueco, subiendo hacia el Este */
-  stair: { x0: 16.02, x1: 17.62, y0: -8.22, y1: -7.56, n: 11 },
+  rail: [[16.02, -9.35, 16.02, -8.16],
+         [16.02, -8.16, 18.47, -8.16],
+         [18.47, -8.16, 18.47, -7.54]],
+  /* escalera de peldaños alternos bajo el hueco, subiendo hacia el Este */
+  stair: { x0: 16.04, x1: 18.45, y0: -8.14, y1: -7.56, n: 11, alt: true },
   velux: 'v-alt',
   bands: [1.20, 1.50, 1.90, 2.20],
   /* mobiliario que cabe, colocado según la altura libre de cada franja.
      [x0, y0, x1, y1, alto, tipo]  ·  alto medido desde el tablero        */
   furn: [
     // cama de 1,20 × 1,90 tumbada E–O contra el alero Norte, que es la
-    // franja baja: bajo el Velux y con 2,22 m en el borde por el que se
+    // franja baja: bajo el Velux y con 2,26 m en el borde por el que se
     // entra.  N–S no cabe: el brazo sólo tiene 1,72 m de fondo.
     [19.45, -7.82, 21.35, -6.62, 0.50, 'bed'],
     [19.45, -6.82, 21.35, -6.62, 0.85, 'head'],
-    // armario de altillo, 1,35 × 0,60, contra el muro Sur del brazo Oeste
-    // (allí el faldón deja 1,85 m: entra un cuerpo de 1,75)
-    [17.30, -9.35, 18.65, -8.75, 1.75, 'closet'],
-    // escritorio y silla en el brazo central, el punto más alto (2,45 m
+    // armario 1,48 × 0,55 × 1,75 contra el muro Sur del brazo Oeste, al
+    // Oeste del pilar para no cerrar el paso (allí el faldón deja 1,85)
+    [16.05, -9.35, 17.53, -8.80, 1.75, 'closet'],
+    // escritorio y silla en el brazo central, el punto más alto (2,53 m
     // sobre la silla) y fuera del paso
-    [19.35, -9.35, 20.55, -8.80, 0.74, 'desk'],
-    [19.72, -8.75, 20.17, -8.30, 0.90, 'chair'],
-    // balda baja bajo el alero, al pie de la cama
+    [19.45, -9.35, 20.65, -8.80, 0.74, 'desk'],
+    [19.80, -8.75, 20.25, -8.30, 0.90, 'chair'],
+    // balda baja bajo el alero, a la cabecera de la cama
     [20.95, -8.17, 21.35, -7.82, 0.45, 'shelf']
   ]
 };
@@ -1560,6 +1599,12 @@ function buildApartment() {
     const bx = (x0,y0,x1,y1,z0,z1) => Msh.box(
       [V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
       [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+    if (s.roof) {           // muere contra el faldón: no asoma por cubierta
+      const t = Math.min(ceilAt(s.x0, s.y0), ceilAt(s.x1, s.y1),
+                         ceilAt(s.x0, s.y1), ceilAt(s.x1, s.y0));
+      bx(s.x0, s.y0, s.x1, s.y1, 0, t);
+      return;
+    }
     bx(s.x0, s.y0, s.x1, s.y1, 0, SHAFT_TOP - 0.16);
     bx(s.x0 - 0.09, s.y0 - 0.09, s.x1 + 0.09, s.y1 + 0.09, SHAFT_TOP - 0.16, SHAFT_TOP);  // albardilla
   });
@@ -1752,16 +1797,20 @@ function buildAltillo() {
     }
   });
 
-  // --- escalera de gato bajo el hueco
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ta = A.z / K.n;
-  for (let i = 1; i <= K.n; i++)
-    bx(Ms, K.x0 + (i-1)*hu, K.y0, K.x0 + i*hu + 0.02, K.y1, i*ta - 0.05, i*ta);
+  // --- escalera bajo el hueco: peldaños alternos si A.stair.alt
+  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ta = A.z / K.n, ym = (K.y0 + K.y1) / 2;
+  for (let i = 1; i <= K.n; i++) {
+    const xa = K.x0 + (i-1)*hu, xb = xa + hu + 0.02;
+    const ya = K.alt ? (i % 2 ? K.y0 : ym) : K.y0;
+    const yb = K.alt ? (i % 2 ? ym : K.y1) : K.y1;
+    bx(Ms, xa, ya, xb, yb, i*ta - 0.05, i*ta);
+  }
   [K.y0 + 0.03, K.y1 - 0.03].forEach(y => {                 // zancas
-    const n = 14;
+    const n = 16;
     for (let i = 0; i < n; i++) {
       const ua = i/n, ub = (i+1)/n;
       const xa = K.x0 + (K.x1-K.x0)*ua, xb = K.x0 + (K.x1-K.x0)*ub;
-      bx(Ms, xa, y-0.03, xb, y+0.03, A.z*ua - 0.14, A.z*ua + 0.02);
+      bx(Ms, xa, y-0.03, xb, y+0.03, A.z*ua - 0.16, A.z*ua + 0.02);
     }
   });
 
@@ -3078,10 +3127,13 @@ function drawAltillo(g) {
   g.fillRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
   g.strokeStyle = 'rgba(60,60,60,0.9)'; g.lineWidth = 1.3;
   g.strokeRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n;
+  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ym = (K.y0 + K.y1) / 2;
   g.beginPath();
   for (let i = 0; i <= K.n; i++) { const x = K.x0 + i * hu;
     g.moveTo(pX(x), pY(K.y0)); g.lineTo(pX(x), pY(K.y1)); }
+  if (K.alt) {                        // peldaños alternos: media huella cada uno
+    g.moveTo(pX(K.x0), pY(ym)); g.lineTo(pX(K.x1), pY(ym));
+  }
   g.stroke();
   // barandilla
   g.strokeStyle = 'rgba(40,40,40,0.95)'; g.lineWidth = 3;
@@ -3113,9 +3165,9 @@ function drawAltillo(g) {
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = 'rgba(150,90,10,0.95)';
     g.font = '700 12px ui-sans-serif,system-ui,sans-serif';
-    g.fillText('ALTILLO  +2,45', pX(16.62), pY(-8.72));
+    g.fillText('ALTILLO  +2,45', pX(17.30), pY(-8.36));
     g.font = '600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
-    g.fillText('9,89 m² con h ≥ 1,50', pX(16.62), pY(-8.92));
+    g.fillText('9,34 m² con h ≥ 1,50', pX(17.30), pY(-8.56));
     g.fillStyle = 'rgba(40,90,140,0.95)';
     g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.20));

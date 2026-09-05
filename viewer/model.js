@@ -159,7 +159,7 @@ const WALLS = [
   { a:[19.06,-7.44], b:[19.06,-8.38], t:0.18, cut:true },          // tabique baño 2 / distribuidor
   { a:[21.475,-6.445], b:[21.475,-8.32], t:0.15 },
   { a:[19.06,-8.32], b:[20.70,-8.32], t:0.12, cut:true, holes:[[0.38,1.08,0.00,2.10,'door']] },  // puerta baño 2
-  { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38, cut:true },          // machón de la jamba
+  { a:[19.06,-8.19], b:[19.41,-8.19], t:0.38 },                     // machón: encierra la bajante del baño 2
   { a:[20.70,-8.265], b:[21.55,-8.265], t:0.25 },                  // machón del pilar
   // habitación 1 (E)
   { a:[21.475,-7.585], b:[24.30,-7.585], t:0.23 },
@@ -213,6 +213,13 @@ const SHAFTS = [
   // extracción de campana y ventilación de 1ºE, 2ºB y 3ºB
   { x0:20.70, y0:-10.04, x1:21.55, y1: -9.26, room:'hab2', free:false,
     note:'Extracción de campana y ventilación 1ºE · 2ºB · 3ºB' },
+  // bajante del baño 2, embebida en el machón de la jamba: círculo de 0,11
+  // dentro de un recuadro de 0,13 en a04.  No lleva la cruz de ejes que sí
+  // llevan los pilares, así que no es estructura; y en a05 no asoma por
+  // cubierta, de modo que o baja sin ventilación primaria o ésta no está
+  // dibujada.  Se modela subiendo hasta el faldón, que es el caso malo.
+  { x0:19.13, y0:-8.26, x1:19.26, y1:-8.14, room:'ban2', free:false, roof:true,
+    note:'Bajante del baño 2' },
   // conducto rotulado «V. GARAJE» en a04; aparece también en la cubierta (a05)
   { x0:14.46, y0: -8.37, x1:16.02, y1: -7.42, room:'rec', free:false,
     note:'Ventilación del garaje (V. GARAJE) + bajante' }
@@ -448,32 +455,39 @@ const ALTILLO = {
   deck: [[16.02, -9.35, 18.97, -7.54],
          [18.97, -9.35, 20.755, -8.26],
          [19.06, -8.26, 21.40, -6.54]],
-  /* hueco de acceso, contra el muro Norte, junto al pilar */
-  hole: [16.02, -8.26, 17.62, -7.54],
+  /* Hueco de acceso contra el muro Norte del brazo Oeste.  Una escala de
+     gato de 1,60 (57°) sólo vale para trastero: con 11 tabicas de 0,223 la
+     huella sale de 0,145.  Con peldaños alternos a 45° el desarrollo es de
+     2,45 m —11 tabicas de 0,223 y huella de 0,223— y cuesta sólo 0,37 m²
+     más de tablero.  Va al Norte para dejar el paso por el Sur del pilar
+     exento (0,98 m); al revés sólo quedarían 0,63.
+     Una escalera de uso restringido del CTE (ancho 0,80, tabica ≤ 0,20,
+     huella ≥ 0,22) pediría 2,64 m y 2,11 m² de hueco.                     */
+  hole: [16.02, -8.16, 18.47, -7.54],
   /* barandilla: sólo los bordes libres (el resto son muros) */
-  rail: [[16.02, -9.35, 16.02, -8.26],
-         [16.02, -8.26, 17.62, -8.26],
-         [17.62, -8.26, 17.62, -7.54]],
-  /* escalera de gato bajo el hueco, subiendo hacia el Este */
-  stair: { x0: 16.02, x1: 17.62, y0: -8.22, y1: -7.56, n: 11 },
+  rail: [[16.02, -9.35, 16.02, -8.16],
+         [16.02, -8.16, 18.47, -8.16],
+         [18.47, -8.16, 18.47, -7.54]],
+  /* escalera de peldaños alternos bajo el hueco, subiendo hacia el Este */
+  stair: { x0: 16.04, x1: 18.45, y0: -8.14, y1: -7.56, n: 11, alt: true },
   velux: 'v-alt',
   bands: [1.20, 1.50, 1.90, 2.20],
   /* mobiliario que cabe, colocado según la altura libre de cada franja.
      [x0, y0, x1, y1, alto, tipo]  ·  alto medido desde el tablero        */
   furn: [
     // cama de 1,20 × 1,90 tumbada E–O contra el alero Norte, que es la
-    // franja baja: bajo el Velux y con 2,22 m en el borde por el que se
+    // franja baja: bajo el Velux y con 2,26 m en el borde por el que se
     // entra.  N–S no cabe: el brazo sólo tiene 1,72 m de fondo.
     [19.45, -7.82, 21.35, -6.62, 0.50, 'bed'],
     [19.45, -6.82, 21.35, -6.62, 0.85, 'head'],
-    // armario de altillo, 1,35 × 0,60, contra el muro Sur del brazo Oeste
-    // (allí el faldón deja 1,85 m: entra un cuerpo de 1,75)
-    [17.30, -9.35, 18.65, -8.75, 1.75, 'closet'],
-    // escritorio y silla en el brazo central, el punto más alto (2,45 m
+    // armario 1,48 × 0,55 × 1,75 contra el muro Sur del brazo Oeste, al
+    // Oeste del pilar para no cerrar el paso (allí el faldón deja 1,85)
+    [16.05, -9.35, 17.53, -8.80, 1.75, 'closet'],
+    // escritorio y silla en el brazo central, el punto más alto (2,53 m
     // sobre la silla) y fuera del paso
-    [19.35, -9.35, 20.55, -8.80, 0.74, 'desk'],
-    [19.72, -8.75, 20.17, -8.30, 0.90, 'chair'],
-    // balda baja bajo el alero, al pie de la cama
+    [19.45, -9.35, 20.65, -8.80, 0.74, 'desk'],
+    [19.80, -8.75, 20.25, -8.30, 0.90, 'chair'],
+    // balda baja bajo el alero, a la cabecera de la cama
     [20.95, -8.17, 21.35, -7.82, 0.45, 'shelf']
   ]
 };

@@ -1029,10 +1029,13 @@ function drawAltillo(g) {
   g.fillRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
   g.strokeStyle = 'rgba(60,60,60,0.9)'; g.lineWidth = 1.3;
   g.strokeRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n;
+  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ym = (K.y0 + K.y1) / 2;
   g.beginPath();
   for (let i = 0; i <= K.n; i++) { const x = K.x0 + i * hu;
     g.moveTo(pX(x), pY(K.y0)); g.lineTo(pX(x), pY(K.y1)); }
+  if (K.alt) {                        // peldaños alternos: media huella cada uno
+    g.moveTo(pX(K.x0), pY(ym)); g.lineTo(pX(K.x1), pY(ym));
+  }
   g.stroke();
   // barandilla
   g.strokeStyle = 'rgba(40,40,40,0.95)'; g.lineWidth = 3;
@@ -1064,9 +1067,9 @@ function drawAltillo(g) {
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = 'rgba(150,90,10,0.95)';
     g.font = '700 12px ui-sans-serif,system-ui,sans-serif';
-    g.fillText('ALTILLO  +2,45', pX(16.62), pY(-8.72));
+    g.fillText('ALTILLO  +2,45', pX(17.30), pY(-8.36));
     g.font = '600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
-    g.fillText('9,89 m² con h ≥ 1,50', pX(16.62), pY(-8.92));
+    g.fillText('9,34 m² con h ≥ 1,50', pX(17.30), pY(-8.56));
     g.fillStyle = 'rgba(40,90,140,0.95)';
     g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.20));

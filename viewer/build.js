@@ -299,6 +299,12 @@ function buildApartment() {
     const bx = (x0,y0,x1,y1,z0,z1) => Msh.box(
       [V(x0,y0,z0),V(x1,y0,z0),V(x1,y1,z0),V(x0,y1,z0)],
       [V(x0,y0,z1),V(x1,y0,z1),V(x1,y1,z1),V(x0,y1,z1)]);
+    if (s.roof) {           // muere contra el faldón: no asoma por cubierta
+      const t = Math.min(ceilAt(s.x0, s.y0), ceilAt(s.x1, s.y1),
+                         ceilAt(s.x0, s.y1), ceilAt(s.x1, s.y0));
+      bx(s.x0, s.y0, s.x1, s.y1, 0, t);
+      return;
+    }
     bx(s.x0, s.y0, s.x1, s.y1, 0, SHAFT_TOP - 0.16);
     bx(s.x0 - 0.09, s.y0 - 0.09, s.x1 + 0.09, s.y1 + 0.09, SHAFT_TOP - 0.16, SHAFT_TOP);  // albardilla
   });
@@ -491,16 +497,20 @@ function buildAltillo() {
     }
   });
 
-  // --- escalera de gato bajo el hueco
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ta = A.z / K.n;
-  for (let i = 1; i <= K.n; i++)
-    bx(Ms, K.x0 + (i-1)*hu, K.y0, K.x0 + i*hu + 0.02, K.y1, i*ta - 0.05, i*ta);
+  // --- escalera bajo el hueco: peldaños alternos si A.stair.alt
+  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ta = A.z / K.n, ym = (K.y0 + K.y1) / 2;
+  for (let i = 1; i <= K.n; i++) {
+    const xa = K.x0 + (i-1)*hu, xb = xa + hu + 0.02;
+    const ya = K.alt ? (i % 2 ? K.y0 : ym) : K.y0;
+    const yb = K.alt ? (i % 2 ? ym : K.y1) : K.y1;
+    bx(Ms, xa, ya, xb, yb, i*ta - 0.05, i*ta);
+  }
   [K.y0 + 0.03, K.y1 - 0.03].forEach(y => {                 // zancas
-    const n = 14;
+    const n = 16;
     for (let i = 0; i < n; i++) {
       const ua = i/n, ub = (i+1)/n;
       const xa = K.x0 + (K.x1-K.x0)*ua, xb = K.x0 + (K.x1-K.x0)*ub;
-      bx(Ms, xa, y-0.03, xb, y+0.03, A.z*ua - 0.14, A.z*ua + 0.02);
+      bx(Ms, xa, y-0.03, xb, y+0.03, A.z*ua - 0.16, A.z*ua + 0.02);
     }
   });
 

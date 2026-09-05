@@ -362,28 +362,54 @@ Tablero a `2,45` → `2,25 m` libres debajo (mínimo habitual de pasillo y baño
 debajo sólo quedan distribuidor y baño). Mantener 2,44 debajo obliga a subir el
 tablero a 2,62 y cuesta 1,8 m² de superficie de pie.
 
-| | tablero 2,45 | tablero 2,62 |
-|---|---|---|
-| Huella bruta | 11,28 m² | 11,28 m² |
-| Hueco de escalera | −1,15 m² | −1,15 m² |
-| Suelo pisable | 10,12 m² | 10,12 m² |
-| h ≥ 1,50 (computable) | **9,89 m²** | 9,28 m² |
-| h ≥ 1,90 (de pie) | **8,15 m²** | 6,31 m² |
-| h ≥ 2,20 | 4,65 m² | 2,29 m² |
-| Altura media / máxima | 2,13 / 2,55 m | 1,96 / 2,38 m |
-| Volumen | 21,6 m³ | 19,8 m³ |
+| tablero a 2,45 | |
+|---|---|
+| Huella bruta | 11,28 m² |
+| Pilar exento y machón de la bajante | −0,19 m² |
+| Hueco de escalera | −1,52 m² |
+| Suelo pisable | 9,57 m² |
+| h ≥ 1,50 (computable) | **9,34 m²** |
+| h ≥ 1,90 (de pie) | **7,60 m²** |
+| h ≥ 2,20 | 4,25 m² |
+| Altura media / máxima | 2,12 / 2,55 m |
+| Volumen | 20,3 m³ |
 
-**Obras que implica.** Derribar por encima del forjado los dos tabiques del baño
-2 (`x = 19,06` y `y = −8,32`, con su machón de jamba) — son tabiquería, no
-estructura. Sin eso el altillo queda partido en dos. Van marcados con `cut:true`
+### La bajante del baño 2
+
+En `a04`, dentro del machón de 0,38 de la jamba del baño, hay un círculo de 0,11
+en un recuadro de 0,13 (`19,13–19,26 × −8,14…−8,26`). **No es un pilar**: los dos
+pilares de la zona —`17,75` y `20,85`— van rayados en cruz y con la marca de eje
+estructural, y éste no; es el símbolo de bajante que el plano usa también en los
+patinillos. En `a05` no asoma por cubierta, así que o baja sin ventilación
+primaria o ésta no está dibujada: se modela subiendo hasta el faldón, que es el
+caso malo.
+
+Consecuencia: **el machón no se derriba** —encierra la bajante— y atraviesa el
+tablero, dejando el paso Norte entre los dos brazos en `0,46 m`. Se rodea por el
+Sur, donde hay `0,97`.
+
+**Obras que implica.** Derribar por encima del forjado el tabique `x = 19,06`
+entre `y = −7,44` y `−8,38` —el tramo al Norte de −7,44 es medianera y se queda—
+y el de `y = −8,32` con la puerta del baño. Son tabiquería, no estructura. Sin eso el altillo queda partido en dos. Van marcados con `cut:true`
 en `WALLS`: `buildApartment()` los mete en una malla aparte (`apt.cutWalls`) que
 se oculta al encender el altillo, y `buildAltillo()` levanta su versión recortada
 a la cota del tablero.
 
-**Acceso.** Hueco de `1,60 × 0,72` contra el muro Norte, terminando en el pilar,
-con escalera de gato; deja `1,09 m` de paso libre en el distribuidor. Una
-escalera de peldaños alternos a 45° sería más cómoda pero pide 2,45 m de
-desarrollo y costaría 1,8 m² de tablero.
+**Acceso: 1,60 m no da el desarrollo.** Con 11 tabicas de `0,223` en 1,60 m la
+huella sale de `0,145` y la pendiente de 57°: eso es una escala de gato. Se
+adopta la de peldaños alternos a 45°, que con la misma tabica da huella de
+`0,223` y sólo cuesta 0,37 m² más de tablero.
+
+| Escalera | Hueco | Pisable | h ≥ 1,90 |
+|---|---|---|---|
+| A · escala de gato · 1,60 × 0,72 · 57° | 1,15 m² | 9,94 m² | 7,97 m² |
+| **B · peldaños alternos · 2,45 × 0,62 · 45°** | 1,52 m² | **9,57 m²** | **7,60 m²** |
+| C · escalera CTE · 2,64 × 0,80 | 2,11 m² | 9,02 m² | 7,05 m² |
+
+La C es la única que cumple *escalera de uso restringido* (ancho 0,80, tabica
+≤ 0,20, huella ≥ 0,22), pero se come 2,11 m² y deja el altillo sin armario. Va
+contra el muro **Norte** del brazo Oeste para que el paso quede por el **Sur del
+pilar**, que da `0,98 m`; al revés sólo quedarían `0,63`.
 
 **Luz.** La única posición posible para un Velux es el faldón Norte sobre el baño
 2 (`19,60–20,38 × −6,75…−7,74`): ahí quedan 1,72 m de faldón propio antes de la
@@ -398,7 +424,7 @@ lo que se usa tumbado o sentado, bajo el alero.
 | Mueble | Altura libre encima |
 |---|---|
 | Cama 1,20 × 1,90 · E–O bajo el alero Norte y bajo la Velux | `1,48 → 2,26 m` |
-| Armario 1,35 × 0,60 × 1,75 · muro Sur del brazo Oeste | `1,85 → 2,24 m` |
+| Armario 1,48 × 0,55 × 1,75 · muro Sur del brazo Oeste | `1,85 → 2,21 m` |
 | Escritorio 1,20 × 0,55 · muro Sur del brazo central | `1,85 → 2,21 m` |
 | Silla · frente al escritorio, sobre la cumbrera | `2,24 → 2,53 m` |
 | Balda 0,40 × 0,35 × 0,45 · a la cabecera de la cama | `2,26 → 2,49 m` |
@@ -408,10 +434,11 @@ tiene `1,72 m` de fondo y un colchón de 1,90 no cabe sin invadir el paso. Puest
 así entra entera, con el respaldo contra el alero (1,48 m, suficiente para
 incorporarse) y 2,26 m en el borde por el que se entra. La Velux le cae encima.
 
-**Sí cabe armario**, pero de altillo: 1,35 × 0,60 × **1,75** de alto (1,4 m³, unos
-1,35 m de barra), contra el muro Sur del brazo Oeste, que es donde el faldón deja
-1,85 m. Uno de 2,00 sólo entraría contra el muro Norte del brazo Oeste, y ahí
-taparía el único paso al brazo del baño.
+**Sí cabe armario**, pero de altillo: 1,48 × 0,55 × **1,75** de alto (1,4 m³, casi
+1,50 m de barra), contra el muro Sur del brazo Oeste y **al Oeste del pilar**,
+para que al pasar por delante del pilar queden los 0,98 m enteros. Uno de 2,00
+sólo entraría contra el muro Norte, y ahí está la escalera. Con la escalera C del
+CTE ya no cabe.
 
 **Volumetría aislada.** El botón **Aislar** pone seis `THREE.Plane` de recorte
 global en el renderer alrededor de la caja del altillo y pasa muros y faldón a

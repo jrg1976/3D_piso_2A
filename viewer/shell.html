@@ -643,23 +643,47 @@ button{font:inherit;color:inherit;cursor:pointer}
      cuesta 1,8 m² de superficie de pie.</p>
   <table>
     <tr><td>Huella bruta</td><td class="mono">11,28 m²</td></tr>
-    <tr><td>Hueco de escalera</td><td class="mono">−1,15 m²</td></tr>
-    <tr><td>Suelo pisable</td><td class="mono">10,12 m²</td></tr>
-    <tr><td>Con h ≥ 1,50 (computable)</td><td class="mono">9,89 m²</td></tr>
-    <tr><td>Con h ≥ 1,90 (de pie)</td><td class="mono">8,15 m²</td></tr>
-    <tr><td>Con h ≥ 2,20</td><td class="mono">4,65 m²</td></tr>
-    <tr><td>Altura media / máxima</td><td class="mono">2,13 / 2,55 m</td></tr>
-    <tr><td>Volumen</td><td class="mono">21,6 m³</td></tr>
+    <tr><td>Pilar exento y machón de la bajante</td><td class="mono">−0,19 m²</td></tr>
+    <tr><td>Hueco de escalera</td><td class="mono">−1,52 m²</td></tr>
+    <tr><td>Suelo pisable</td><td class="mono">9,57 m²</td></tr>
+    <tr><td>Con h ≥ 1,50 (computable)</td><td class="mono">9,34 m²</td></tr>
+    <tr><td>Con h ≥ 1,90 (de pie)</td><td class="mono">7,60 m²</td></tr>
+    <tr><td>Con h ≥ 2,20</td><td class="mono">4,25 m²</td></tr>
+    <tr><td>Altura media / máxima</td><td class="mono">2,12 / 2,55 m</td></tr>
+    <tr><td>Volumen</td><td class="mono">20,3 m³</td></tr>
   </table>
-  <p><b>Obras que implica.</b> Derribar por encima del forjado los dos tabiques del
-     baño 2 (el de <span class="mono">x = 19,06</span> y el de
-     <span class="mono">y = −8,32</span>, con su machón de jamba); son tabiquería, no
-     estructura. Sin eso el altillo queda partido en dos.</p>
-  <p><b>Acceso.</b> Hueco de <span class="mono">1,60 × 0,72</span> contra el muro
-     Norte, terminando en el pilar, con escalera de gato. Deja
-     <span class="mono">1,09 m</span> de paso libre en el distribuidor. Una escalera
-     de peldaños alternos a 45° sería más cómoda pero pide 2,45 m de desarrollo y
-     costaría 1,8 m² de tablero.</p>
+  <p><b>La bajante del baño 2.</b> En a04, dentro del machón de 0,38 de la jamba
+     del baño, hay un círculo de 0,11 en un recuadro de 0,13
+     (<span class="mono">19,13–19,26 × −8,14…−8,26</span>). <b>No es un pilar</b>:
+     los dos pilares de la zona —<span class="mono">17,75</span> y
+     <span class="mono">20,85</span>— van rayados en cruz y con la marca de eje
+     estructural, y éste no. Es la bajante del baño. En a05 no asoma por cubierta,
+     así que o baja sin ventilación primaria o ésta no está dibujada; se modela
+     subiendo hasta el faldón, que es el caso malo. <b>El machón no se derriba</b>
+     —encierra la bajante— y atraviesa el tablero, dejando el paso Norte entre los
+     dos brazos en <span class="mono">0,46 m</span>: se rodea por el Sur, donde hay
+     <span class="mono">0,97</span>.</p>
+  <p><b>Obras que implica.</b> Derribar por encima del forjado el tabique
+     <span class="mono">x = 19,06</span> entre <span class="mono">y = −7,44</span>
+     y <span class="mono">−8,38</span> —el tramo al Norte de −7,44 es medianera y
+     se queda— y el de <span class="mono">y = −8,32</span> con la puerta del baño.
+     Son tabiquería, no estructura. Sin eso el altillo queda partido en dos.</p>
+  <p><b>Acceso: 1,60 m no da el desarrollo.</b> Con 11 tabicas de
+     <span class="mono">0,223</span> en 1,60 m la huella sale de
+     <span class="mono">0,145</span> y la pendiente de 57°: eso es una escala de
+     gato, válida para un trastero y poco más. Se adopta la de
+     <b>peldaños alternos a 45°</b>, que con la misma tabica da huella de
+     <span class="mono">0,223</span> y sólo cuesta 0,37 m² más de tablero:</p>
+  <table>
+    <tr><td>A · escala de gato · 1,60 × 0,72 · 57°</td><td class="mono">9,94 m² · 7,97 de pie</td></tr>
+    <tr><td>B · peldaños alternos · 2,45 × 0,62 · 45°</td><td class="mono">9,57 m² · 7,60 de pie</td></tr>
+    <tr><td>C · escalera CTE · 2,64 × 0,80</td><td class="mono">9,02 m² · 7,05 de pie</td></tr>
+  </table>
+  <p>La C es la única que cumple <i>escalera de uso restringido</i> (ancho 0,80,
+     tabica ≤ 0,20, huella ≥ 0,22), pero se come 2,11 m² y deja al altillo sin
+     armario. Va contra el muro <b>Norte</b> del brazo Oeste para que el paso
+     quede por el <b>Sur del pilar</b>, que da <span class="mono">0,98 m</span>;
+     al revés sólo quedarían <span class="mono">0,63</span>.</p>
   <p><b>Luz.</b> Sin hueco, el altillo es un trastero. La única posición posible para
      un Velux es el <b>faldón Norte sobre el baño 2</b>
      (<span class="mono">19,60–20,38 × −6,75…−7,74</span>): ahí quedan 1,72 m de
@@ -671,7 +695,7 @@ button{font:inherit;color:inherit;cursor:pointer}
      cumbrera y lo que se usa tumbado o sentado, bajo el alero.</p>
   <table>
     <tr><td>Cama 1,20 × 1,90 · E–O bajo el alero Norte y bajo la Velux</td><td class="mono">1,48 → 2,26 m</td></tr>
-    <tr><td>Armario 1,35 × 0,60 × 1,75 · muro Sur del brazo Oeste</td><td class="mono">1,85 → 2,24 m</td></tr>
+    <tr><td>Armario 1,48 × 0,55 × 1,75 · muro Sur del brazo Oeste</td><td class="mono">1,85 → 2,21 m</td></tr>
     <tr><td>Escritorio 1,20 × 0,55 · muro Sur del brazo central</td><td class="mono">1,85 → 2,21 m</td></tr>
     <tr><td>Silla · frente al escritorio, sobre la cumbrera</td><td class="mono">2,24 → 2,53 m</td></tr>
     <tr><td>Balda 0,40 × 0,35 × 0,45 · a la cabecera de la cama</td><td class="mono">2,26 → 2,49 m</td></tr>
@@ -681,10 +705,11 @@ button{font:inherit;color:inherit;cursor:pointer}
      cabe sin invadir el paso. Puesta así entra entera, con el respaldo contra el
      alero (1,48 m, suficiente para incorporarse) y 2,26 m en el borde por el que
      se entra. La Velux le cae justo encima.</p>
-  <p><b>Sí cabe armario</b>, pero de altillo: 1,35 × 0,60 × <b>1,75</b> de alto
-     —1,4 m³, unos 1,35 m de barra—, contra el muro Sur del brazo Oeste, que es
-     donde el faldón deja 1,85 m. Uno de 2,00 sólo entraría contra el muro Norte
-     del brazo Oeste, y ahí taparía el único paso al brazo del baño.</p>
+  <p><b>Sí cabe armario</b>, pero de altillo: 1,48 × 0,55 × <b>1,75</b> de alto
+     —1,4 m³, casi 1,50 m de barra—, contra el muro Sur del brazo Oeste y
+     <b>al Oeste del pilar</b>, para que al pasar por delante del pilar queden los
+     0,98 m enteros. Uno de 2,00 sólo entraría contra el muro Norte, y ahí está la
+     escalera. Con la escalera C del CTE ya no cabe.</p>
   <p><b>Volumetría aislada.</b> El botón <b>Aislar</b> recorta la escena a una caja
      alrededor del altillo y pasa muros y faldón a translúcido: queda sólo el
      volumen, con su suelo, su envolvente seccionada y el mobiliario. Es la forma
