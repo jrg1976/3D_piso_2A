@@ -79,6 +79,39 @@ autocontenido (three.js incluido), sin dependencias externas.
   todo a opaco y sube la cámara al tablero.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
+## Cómo está ordenada la interfaz
+
+Los controles no son todos de la misma clase, así que no se presentan igual. La
+barra superior lleva dos filas: la primera dice **qué** se mira —la hoja y sus
+datos—, la segunda **cómo**, en cuatro grupos rotulados.
+
+| Grupo | Forma | Contenido |
+|---|---|---|
+| **Vista** | segmentado negro (selector) | Recorrer · Maqueta · Planta |
+| **Propuesta** | segmentado ámbar (selector) | Estado actual · Altillo 1 · Altillo 2 |
+| **Capas** | píldoras con punto (interruptores) | Techo · Cubierta · Estructura · Mobiliario · Pladur · Rótulos |
+| **Herramienta** | botón que abre panel | Falso techo |
+
+- **Vista y Propuesta son selectores.** Antes «Altillo 1» y «Altillo 2» parecían
+  interruptores sueltos aunque fueran excluyentes, y no existía forma de pedir
+  explícitamente el estado actual: se salía apagando el altillo encendido. Ahora
+  son tres botones de un mismo mando con **Estado actual** como opción de pleno
+  derecho (`setAltillo(0)`).
+- **Las propuestas van en ámbar** y encienden un filo ámbar en la barra
+  (`.topbar.proposal`): lo que se ve no es lo construido.
+- **Las capas son independientes** y tienen otra forma —píldora con punto— porque
+  se combinan libremente y ninguna cambia el modelo.
+- **Falso techo es lo único que edita**, así que va aparte y abre su propio panel.
+  Lo que produce se muestra u oculta con la capa **Pladur**.
+- La lista de la izquierda separa **estancias** de **propuestas**.
+- **Aislar altillo** (barra de maqueta) sale deshabilitado sin propuesta activa.
+- Los dos paneles de la derecha —notas y falso techo— se excluyen y se cierran con
+  la ✕ o con `esc`.
+- La altura real de la barra se mide en tiempo de ejecución y se publica como
+  `--topbar-h`, porque en pantallas estrechas la fila de control se envuelve; las
+  notas y el índice se posicionan contra esa variable. Por debajo de 760 px la
+  fila pasa a ser una sola tira deslizable sin rótulos de grupo.
+
 ## Cómo se ha obtenido la geometría
 
 Los PDF son vectoriales con el texto convertido a curvas, así que la geometría

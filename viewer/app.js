@@ -211,8 +211,11 @@ function bindControls() {
     pladurOn = v; syncZoneVis();
   });
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
-  [1, 2].forEach(k => { document.getElementById('t-altillo' + k).onclick = e =>
-    setAltillo(e.currentTarget.getAttribute('aria-pressed') === 'true' ? 0 : k); });
+  /* «Propuesta» es un segmentado de tres estados excluyentes; pulsar la
+     activa no hace nada, para que el control se comporte como un selector */
+  document.getElementById('t-alt0').onclick = () => setAltillo(0);
+  [1, 2].forEach(k => { document.getElementById('t-altillo' + k).onclick =
+    () => setAltillo(k); });
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -254,11 +257,18 @@ function bindControls() {
   };
   hold('tp-fwd', 'w'); hold('tp-back', 's');
 
-  document.getElementById('notes-btn').onclick = () => {
-    const p = document.getElementById('notes');
-    const open = p.classList.toggle('open');
-    document.getElementById('notes-btn').setAttribute('aria-expanded', open);
-  };
+  /* la barra crece al envolverse en pantallas estrechas: se mide y se
+     publica como --topbar-h para que las notas y el índice no la pisen  */
+  const bar = document.getElementById('topbar');
+  const measureBar = () => document.documentElement.style
+    .setProperty('--topbar-h', Math.round(bar.getBoundingClientRect().height) + 'px');
+  measureBar();
+  if (window.ResizeObserver) new ResizeObserver(measureBar).observe(bar);
+  else addEventListener('resize', measureBar);
+
+  document.getElementById('notes-btn').onclick = () => setNotes(!notesOpen());
+  document.getElementById('notes-close').onclick = () => setNotes(false);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && notesOpen()) setNotes(false); });
 }
 function toggle(el, fn) {
   const on = el.getAttribute('aria-pressed') !== 'true';
@@ -297,14 +307,23 @@ function setMode(m) {
 }
 function buildViewButtons() {
   const nav = document.getElementById('views');
+  let sep = false;
   VIEWS.forEach(v => {
+    /* las dos vistas de altillo no son estancias construidas: van en su
+       propio bloque, detrás de un separador rotulado                     */
+    if (v.alt && !sep) {
+      sep = true;
+      const h = document.createElement('div');
+      h.className = 'index-h index-h2'; h.textContent = 'Propuestas';
+      nav.appendChild(h);
+    }
     const b = document.createElement('button');
-    b.className = 'view-btn'; b.type = 'button';
+    b.className = 'view-btn' + (v.alt ? ' view-alt' : ''); b.type = 'button';
     b.innerHTML = '<span class="vn">' + v.name + '</span>';
     b.onclick = () => {
       setMode('walk');
       applyView(v);
-      [...nav.children].forEach(k => k.setAttribute('aria-current', 'false'));
+      nav.querySelectorAll('.view-btn').forEach(k => k.setAttribute('aria-current', 'false'));
       b.setAttribute('aria-current', 'true');
     };
     nav.appendChild(b);
@@ -409,8 +428,13 @@ function setAltillo(n) {
   if (core.shaft) core.shaft.visible = (n !== 2);
   if (core.plafondFull) core.plafondFull.visible = (n === 2);
   if (!n) { onAltillo = false; setSolo(false); }
-  [1, 2].forEach(k => { const b = document.getElementById('t-altillo' + k);
+  [0, 1, 2].forEach(k => {
+    const b = document.getElementById(k ? 't-altillo' + k : 't-alt0');
     if (b) b.setAttribute('aria-pressed', n === k ? 'true' : 'false'); });
+  document.getElementById('topbar').classList.toggle('proposal', !!n);
+  const iso = document.querySelector('#orbtools [data-orb="alt"]');
+  if (iso) iso.disabled = !n;              // sin propuesta no hay nada que aislar
+
   applyIso();
   plan.dirty = true;
 }
@@ -499,11 +523,25 @@ const n2 = v => v.toFixed(2).replace('.', ',');
    -------------------------------------------------------------------- */
 const STORE = 'piso-b-falsos-techos';
 
+/* Los dos paneles de la derecha —notas y herramienta de falso techo— se
+   excluyen: apilados se tapaban entre sí y a la chuleta de teclas.      */
+const notesOpen = () => document.getElementById('notes').classList.contains('open');
+function syncHint() {
+  document.querySelector('.hint').hidden = plafonding || notesOpen();
+}
+function setNotes(v) {
+  if (v && plafonding) setPlafond(false);
+  document.getElementById('notes').classList.toggle('open', v);
+  document.getElementById('notes-btn').setAttribute('aria-expanded', v);
+  if (v) document.getElementById('notes').scrollTop = 0;
+  syncHint();
+}
 function setPlafond(v) {
+  if (v && notesOpen()) setNotes(false);
   plafonding = v;
   document.getElementById('t-plafond').setAttribute('aria-pressed', v);
   document.getElementById('plafond').hidden = !v;
-  document.querySelector('.hint').hidden = v;
+  syncHint();
   syncZoneVis();
   if (v) { pending = null; renderZones(); }
 }

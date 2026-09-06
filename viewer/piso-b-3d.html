@@ -7,8 +7,10 @@
   --amber:#c07a12; --amber-soft:#f0e0c2; --slate:#3f5568;
   --chrome:rgba(247,244,238,0.94); --chrome-line:rgba(21,24,28,0.13);
   --btn:rgba(21,24,28,0.05); --btn-on:#15181c; --btn-on-fg:#f6f2ea;
+  --seg-on:#15181c; --seg-on-fg:#f6f2ea;
   --shadow:0 10px 34px rgba(21,24,28,0.16), 0 2px 6px rgba(21,24,28,0.10);
   --r:9px;
+  --topbar-h:96px;          /* lo mide app.js y lo reescribe al redimensionar */
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -17,6 +19,8 @@
     --amber:#e8a33d; --amber-soft:#3a2e1a; --slate:#7fa3c0;
     --chrome:rgba(20,23,26,0.92); --chrome-line:rgba(236,234,229,0.14);
     --btn:rgba(236,234,229,0.07); --btn-on:#e8a33d; --btn-on-fg:#14171a;
+  --seg-on:#e9e6df; --seg-on-fg:#14171a;
+    --seg-on:#e9e6df; --seg-on-fg:#14171a;
     --shadow:0 10px 34px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4);
   }
 }
@@ -47,21 +51,62 @@ body{
 #plan[hidden]{display:none}
 #plan.grabbing{cursor:grabbing}
 
-/* ---------- cartela superior ---------- */
-.title-block{
-  position:fixed;top:0;left:0;right:0;z-index:5;
-  display:flex;align-items:stretch;gap:0;flex-wrap:wrap;
+/* ---------- cartela superior ----------
+   Dos filas con papeles distintos: arriba QUÉ se está mirando (la hoja y
+   sus datos), abajo CÓMO se mira.  La fila de control va en grupos
+   rotulados —Vista · Propuesta · Capas · Herramienta— para que se lea de
+   un vistazo qué hace cada botón y cuáles se excluyen entre sí.        */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:7;
   background:var(--chrome);backdrop-filter:blur(14px);
   border-bottom:1px solid var(--chrome-line);
 }
-.tb-cell{padding:8px 13px;border-right:1px solid var(--chrome-line);display:flex;flex-direction:column;justify-content:center;gap:2px}
-.tb-cell:last-child{border-right:0}
-.tb-k{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
-.tb-v{font-size:13px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
-.tb-id{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1}
+/* con una propuesta encendida, filo ámbar: no es el estado actual */
+.topbar::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:var(--amber);opacity:0;transition:opacity .18s ease;
+}
+.topbar.proposal::before{opacity:1}
+
+.tb-r1{display:flex;align-items:center;gap:12px;padding:7px 12px;
+       border-bottom:1px solid var(--chrome-line)}
+.tb-id{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1;flex:none}
 .tb-id b{color:var(--amber)}
-.tb-grow{flex:1;border-right:0}
-.tb-actions{display:flex;align-items:center;gap:5px;padding:7px 10px;flex:none}
+.tb-title{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.tb-name{font-size:13px;font-weight:650;white-space:nowrap;letter-spacing:-.01em}
+.tb-sub{font-size:10px;color:var(--muted);white-space:nowrap}
+.tb-facts{display:flex;gap:18px;margin-left:auto;align-items:baseline;flex:none}
+.tb-facts>span{display:flex;flex-direction:column;line-height:1.3;gap:1px}
+.tb-facts i{font-style:normal;font-size:9px;letter-spacing:.12em;
+            text-transform:uppercase;color:var(--muted)}
+.tb-facts b{font-size:12px;font-weight:650;white-space:nowrap}
+
+.tb-r2{display:flex;align-items:flex-end;padding:6px 12px 7px;gap:0;
+       flex-wrap:wrap;row-gap:9px}
+.grp{display:flex;flex-direction:column;gap:4px;padding:0 12px;flex:none;
+     border-right:1px solid var(--chrome-line)}
+.grp:first-child{padding-left:0}
+.grp-last{border-right:0;padding-right:0}
+.grp-k{font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+       color:var(--muted);font-weight:700}
+.grp-row{display:flex;gap:4px;align-items:center}
+.tb-spacer{flex:1 1 auto;min-width:12px}
+
+/* interruptores de capa: más ligeros que los botones de modo, con punto */
+.chip{
+  background:transparent;border:1px solid var(--chrome-line);border-radius:999px;
+  padding:4px 10px 4px 8px;font-size:11px;font-weight:600;color:var(--muted);
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  transition:background .14s ease,border-color .14s ease,color .14s ease;
+}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;flex:none;
+  background:transparent;border:1.5px solid var(--line);transition:background .14s,border-color .14s}
+.chip{color:var(--text-2)}
+.chip:hover{color:var(--text);border-color:var(--line)}
+.chip[aria-pressed="true"]{color:var(--text);background:var(--amber-soft);
+  border-color:var(--amber)}
+.chip[aria-pressed="true"]::before{background:var(--amber);border-color:var(--amber)}
+.chip:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
 /* ---------- botones ---------- */
 button{font:inherit;color:inherit;cursor:pointer}
@@ -76,17 +121,30 @@ button{font:inherit;color:inherit;cursor:pointer}
 .seg{display:flex;gap:0;border:1px solid var(--chrome-line);border-radius:var(--r);overflow:hidden}
 .seg .btn{border:0;border-radius:0}
 .seg .btn+.btn{border-left:1px solid var(--chrome-line)}
+/* El ámbar queda reservado a «estás viendo una propuesta», así que la
+   opción activa de un segmentado va en neutro —en oscuro, claro sobre
+   fondo oscuro— y sólo los dos altillos se pintan de ámbar.  Sin esto,
+   en modo oscuro el modo activo y la propuesta salían del mismo color. */
+.seg .btn[aria-pressed="true"]{
+  background:var(--seg-on);border-color:var(--seg-on);color:var(--seg-on-fg)}
+.seg-prop .btn+.btn[aria-pressed="true"]{
+  background:var(--amber);border-color:var(--amber);color:#1c1406}
+.btn.tool[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:#1c1406}
+.btn[disabled]{opacity:.38;cursor:default;pointer-events:none}
 
 /* ---------- índice de estancias ---------- */
 .index{
   position:fixed;left:14px;top:auto;bottom:118px;z-index:5;
   display:flex;flex-direction:column;gap:3px;
-  max-height:min(56vh,420px);overflow-y:auto;padding:8px;
+  max-height:calc(100vh - var(--topbar-h) - 150px);overflow-y:auto;padding:8px;
   background:var(--chrome);backdrop-filter:blur(14px);
   border:1px solid var(--chrome-line);border-radius:12px;box-shadow:var(--shadow);
 }
 .views{display:flex;flex-direction:column;gap:3px}
 .index-h{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:2px 8px 6px}
+.index-h2{margin-top:6px;padding-top:8px;border-top:1px solid var(--chrome-line);color:var(--amber)}
+.view-alt::before{background:var(--amber);opacity:.55}
+.view-alt[aria-current="true"]::before{opacity:1}
 .view-btn{
   background:none;border:0;border-radius:7px;text-align:left;
   padding:5px 9px;font-size:12.5px;color:var(--text-2);
@@ -221,8 +279,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 /* ---------- notas ---------- */
 .notes{
-  position:fixed;right:14px;top:64px;z-index:6;width:min(400px,calc(100vw - 28px));
-  max-height:calc(100vh - 160px);overflow-y:auto;
+  position:fixed;right:14px;top:calc(var(--topbar-h) + 10px);z-index:8;
+  width:min(400px,calc(100vw - 28px));
+  max-height:calc(100vh - var(--topbar-h) - 100px);overflow-y:auto;
   background:var(--chrome);backdrop-filter:blur(14px);
   border:1px solid var(--chrome-line);border-radius:12px;box-shadow:var(--shadow);
   padding:16px 18px 18px;
@@ -230,6 +289,17 @@ button{font:inherit;color:inherit;cursor:pointer}
   transition:opacity .18s ease,transform .18s ease,visibility .18s;
 }
 .notes.open{opacity:1;visibility:visible;transform:none}
+.notes-bar{
+  position:sticky;top:-16px;z-index:1;margin:-16px -18px 12px;padding:11px 14px 10px 18px;
+  display:flex;align-items:center;gap:10px;
+  background:var(--chrome);border-bottom:1px solid var(--chrome-line);
+  backdrop-filter:blur(14px);
+}
+.notes-t{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+         font-weight:700;color:var(--text)}
+.notes-x{background:none;border:0;color:var(--muted);font-size:14px;line-height:1;
+         margin-left:auto;padding:2px 4px;border-radius:6px}
+.notes-x:hover{color:var(--text);background:var(--btn)}
 .notes h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin:0 0 10px}
 .notes h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
 .notes p{margin:0 0 8px;font-size:12.5px;color:var(--text-2);line-height:1.62}
@@ -239,17 +309,32 @@ button{font:inherit;color:inherit;cursor:pointer}
 .notes ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--text-2);line-height:1.62}
 .notes li{margin-bottom:4px}
 
-@media (max-width:1320px){ .tb-cell.opt2{display:none} }
-@media (max-width:1120px){ .tb-cell.opt{display:none} }
+@media (max-width:1240px){
+  .tb-facts .opt2{display:none}
+  .grp{padding:0 9px} .chip{padding:4px 9px 4px 7px} .btn{padding:5px 8px}
+}
+@media (max-width:1040px){ .tb-facts .opt{display:none} }
+@media (max-width:860px){ .tb-facts{display:none} .tb-sub{display:none} }
+/* al envolverse, los rótulos de grupo bastan como separación */
+@media (max-width:1100px){
+  .tb-spacer{display:none} .grp-last{padding-left:12px} .grp{border-right:0}
+}
+/* en móvil no hay sitio para cuatro filas: una sola tira deslizable, sin
+   rótulos de grupo —los separa el propio aspecto de cada control—      */
 @media (max-width:760px){
-  .title-block{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .title-block::-webkit-scrollbar{display:none}
-  .tb-grow{display:none}
-  .tb-actions{padding:7px 8px}
+  .tb-r1{padding:6px 8px;gap:8px}
+  .tb-r2{padding:6px 8px;flex-wrap:nowrap;align-items:center;
+         overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tb-r2::-webkit-scrollbar{display:none}
+  .grp-k{display:none}
+  .grp{padding:0 8px;border-right:1px solid var(--chrome-line)}
+  .grp-last{padding-left:8px}
+  .chip{padding:4px 8px 4px 7px;font-size:10.5px}
   .index{left:8px;right:8px;bottom:8px;top:auto;padding:6px;
          max-height:none;overflow-x:auto;overflow-y:hidden}
   .views{flex-direction:row;gap:4px}
   .index-h{display:none}
+  .index-h2{display:none}
   .view-btn{white-space:nowrap;padding:7px 11px}
   .readout{left:8px;right:8px;bottom:66px;min-width:0;padding:8px 12px}
   .ro-room{margin-bottom:3px}
@@ -264,41 +349,74 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 <div id="stage"><canvas id="view"></canvas><canvas id="plan" hidden></canvas></div>
 
-<header class="title-block">
-  <div class="tb-cell"><span class="tb-id">a<b>04</b></span></div>
-  <div class="tb-cell">
-    <span class="tb-k">Vivienda</span>
-    <span class="tb-v">Piso B · planta bajocubierta</span>
+<header class="topbar" id="topbar">
+  <div class="tb-r1">
+    <span class="tb-id">a<b>04</b></span>
+    <span class="tb-title">
+      <span class="tb-name">Piso B · planta bajocubierta</span>
+      <span class="tb-sub">Bloque 3 · UE-VP Manzana A, Benasque · planos de ejecución 2015</span>
+    </span>
+    <span class="tb-facts">
+      <span><i>Superficie útil</i><b class="mono">144,76 m²</b></span>
+      <span class="opt"><i>Cota de pavimento</i><b class="mono">+118,00</b></span>
+      <span class="opt2"><i>Cumbrera interior</i><b class="mono">5,00 m · 65 %</b></span>
+    </span>
+    <button class="btn" id="notes-btn" type="button" aria-expanded="false"
+            aria-controls="notes">Cotas y fuentes</button>
   </div>
-  <div class="tb-cell opt">
-    <span class="tb-k">Superficie útil</span>
-    <span class="tb-v mono">144,76 m²</span>
-  </div>
-  <div class="tb-cell opt2">
-    <span class="tb-k">Cota de pavimento</span>
-    <span class="tb-v mono">+118,00</span>
-  </div>
-  <div class="tb-cell opt2">
-    <span class="tb-k">Cumbrera interior</span>
-    <span class="tb-v mono">5,00 m · 65 %</span>
-  </div>
-  <div class="tb-cell tb-grow"></div>
-  <div class="tb-actions">
-    <div class="seg">
-      <button class="btn" id="mode-walk" type="button" aria-pressed="true">Recorrer</button>
-      <button class="btn" id="mode-orbit" type="button" aria-pressed="false">Maqueta</button>
-      <button class="btn" id="mode-plan" type="button" aria-pressed="false">Planta</button>
+
+  <div class="tb-r2">
+    <div class="grp">
+      <span class="grp-k" id="k-vista">Vista</span>
+      <div class="grp-row seg" role="group" aria-labelledby="k-vista">
+        <button class="btn" id="mode-walk" type="button" aria-pressed="true"
+                title="Cámara a 1,62 m · WASD para andar">Recorrer</button>
+        <button class="btn" id="mode-orbit" type="button" aria-pressed="false"
+                title="Maqueta orbital">Maqueta</button>
+        <button class="btn" id="mode-plan" type="button" aria-pressed="false"
+                title="Dibujo 2D a escala">Planta</button>
+      </div>
     </div>
-    <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
-    <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
-    <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
-    <button class="btn" id="t-altillo1" type="button" aria-pressed="false">Altillo 1</button>
-    <button class="btn" id="t-altillo2" type="button" aria-pressed="false">Altillo 2</button>
-    <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
-    <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
-    <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
-    <button class="btn" id="t-furn" type="button" aria-pressed="true">Mobiliario</button>
-    <button class="btn" id="notes-btn" type="button" aria-expanded="false" aria-controls="notes">Cotas y fuentes</button>
+
+    <div class="grp">
+      <span class="grp-k" id="k-prop">Propuesta</span>
+      <div class="grp-row seg seg-prop" role="group" aria-labelledby="k-prop">
+        <button class="btn" id="t-alt0" type="button" aria-pressed="true"
+                title="Lo que hay construido">Estado actual</button>
+        <button class="btn" id="t-altillo1" type="button" aria-pressed="false"
+                title="Altillo sobre el distribuidor y el baño 2">Altillo 1</button>
+        <button class="btn" id="t-altillo2" type="button" aria-pressed="false"
+                title="Altillo sobre el falso techo del rellano">Altillo 2</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <span class="grp-k" id="k-capas">Capas</span>
+      <div class="grp-row" role="group" aria-labelledby="k-capas">
+        <button class="chip" id="t-ceil" type="button" aria-pressed="true"
+                title="Faldón interior">Techo</button>
+        <button class="chip" id="t-shell" type="button" aria-pressed="false"
+                title="Plano de cubierta con el vuelo de alero">Cubierta</button>
+        <button class="chip" id="t-struct" type="button" aria-pressed="false"
+                title="Tiñe pilares y patinillos">Estructura</button>
+        <button class="chip" id="t-furn" type="button" aria-pressed="true"
+                title="Mobiliario y figuras de escala">Mobiliario</button>
+        <button class="chip" id="t-pladur" type="button" aria-pressed="true"
+                title="Bandas de falso techo">Pladur</button>
+        <button class="chip" id="t-labels" type="button" aria-pressed="false"
+                title="Nombre y superficie de cada estancia">Rótulos</button>
+      </div>
+    </div>
+
+    <div class="tb-spacer"></div>
+
+    <div class="grp grp-last">
+      <span class="grp-k" id="k-herr">Herramienta</span>
+      <div class="grp-row" role="group" aria-labelledby="k-herr">
+        <button class="btn tool" id="t-plafond" type="button" aria-pressed="false"
+                title="Crear y editar las zonas de falso techo">Falso techo</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -322,8 +440,8 @@ button{font:inherit;color:inherit;cursor:pointer}
   <button class="btn" data-orb="fit" type="button">Encajar</button>
   <button class="btn" data-orb="top" type="button">Cenital</button>
   <button class="btn" data-orb="iso" type="button">Isométrica</button>
-  <button class="btn" data-orb="alt" type="button" aria-pressed="false"
-          title="Aislar el altillo">Altillo</button>
+  <button class="btn" data-orb="alt" type="button" aria-pressed="false" disabled
+          title="Recorta la escena a la caja del altillo activo">Aislar altillo</button>
   <span class="ot-sep"></span>
   <button class="btn ot-sq" data-orb="n" type="button" title="Alzado Norte">N</button>
   <button class="btn ot-sq" data-orb="s" type="button" title="Alzado Sur">S</button>
@@ -376,6 +494,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 </div>
 
 <section class="notes" id="notes" aria-label="Cotas y fuentes">
+  <div class="notes-bar">
+    <span class="notes-t">Cotas y fuentes</span>
+    <button class="notes-x" id="notes-close" type="button" aria-label="Cerrar">✕</button>
+  </div>
   <h2>Cómo se ha levantado el modelo</h2>
   <p>Geometría medida directamente sobre los vectores de los PDF (escala 1:50 en A1,
      1 pt = 17,64 mm). Sin datos inventados: todo lo que ves procede de los planos.</p>
@@ -640,7 +762,7 @@ button{font:inherit;color:inherit;cursor:pointer}
      continuo desde fuera.</p>
 
   <h3>Altillo sobre el distribuidor y el baño 2 — estudio de volumetría</h3>
-  <p>Propuesta, no estado actual: se enciende con el botón <b>Altillo</b>. La zona
+  <p>Propuesta, no estado actual: se enciende en el selector <b>Propuesta</b>. La zona
      marcada es la mejor del piso para un altillo, porque la <b>cumbrera principal</b>
      (<span class="mono">y = −8,27</span>, 5,00 m) la cruza de Este a Oeste, no hay
      <b>ningún patinillo</b> dentro y el único <b>pilar exento</b>
@@ -737,9 +859,9 @@ button{font:inherit;color:inherit;cursor:pointer}
      <b>al Oeste del pilar</b>, para que al pasar por delante del pilar queden los
      0,98 m enteros. Uno de 2,00 sólo entraría contra el muro Norte, y ahí está la
      escalera. Con la escalera C del CTE ya no cabe.</p>
-  <p><b>El botón «Altillo»</b> de arriba sólo levanta la propuesta: en Maqueta se
+  <p><b>El selector «Propuesta»</b> de arriba sólo levanta el altillo: en Maqueta se
      ve dentro del piso entero, y en Recorrer se anda por él. Para mirarlo
-     <b>aislado</b> está la vista <b>Altillo</b> de la barra de maqueta, junto a
+     <b>aislado</b> está <b>Aislar altillo</b>, en la barra de maqueta, junto a
      <i>Encajar</i>, <i>Cenital</i> e <i>Isométrica</i>: recorta la escena a una caja
      alrededor de la zona —desde el pavimento del distribuidor hasta el faldón,
      para que la escalera se vea entera— y pasa a translúcido los muros, el faldón,
@@ -882,20 +1004,46 @@ button{font:inherit;color:inherit;cursor:pointer}
     <li><b>a01–a03</b> plantas inferiores — comprobación de ejes y espesores.</li>
   </ul>
 
+  <h3>Cómo está ordenada la interfaz</h3>
+  <p>Los controles no son todos de la misma clase, así que no se presentan igual.
+     La barra de arriba lleva dos filas: la primera dice <b>qué</b> se está mirando
+     —la hoja y sus datos—, y la segunda <b>cómo</b>, repartida en cuatro grupos
+     rotulados:</p>
+  <table>
+    <tr><td><b>Vista</b> · segmentado negro</td><td class="mono">Recorrer · Maqueta · Planta</td></tr>
+    <tr><td><b>Propuesta</b> · segmentado ámbar</td><td class="mono">Estado actual · Altillo 1 · Altillo 2</td></tr>
+    <tr><td><b>Capas</b> · interruptores con punto</td><td class="mono">Techo · Cubierta · Estructura · Mobiliario · Pladur · Rótulos</td></tr>
+    <tr><td><b>Herramienta</b> · abre un panel</td><td class="mono">Falso techo</td></tr>
+  </table>
+  <ul>
+    <li><b>Vista y Propuesta son selectores</b>: sólo una opción a la vez, y se ve
+        cuál. Antes «Altillo 1» y «Altillo 2» parecían dos interruptores sueltos
+        aunque fueran excluyentes, y no había manera de pedir explícitamente el
+        estado actual. Ahora son tres botones de un mismo mando, con
+        <b>Estado actual</b> como opción de pleno derecho.</li>
+    <li><b>Las propuestas van en ámbar</b>, y mientras haya una encendida la barra
+        lleva un filo ámbar arriba: lo que se está viendo no es lo construido, y
+        eso no debería poder olvidarse.</li>
+    <li><b>Las capas son interruptores independientes</b> y por eso tienen otra
+        forma —píldora con punto—: se pueden combinar como se quiera y ninguna
+        cambia el modelo, sólo lo que se dibuja.</li>
+    <li><b>Falso techo es lo único que edita</b>, así que va aparte, a la derecha,
+        y abre su propio panel. Su resultado se muestra u oculta con la capa
+        <b>Pladur</b>.</li>
+    <li>La lista de la izquierda separa las <b>estancias</b> construidas de las
+        <b>propuestas</b>; entrar en una de éstas enciende su altillo.</li>
+    <li>La barra inferior de <b>Maqueta</b> lleva los encuadres, los cuatro alzados
+        y <b>Aislar altillo</b>, que aparece apagado mientras no haya propuesta
+        activa, porque no habría nada que aislar.</li>
+    <li>Los dos paneles de la derecha —éste y el de falso techo— se excluyen, y se
+        cierran con la ✕ o con <kbd>esc</kbd>.</li>
+  </ul>
+
   <h3>Simplificaciones</h3>
   <ul>
     <li>Tabiquería secundaria, armarios y aparatos sanitarios están resueltos
         como volúmenes simples, a modo de referencia de escala.</li>
-    <li>El botón <b>Estructura</b> tiñe pilares y patinillos para localizarlos
-        de un vistazo.</li>
-    <li>El botón <b>Falso techo</b> crea y modifica las zonas de pladur con su
-        altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
-        mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>Los botones <b>Altillo 1</b> y <b>Altillo 2</b> encienden una u otra
-        propuesta —son excluyentes—; la vista <b>Altillo</b> de la barra de maqueta
-        aísla la que esté activa, y las de la lista de estancias suben la cámara al
-        tablero.</li>
     <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
         sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta
         estorbaba.</li>
@@ -2599,8 +2747,11 @@ function bindControls() {
     pladurOn = v; syncZoneVis();
   });
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
-  [1, 2].forEach(k => { document.getElementById('t-altillo' + k).onclick = e =>
-    setAltillo(e.currentTarget.getAttribute('aria-pressed') === 'true' ? 0 : k); });
+  /* «Propuesta» es un segmentado de tres estados excluyentes; pulsar la
+     activa no hace nada, para que el control se comporte como un selector */
+  document.getElementById('t-alt0').onclick = () => setAltillo(0);
+  [1, 2].forEach(k => { document.getElementById('t-altillo' + k).onclick =
+    () => setAltillo(k); });
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -2642,11 +2793,18 @@ function bindControls() {
   };
   hold('tp-fwd', 'w'); hold('tp-back', 's');
 
-  document.getElementById('notes-btn').onclick = () => {
-    const p = document.getElementById('notes');
-    const open = p.classList.toggle('open');
-    document.getElementById('notes-btn').setAttribute('aria-expanded', open);
-  };
+  /* la barra crece al envolverse en pantallas estrechas: se mide y se
+     publica como --topbar-h para que las notas y el índice no la pisen  */
+  const bar = document.getElementById('topbar');
+  const measureBar = () => document.documentElement.style
+    .setProperty('--topbar-h', Math.round(bar.getBoundingClientRect().height) + 'px');
+  measureBar();
+  if (window.ResizeObserver) new ResizeObserver(measureBar).observe(bar);
+  else addEventListener('resize', measureBar);
+
+  document.getElementById('notes-btn').onclick = () => setNotes(!notesOpen());
+  document.getElementById('notes-close').onclick = () => setNotes(false);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && notesOpen()) setNotes(false); });
 }
 function toggle(el, fn) {
   const on = el.getAttribute('aria-pressed') !== 'true';
@@ -2685,14 +2843,23 @@ function setMode(m) {
 }
 function buildViewButtons() {
   const nav = document.getElementById('views');
+  let sep = false;
   VIEWS.forEach(v => {
+    /* las dos vistas de altillo no son estancias construidas: van en su
+       propio bloque, detrás de un separador rotulado                     */
+    if (v.alt && !sep) {
+      sep = true;
+      const h = document.createElement('div');
+      h.className = 'index-h index-h2'; h.textContent = 'Propuestas';
+      nav.appendChild(h);
+    }
     const b = document.createElement('button');
-    b.className = 'view-btn'; b.type = 'button';
+    b.className = 'view-btn' + (v.alt ? ' view-alt' : ''); b.type = 'button';
     b.innerHTML = '<span class="vn">' + v.name + '</span>';
     b.onclick = () => {
       setMode('walk');
       applyView(v);
-      [...nav.children].forEach(k => k.setAttribute('aria-current', 'false'));
+      nav.querySelectorAll('.view-btn').forEach(k => k.setAttribute('aria-current', 'false'));
       b.setAttribute('aria-current', 'true');
     };
     nav.appendChild(b);
@@ -2797,8 +2964,13 @@ function setAltillo(n) {
   if (core.shaft) core.shaft.visible = (n !== 2);
   if (core.plafondFull) core.plafondFull.visible = (n === 2);
   if (!n) { onAltillo = false; setSolo(false); }
-  [1, 2].forEach(k => { const b = document.getElementById('t-altillo' + k);
+  [0, 1, 2].forEach(k => {
+    const b = document.getElementById(k ? 't-altillo' + k : 't-alt0');
     if (b) b.setAttribute('aria-pressed', n === k ? 'true' : 'false'); });
+  document.getElementById('topbar').classList.toggle('proposal', !!n);
+  const iso = document.querySelector('#orbtools [data-orb="alt"]');
+  if (iso) iso.disabled = !n;              // sin propuesta no hay nada que aislar
+
   applyIso();
   plan.dirty = true;
 }
@@ -2887,11 +3059,25 @@ const n2 = v => v.toFixed(2).replace('.', ',');
    -------------------------------------------------------------------- */
 const STORE = 'piso-b-falsos-techos';
 
+/* Los dos paneles de la derecha —notas y herramienta de falso techo— se
+   excluyen: apilados se tapaban entre sí y a la chuleta de teclas.      */
+const notesOpen = () => document.getElementById('notes').classList.contains('open');
+function syncHint() {
+  document.querySelector('.hint').hidden = plafonding || notesOpen();
+}
+function setNotes(v) {
+  if (v && plafonding) setPlafond(false);
+  document.getElementById('notes').classList.toggle('open', v);
+  document.getElementById('notes-btn').setAttribute('aria-expanded', v);
+  if (v) document.getElementById('notes').scrollTop = 0;
+  syncHint();
+}
 function setPlafond(v) {
+  if (v && notesOpen()) setNotes(false);
   plafonding = v;
   document.getElementById('t-plafond').setAttribute('aria-pressed', v);
   document.getElementById('plafond').hidden = !v;
-  document.querySelector('.hint').hidden = v;
+  syncHint();
   syncZoneVis();
   if (v) { pending = null; renderZones(); }
 }
