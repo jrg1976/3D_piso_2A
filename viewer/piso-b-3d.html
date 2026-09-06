@@ -321,6 +321,8 @@ button{font:inherit;color:inherit;cursor:pointer}
   <button class="btn" data-orb="fit" type="button">Encajar</button>
   <button class="btn" data-orb="top" type="button">Cenital</button>
   <button class="btn" data-orb="iso" type="button">Isométrica</button>
+  <button class="btn" data-orb="alt" type="button" aria-pressed="false"
+          title="Aislar el altillo">Altillo</button>
   <span class="ot-sep"></span>
   <button class="btn ot-sq" data-orb="n" type="button" title="Alzado Norte">N</button>
   <button class="btn ot-sq" data-orb="s" type="button" title="Alzado Sur">S</button>
@@ -709,13 +711,16 @@ button{font:inherit;color:inherit;cursor:pointer}
      <b>al Oeste del pilar</b>, para que al pasar por delante del pilar queden los
      0,98 m enteros. Uno de 2,00 sólo entraría contra el muro Norte, y ahí está la
      escalera. Con la escalera C del CTE ya no cabe.</p>
-  <p><b>El botón «Altillo»</b> levanta la propuesta y, en <b>Maqueta</b>, recorta la
-     escena a una caja alrededor de la zona —desde el pavimento del distribuidor
-     hasta el faldón, para que la escalera se vea entera— y pasa muros y faldón a
-     translúcido. El aislado <b>sólo se aplica en Maqueta</b>: al pasar a
-     <i>Recorrer</i> se quita el recorte, todo vuelve a ser opaco (se ven los techos
-     desde dentro) y la cámara sube al tablero; al volver a <b>Maqueta</b>, se
-     reencuadra el altillo.</p>
+  <p><b>El botón «Altillo»</b> de arriba sólo levanta la propuesta: en Maqueta se
+     ve dentro del piso entero, y en Recorrer se anda por él. Para mirarlo
+     <b>aislado</b> está la vista <b>Altillo</b> de la barra de maqueta, junto a
+     <i>Encajar</i>, <i>Cenital</i> e <i>Isométrica</i>: recorta la escena a una caja
+     alrededor de la zona —desde el pavimento del distribuidor hasta el faldón,
+     para que la escalera se vea entera— y pasa muros y faldón a translúcido.
+     Cualquier otra vista de esa barra devuelve la maqueta completa.</p>
+  <p>El aislado <b>sólo se aplica en Maqueta</b>: al pasar a <i>Recorrer</i> se quita
+     el recorte, todo vuelve a ser opaco (se ven los techos desde dentro) y la
+     cámara sube al tablero; al volver a <b>Maqueta</b>, se reencuadra el altillo.</p>
   <p><b>A verificar antes de nada.</b> Altura libre mínima admitida debajo y cómputo
      de la superficie del altillo (normativa de habitabilidad de Aragón y ordenanza
      de Benasque: si computa como superficie habitable puede consumir
@@ -760,9 +765,9 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>El botón <b>Altillo</b> enciende la propuesta y la aísla en Maqueta; en
-        Recorrer se anda por el tablero. La vista <i>Altillo</i> de la lista de
-        estancias hace lo mismo sin tocar el resto.</li>
+    <li>El botón <b>Altillo</b> enciende la propuesta; la vista <b>Altillo</b> de la
+        barra de maqueta la aísla, y la de la lista de estancias sube la cámara al
+        tablero.</li>
     <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
         sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta
         estorbaba.</li>
@@ -2448,7 +2453,8 @@ function walkOk(x, y) {
        que lo delimitan, seccionados.  --------------------------------- */
 function altilloBox() {
   const A = ALTILLO;
-  let b = { x0: 1e9, y0: 1e9, z0: A.z - A.t, x1: -1e9, y1: -1e9, z1: -1e9 };
+  // desde el pavimento: el recorte y el encuadre incluyen la escalera
+  let b = { x0: 1e9, y0: 1e9, z0: 0, x1: -1e9, y1: -1e9, z1: -1e9 };
   A.deck.forEach(r => {
     b.x0 = Math.min(b.x0, r[0]); b.x1 = Math.max(b.x1, r[2]);
     b.y0 = Math.min(b.y0, r[1]); b.y1 = Math.max(b.y1, r[3]);
@@ -2482,20 +2488,29 @@ function applyIso() {
 function frameAltillo() {
   const b = altilloBox(), az = -0.62, el = 0.42;
   orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
-            tz: (b.z0 + b.z1) / 2 + 0.35, dist: fitDist(b, az, el, 1.10) });
+            tz: (b.z0 + b.z1) / 2 + 0.20, dist: fitDist(b, az, el, 1.06) });
 }
-function setAltillo(v, quiet) {
-  altilloOn = v; soloAlt = v;
+/* El botón «Altillo» sólo levanta la propuesta: en maqueta se ve dentro del
+   piso entero.  Para mirarlo aislado está la vista «Altillo» de la barra de
+   maqueta, que es donde vive el encuadre.                                  */
+function setAltillo(v) {
+  altilloOn = v;
   altillo.group.visible = v;
   altillo.patch.visible = !v;
   if (apt) apt.cutWalls.visible = !v;
-  if (!v) onAltillo = false;
+  if (!v) { onAltillo = false; setSolo(false); }
   const b = document.getElementById('t-altillo');
   if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
-  if (!quiet && v && mode !== 'orbit') setMode('orbit');
   applyIso();
-  if (!quiet && v) frameAltillo();
   plan.dirty = true;
+}
+function setSolo(v) {
+  soloAlt = v;
+  if (v && !altilloOn) setAltillo(true);
+  const b = document.querySelector('#orbtools [data-orb="alt"]');
+  if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
+  applyIso();
+  if (v && mode === 'orbit') frameAltillo();
 }
 function place() {
   const wantFov = mode === 'orbit' ? ORBIT_FOV : walkFov;
@@ -2923,7 +2938,8 @@ function bindOrbTools() {
       const k = b.dataset.orb;
       if (k === 'in') orbZoom(-1);
       else if (k === 'out') orbZoom(1);
-      else orbView(k);
+      else if (k === 'alt') setSolo(true);
+      else { setSolo(false); orbView(k); }
     };
   });
 }
@@ -3498,7 +3514,7 @@ function crossMark(g, p, color, solid) {
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
-  if (v.alt && !altilloOn) setAltillo(true, true);
+  if (v.alt && !altilloOn) setAltillo(true);
   onAltillo = !!v.alt;
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;

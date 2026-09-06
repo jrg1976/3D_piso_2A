@@ -72,8 +72,9 @@ autocontenido (three.js incluido), sin dependencias externas.
   Velux propuesto, mobiliario y los tabiques que habría que derribar por encima.
   En *Planta* se sombrea por bandas de altura libre; la vista *Altillo* sube la
   cámara al tablero y se anda por él.
-  El botón lo aísla en Maqueta —recorta la escena a su caja y pasa muros y faldón
-  a translúcido— y en Recorrer devuelve todo a opaco y sube la cámara al tablero.
+  El botón lo levanta dentro del piso; la vista *Altillo* de la barra de maqueta
+  lo aísla —recorta la escena a su caja y pasa muros y faldón a translúcido— y en
+  Recorrer devuelve todo a opaco y sube la cámara al tablero.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -440,10 +441,13 @@ para que al pasar por delante del pilar queden los 0,98 m enteros. Uno de 2,00
 sólo entraría contra el muro Norte, y ahí está la escalera. Con la escalera C del
 CTE ya no cabe.
 
-**Volumetría aislada.** El botón **Altillo** levanta la propuesta y, en Maqueta,
+**Volumetría aislada.** El botón **Altillo** de la cartela sólo levanta la
+propuesta: en Maqueta se ve dentro del piso entero. El aislado es una **vista de
+la barra de maqueta** (`data-orb="alt"`), junto a Encajar / Cenital / Isométrica:
 pone seis `THREE.Plane` de recorte global en el renderer alrededor de la caja del
 altillo —desde el pavimento del distribuidor hasta el faldón, para que la
-escalera se vea entera— y pasa muros y faldón a translúcido.
+escalera se vea entera— y pasa muros y faldón a translúcido. Cualquier otra vista
+de esa barra lo desactiva.
 
 `applyIso()` sólo aplica el recorte cuando `mode === 'orbit'`: en *Recorrer* el
 recorte dejaba fuera todo lo que hay por debajo de la caja y no se veía nada, y

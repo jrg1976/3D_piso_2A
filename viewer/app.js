@@ -345,7 +345,8 @@ function walkOk(x, y) {
        que lo delimitan, seccionados.  --------------------------------- */
 function altilloBox() {
   const A = ALTILLO;
-  let b = { x0: 1e9, y0: 1e9, z0: A.z - A.t, x1: -1e9, y1: -1e9, z1: -1e9 };
+  // desde el pavimento: el recorte y el encuadre incluyen la escalera
+  let b = { x0: 1e9, y0: 1e9, z0: 0, x1: -1e9, y1: -1e9, z1: -1e9 };
   A.deck.forEach(r => {
     b.x0 = Math.min(b.x0, r[0]); b.x1 = Math.max(b.x1, r[2]);
     b.y0 = Math.min(b.y0, r[1]); b.y1 = Math.max(b.y1, r[3]);
@@ -379,20 +380,29 @@ function applyIso() {
 function frameAltillo() {
   const b = altilloBox(), az = -0.62, el = 0.42;
   orbGoto({ az, el, tx: (b.x0 + b.x1) / 2, ty: (b.y0 + b.y1) / 2,
-            tz: (b.z0 + b.z1) / 2 + 0.35, dist: fitDist(b, az, el, 1.10) });
+            tz: (b.z0 + b.z1) / 2 + 0.20, dist: fitDist(b, az, el, 1.06) });
 }
-function setAltillo(v, quiet) {
-  altilloOn = v; soloAlt = v;
+/* El botón «Altillo» sólo levanta la propuesta: en maqueta se ve dentro del
+   piso entero.  Para mirarlo aislado está la vista «Altillo» de la barra de
+   maqueta, que es donde vive el encuadre.                                  */
+function setAltillo(v) {
+  altilloOn = v;
   altillo.group.visible = v;
   altillo.patch.visible = !v;
   if (apt) apt.cutWalls.visible = !v;
-  if (!v) onAltillo = false;
+  if (!v) { onAltillo = false; setSolo(false); }
   const b = document.getElementById('t-altillo');
   if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
-  if (!quiet && v && mode !== 'orbit') setMode('orbit');
   applyIso();
-  if (!quiet && v) frameAltillo();
   plan.dirty = true;
+}
+function setSolo(v) {
+  soloAlt = v;
+  if (v && !altilloOn) setAltillo(true);
+  const b = document.querySelector('#orbtools [data-orb="alt"]');
+  if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
+  applyIso();
+  if (v && mode === 'orbit') frameAltillo();
 }
 function place() {
   const wantFov = mode === 'orbit' ? ORBIT_FOV : walkFov;
@@ -820,7 +830,8 @@ function bindOrbTools() {
       const k = b.dataset.orb;
       if (k === 'in') orbZoom(-1);
       else if (k === 'out') orbZoom(1);
-      else orbView(k);
+      else if (k === 'alt') setSolo(true);
+      else { setSolo(false); orbView(k); }
     };
   });
 }
@@ -1395,7 +1406,7 @@ function crossMark(g, p, color, solid) {
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
-  if (v.alt && !altilloOn) setAltillo(true, true);
+  if (v.alt && !altilloOn) setAltillo(true);
   onAltillo = !!v.alt;
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;
