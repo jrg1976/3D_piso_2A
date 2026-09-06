@@ -455,9 +455,9 @@ function veluxPane(M, v, lift) {
    botón «Altillo»; mientras está apagado, `patch` tapa el hueco que se
    le ha recortado al faldón para el Velux nuevo.
    --------------------------------------------------------------------- */
-function buildAltillo() {
+function buildAltillo(A) {
   const group = new THREE.Group();
-  const S = THREE.DoubleSide, A = ALTILLO;
+  const S = THREE.DoubleSide;
   const zb = A.z - A.t;                                   // cara inferior
   const Md = new Mesher(), Mr = new Mesher(), Ms = new Mesher(), Mg = new Mesher();
   const bx = (M, x0, y0, x1, y1, z0, z1) => M.box(
@@ -498,29 +498,39 @@ function buildAltillo() {
   });
 
   // --- escalera bajo el hueco: peldaños alternos si A.stair.alt
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ta = A.z / K.n, ym = (K.y0 + K.y1) / 2;
+  /* La escalera puede subir en x (dir 'x', por defecto) o en y.  `P(u,v)`
+     pasa de coordenadas «a lo largo / a lo ancho» a x,y del plano.       */
+  const K = A.stair, ta = A.z / K.n, yy = K.dir === 'y';
+  const u0 = yy ? K.y0 : K.x0, u1 = yy ? K.y1 : K.x1;
+  const v0 = yy ? K.x0 : K.y0, v1 = yy ? K.x1 : K.y1;
+  const hu = (u1 - u0) / K.n, vm = (v0 + v1) / 2;
+  const R = (ua, va, ub, vb, z0, z1) => yy
+    ? bx(Ms, Math.min(va,vb), Math.min(ua,ub), Math.max(va,vb), Math.max(ua,ub), z0, z1)
+    : bx(Ms, Math.min(ua,ub), Math.min(va,vb), Math.max(ua,ub), Math.max(va,vb), z0, z1);
   for (let i = 1; i <= K.n; i++) {
-    const xa = K.x0 + (i-1)*hu, xb = xa + hu + 0.02;
-    const ya = K.alt ? (i % 2 ? K.y0 : ym) : K.y0;
-    const yb = K.alt ? (i % 2 ? ym : K.y1) : K.y1;
-    bx(Ms, xa, ya, xb, yb, i*ta - 0.05, i*ta);
+    const ua = u0 + (i-1)*hu, ub = ua + hu + 0.02 * Math.sign(hu);
+    const va = K.alt ? (i % 2 ? v0 : vm) : v0;
+    const vb = K.alt ? (i % 2 ? vm : v1) : v1;
+    R(ua, va, ub, vb, i*ta - 0.05, i*ta);
   }
   /* zancas y pasamanos: prismas inclinados de una pieza (los vértices
      inferiores y superiores de Mesher.box pueden llevar z distinta) */
-  const band = (y, e, z0, z1) => Ms.box(
-    [V(K.x0, y-e, z0), V(K.x1, y-e, A.z+z0), V(K.x1, y+e, A.z+z0), V(K.x0, y+e, z0)],
-    [V(K.x0, y-e, z1), V(K.x1, y-e, A.z+z1), V(K.x1, y+e, A.z+z1), V(K.x0, y+e, z1)]);
-  band(K.y0 + 0.03, 0.03, -0.19, 0.01);                    // zanca Sur
-  band(K.y1 - 0.03, 0.03, -0.19, 0.01);                    // zanca Norte
-  band(K.y0 + 0.02, 0.022, 0.86, 0.92);                    // pasamanos
+  const P = (u, v, z) => yy ? V(v, u, z) : V(u, v, z);
+  const band = (v, e, z0, z1) => Ms.box(
+    [P(u0, v-e, z0), P(u1, v-e, A.z+z0), P(u1, v+e, A.z+z0), P(u0, v+e, z0)],
+    [P(u0, v-e, z1), P(u1, v-e, A.z+z1), P(u1, v+e, A.z+z1), P(u0, v+e, z1)]);
+  const vin = v0 < v1 ? 1 : -1;
+  band(v0 + 0.03*vin, 0.03, -0.19, 0.01);                  // zanca
+  band(v1 - 0.03*vin, 0.03, -0.19, 0.01);                  // zanca
+  band(v0 + 0.02*vin, 0.022, 0.86, 0.92);                  // pasamanos
   for (let i = 1; i < 4; i++) {                            // montantes
-    const u = i / 4, px = K.x0 + (K.x1 - K.x0) * u;
-    bx(Ms, px - 0.022, K.y0, px + 0.022, K.y0 + 0.044, A.z*u - 0.02, A.z*u + 0.92);
+    const u = i / 4, pu = u0 + (u1 - u0) * u, pv = v0 + 0.022*vin;
+    R(pu - 0.022, pv - 0.022, pu + 0.022, pv + 0.022, A.z*u - 0.02, A.z*u + 0.92);
   }
 
-  // --- tabiques del baño 2 recortados a la cota del forjado
+  // --- tabiques del baño 2 recortados a la cota del forjado (altillo 1)
   const Mc = new Mesher();
-  WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
+  if (A.id === 'alt1') WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
 
   // --- mobiliario, apoyado en el tablero.  Ropa de cama aparte, en un tono
   //     claro, para que se vea de un vistazo dónde va la almohada
@@ -546,9 +556,9 @@ function buildAltillo() {
     bx(Mu, x0, y0, x1, y1, A.z + 0.02, A.z + hh);
   });
 
-  // --- Velux nuevo sobre el baño 2
-  const v = VELUX.find(k => k.id === A.velux);
-  veluxPane(Mg, v);
+  // --- Velux nuevo (sólo el altillo 1 lo lleva)
+  const v = A.velux ? VELUX.find(k => k.id === A.velux) : null;
+  if (v) veluxPane(Mg, v);
 
   const add = (M, m, sh) => { if (M.empty) return null;
     const o = new THREE.Mesh(M.geometry(), m);
@@ -563,12 +573,15 @@ function buildAltillo() {
     transparent: true, opacity: 0.22, depthWrite: false }), false);
 
   // parche del faldón mientras el altillo está apagado
-  const Mp = new Mesher();
-  veluxPane(Mp, v, 0.0);
-  const patch = new THREE.Mesh(Mp.geometry(),
-    new THREE.MeshLambertMaterial({ color: 0xe4d9c4, side: S }));
+  let patch = null;
+  if (v) {
+    const Mp = new Mesher();
+    veluxPane(Mp, v, 0.0);
+    patch = new THREE.Mesh(Mp.geometry(),
+      new THREE.MeshLambertMaterial({ color: 0xe4d9c4, side: S }));
+  }
   group.visible = false;
-  return { group, patch };
+  return { A, group, patch };
 }
 
 /* ------------------- envolvente de cubierta (modo maqueta) ------------

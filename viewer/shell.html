@@ -292,7 +292,8 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
     <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
-    <button class="btn" id="t-altillo" type="button" aria-pressed="false">Altillo</button>
+    <button class="btn" id="t-altillo1" type="button" aria-pressed="false">Altillo 1</button>
+    <button class="btn" id="t-altillo2" type="button" aria-pressed="false">Altillo 2</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -736,6 +737,57 @@ button{font:inherit;color:inherit;cursor:pointer}
      extracción del baño 2 hasta el patinillo, que ahora va por el falso techo y
      tendrá que caber en el canto del forjado nuevo.</p>
 
+  <h3>Altillo 2 — sobre el falso techo del rellano</h3>
+  <p>Segunda opción. El rellano tiene 9,30 m² y su falso techo está a
+     <span class="mono">2,35</span>, así que por encima queda un volumen libre
+     hasta el faldón. Tablero a <span class="mono">2,55</span> (2,35 + 0,20 de
+     forjado), respetando la altura del rellano.</p>
+  <table>
+    <tr><td>Suelo pisable (descontado el cañón de luz)</td><td class="mono">9,11 m²</td></tr>
+    <tr><td>Con h ≥ 1,50</td><td class="mono">6,72 m²</td></tr>
+    <tr><td>Con h ≥ 1,90 (de pie)</td><td class="mono">3,32 m²</td></tr>
+    <tr><td>Con h ≥ 2,20</td><td class="mono">1,56 m²</td></tr>
+    <tr><td>Altura media / máxima</td><td class="mono">1,76 / 2,44 m</td></tr>
+    <tr><td>Volumen</td><td class="mono">16,0 m³</td></tr>
+  </table>
+  <p><b>Por qué sale peor.</b> Aquí no manda la cumbrera principal sino el
+     <b>hastial Norte</b>, con la cumbrera N–S en <span class="mono">x = 14,60</span>
+     y faldones al 61 %: la franja alta es una banda estrecha Norte–Sur y a 1,60 m
+     de ella el faldón ya ha bajado un metro. En el altillo 1, en cambio, la
+     cumbrera principal (5,00 m) cruza toda la zona de Este a Oeste. De ahí que
+     el de pie pase de <span class="mono">7,60</span> a
+     <span class="mono">3,32 m²</span>.</p>
+  <p><b>El cañón de luz lo atraviesa.</b> La Velux del rellano baja por un cañón de
+     0,75 × 0,98 hasta el falso techo, y es la <b>única luz natural</b> del rellano:
+     no se puede tapar. Se le deja el hueco (0,74 m²) y el altillo queda partido en
+     dos alrededor. A cambio, si se acristalan las paredes del cañón por encima del
+     tablero, el altillo se ilumina con esa misma Velux.</p>
+  <p><b>Acceso.</b> Escalera de peldaños alternos de 2,45 m en el estudio, contra su
+     muro Este, y paso por encima del forjado a través del muro
+     <span class="mono">x = 11,27</span>. Cuesta 1,5 m² del estudio.</p>
+  <p><b>Lo que cabe.</b> Cama de 1,20 × 1,90 con el cabecero al Oeste, contra la caja
+     del lucernario: ahí la cumbrera del hastial deja <span class="mono">2,41 m</span>
+     sobre el colchón —el mejor sitio de los dos altillos para incorporarse en la
+     cama— y los pies quedan bajo el alero, a 1,50. Y almacenaje bajo contra el
+     antepecho. <b>No cabe escritorio</b>: donde hay altura para sentarse no hay
+     fondo, y donde hay fondo el faldón está a 1,45.</p>
+  <p><b>El problema de fondo: el rellano es elemento común.</b> El vuelo sobre su
+     falso techo no pertenece a la vivienda. Anexionarlo no es una obra interior:
+     exige acuerdo de la comunidad de propietarios y, al alterar la superficie
+     privativa, muy probablemente modificación del título constitutivo —es decir,
+     unanimidad—. El altillo 1 es obra dentro de casa; éste no.</p>
+  <table>
+    <tr><td>&nbsp;</td><td class="mono">Altillo 1 · Altillo 2</td></tr>
+    <tr><td>Sobre</td><td class="mono">privativo · común</td></tr>
+    <tr><td>Tablero / libre debajo</td><td class="mono">2,45 / 2,25 · 2,55 / 2,35</td></tr>
+    <tr><td>Pisable</td><td class="mono">9,57 · 9,11 m²</td></tr>
+    <tr><td>h ≥ 1,50</td><td class="mono">9,34 · 6,72 m²</td></tr>
+    <tr><td>h ≥ 1,90</td><td class="mono">7,60 · 3,32 m²</td></tr>
+    <tr><td>Altura media</td><td class="mono">2,12 · 1,76 m</td></tr>
+    <tr><td>Volumen</td><td class="mono">20,3 · 16,0 m³</td></tr>
+    <tr><td>Mobiliario</td><td class="mono">cama+armario+mesa · cama+almacenaje</td></tr>
+  </table>
+
   <h3>Comprobación del modelo</h3>
   <p>Antes de empaquetar el visor se pasan dos pruebas sobre la geometría:</p>
   <ul>
@@ -771,8 +823,9 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>El botón <b>Altillo</b> enciende la propuesta; la vista <b>Altillo</b> de la
-        barra de maqueta la aísla, y la de la lista de estancias sube la cámara al
+    <li>Los botones <b>Altillo 1</b> y <b>Altillo 2</b> encienden una u otra
+        propuesta —son excluyentes—; la vista <b>Altillo</b> de la barra de maqueta
+        aísla la que esté activa, y las de la lista de estancias suben la cámara al
         tablero.</li>
     <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
         sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta

@@ -292,7 +292,8 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button class="btn" id="t-labels" type="button" aria-pressed="false">Rótulos</button>
     <button class="btn" id="t-plafond" type="button" aria-pressed="false">Falso techo</button>
     <button class="btn" id="t-pladur" type="button" aria-pressed="true">Pladur</button>
-    <button class="btn" id="t-altillo" type="button" aria-pressed="false">Altillo</button>
+    <button class="btn" id="t-altillo1" type="button" aria-pressed="false">Altillo 1</button>
+    <button class="btn" id="t-altillo2" type="button" aria-pressed="false">Altillo 2</button>
     <button class="btn" id="t-struct" type="button" aria-pressed="false">Estructura</button>
     <button class="btn" id="t-ceil" type="button" aria-pressed="true">Techo</button>
     <button class="btn" id="t-shell" type="button" aria-pressed="false">Cubierta</button>
@@ -736,6 +737,57 @@ button{font:inherit;color:inherit;cursor:pointer}
      extracción del baño 2 hasta el patinillo, que ahora va por el falso techo y
      tendrá que caber en el canto del forjado nuevo.</p>
 
+  <h3>Altillo 2 — sobre el falso techo del rellano</h3>
+  <p>Segunda opción. El rellano tiene 9,30 m² y su falso techo está a
+     <span class="mono">2,35</span>, así que por encima queda un volumen libre
+     hasta el faldón. Tablero a <span class="mono">2,55</span> (2,35 + 0,20 de
+     forjado), respetando la altura del rellano.</p>
+  <table>
+    <tr><td>Suelo pisable (descontado el cañón de luz)</td><td class="mono">9,11 m²</td></tr>
+    <tr><td>Con h ≥ 1,50</td><td class="mono">6,72 m²</td></tr>
+    <tr><td>Con h ≥ 1,90 (de pie)</td><td class="mono">3,32 m²</td></tr>
+    <tr><td>Con h ≥ 2,20</td><td class="mono">1,56 m²</td></tr>
+    <tr><td>Altura media / máxima</td><td class="mono">1,76 / 2,44 m</td></tr>
+    <tr><td>Volumen</td><td class="mono">16,0 m³</td></tr>
+  </table>
+  <p><b>Por qué sale peor.</b> Aquí no manda la cumbrera principal sino el
+     <b>hastial Norte</b>, con la cumbrera N–S en <span class="mono">x = 14,60</span>
+     y faldones al 61 %: la franja alta es una banda estrecha Norte–Sur y a 1,60 m
+     de ella el faldón ya ha bajado un metro. En el altillo 1, en cambio, la
+     cumbrera principal (5,00 m) cruza toda la zona de Este a Oeste. De ahí que
+     el de pie pase de <span class="mono">7,60</span> a
+     <span class="mono">3,32 m²</span>.</p>
+  <p><b>El cañón de luz lo atraviesa.</b> La Velux del rellano baja por un cañón de
+     0,75 × 0,98 hasta el falso techo, y es la <b>única luz natural</b> del rellano:
+     no se puede tapar. Se le deja el hueco (0,74 m²) y el altillo queda partido en
+     dos alrededor. A cambio, si se acristalan las paredes del cañón por encima del
+     tablero, el altillo se ilumina con esa misma Velux.</p>
+  <p><b>Acceso.</b> Escalera de peldaños alternos de 2,45 m en el estudio, contra su
+     muro Este, y paso por encima del forjado a través del muro
+     <span class="mono">x = 11,27</span>. Cuesta 1,5 m² del estudio.</p>
+  <p><b>Lo que cabe.</b> Cama de 1,20 × 1,90 con el cabecero al Oeste, contra la caja
+     del lucernario: ahí la cumbrera del hastial deja <span class="mono">2,41 m</span>
+     sobre el colchón —el mejor sitio de los dos altillos para incorporarse en la
+     cama— y los pies quedan bajo el alero, a 1,50. Y almacenaje bajo contra el
+     antepecho. <b>No cabe escritorio</b>: donde hay altura para sentarse no hay
+     fondo, y donde hay fondo el faldón está a 1,45.</p>
+  <p><b>El problema de fondo: el rellano es elemento común.</b> El vuelo sobre su
+     falso techo no pertenece a la vivienda. Anexionarlo no es una obra interior:
+     exige acuerdo de la comunidad de propietarios y, al alterar la superficie
+     privativa, muy probablemente modificación del título constitutivo —es decir,
+     unanimidad—. El altillo 1 es obra dentro de casa; éste no.</p>
+  <table>
+    <tr><td>&nbsp;</td><td class="mono">Altillo 1 · Altillo 2</td></tr>
+    <tr><td>Sobre</td><td class="mono">privativo · común</td></tr>
+    <tr><td>Tablero / libre debajo</td><td class="mono">2,45 / 2,25 · 2,55 / 2,35</td></tr>
+    <tr><td>Pisable</td><td class="mono">9,57 · 9,11 m²</td></tr>
+    <tr><td>h ≥ 1,50</td><td class="mono">9,34 · 6,72 m²</td></tr>
+    <tr><td>h ≥ 1,90</td><td class="mono">7,60 · 3,32 m²</td></tr>
+    <tr><td>Altura media</td><td class="mono">2,12 · 1,76 m</td></tr>
+    <tr><td>Volumen</td><td class="mono">20,3 · 16,0 m³</td></tr>
+    <tr><td>Mobiliario</td><td class="mono">cama+armario+mesa · cama+almacenaje</td></tr>
+  </table>
+
   <h3>Comprobación del modelo</h3>
   <p>Antes de empaquetar el visor se pasan dos pruebas sobre la geometría:</p>
   <ul>
@@ -771,8 +823,9 @@ button{font:inherit;color:inherit;cursor:pointer}
         altura y las exporta; <b>Pladur</b> las muestra u oculta, para poder
         mirar la maqueta sin ellas.</li>
     <li>Las figuras humanas miden 1,75 m.</li>
-    <li>El botón <b>Altillo</b> enciende la propuesta; la vista <b>Altillo</b> de la
-        barra de maqueta la aísla, y la de la lista de estancias sube la cámara al
+    <li>Los botones <b>Altillo 1</b> y <b>Altillo 2</b> encienden una u otra
+        propuesta —son excluyentes—; la vista <b>Altillo</b> de la barra de maqueta
+        aísla la que esté activa, y las de la lista de estancias suben la cámara al
         tablero.</li>
     <li>El canto ámbar de las bandas de pladur es una ayuda para editarlas, así que
         sólo sale con la herramienta de <b>Falso techo</b> abierta: en la maqueta
@@ -1244,6 +1297,7 @@ const FURNITURE = [
    sólo quedan distribuidor y baño).
    -------------------------------------------------------------------- */
 const ALTILLO = {
+  id: 'alt1', name: 'Altillo 1 · distribuidor y baño 2',
   z: 2.45,            // cara superior del tablero
   t: 0.20,            // canto del forjado nuevo (viguetas + tablero)
   /* huella: distribuidor + baño 2, pasando por encima del tabique */
@@ -1267,6 +1321,7 @@ const ALTILLO = {
   stair: { x0: 16.04, x1: 18.45, y0: -8.14, y1: -7.56, n: 11, alt: true },
   velux: 'v-alt',
   bands: [1.20, 1.50, 1.90, 2.20],
+  label: { x:17.30, y:-8.36, txt:'ALTILLO 1  +2,45', sub:'9,34 m² con h ≥ 1,50' },
   /* mobiliario que cabe, colocado según la altura libre de cada franja.
      [x0, y0, x1, y1, alto, tipo, arranque]  ·  cotas desde el tablero    */
   furn: [
@@ -1289,9 +1344,53 @@ const ALTILLO = {
     [20.95, -8.17, 21.35, -7.82, 0.45, 'shelf']
   ]
 };
-const inAltillo = (x, y) =>
-  ALTILLO.deck.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);
-const inAltilloHole = (x, y) => { const h = ALTILLO.hole;
+
+/* ------------- altillo 2: sobre el falso techo del rellano ------------
+   Segunda opción pedida por la propiedad.  El rellano tiene 9,30 m² y su
+   falso techo está a 2,35, así que por encima queda un volumen libre
+   hasta el faldón.  Dos diferencias de fondo con el altillo 1:
+
+   · La cubierta que manda aquí no es la cumbrera principal sino el
+     HASTIAL NORTE, con la cumbrera N–S en x = 14,60 y faldones al 61 %.
+     La franja alta es por tanto una banda estrecha N–S, y a 1,60 m de
+     ella el faldón ya ha bajado un metro.  De ahí que salgan 3,3 m² de
+     pie frente a los 7,6 del altillo 1.
+   · El rellano es ELEMENTO COMÚN.  El vuelo sobre su falso techo no es
+     de la vivienda: anexionarlo exige acuerdo de la comunidad.
+
+   Además el cañón de luz de la Velux lo atraviesa: hay que dejarle el
+   hueco (0,74 m²), porque es la única luz natural del rellano.
+   -------------------------------------------------------------------- */
+const ALTILLO2 = {
+  id: 'alt2', name: 'Altillo 2 · sobre el rellano',
+  z: 2.55,            // 2,35 libres para el rellano + 0,20 de forjado
+  t: 0.20,
+  deck: CORE.floor,
+  hole: CORE.plafond.hole,          // el cañón de luz sube y lo parte
+  /* único borde libre: el que da al hueco de la escalera comunitaria */
+  rail: [[12.212, -4.868, 14.588, -4.868]],
+  /* acceso desde el estudio, atravesando el muro x = 11,27 por encima
+     del forjado; escalera de peldaños alternos N–S contra ese muro      */
+  stair: { x0: 10.55, x1: 11.17, y0: -7.35, y1: -4.90, n: 11, alt: true, dir: 'y' },
+  door: [11.27, -7.35, 11.27, -6.55],
+  bands: [1.20, 1.50, 1.90, 2.20],
+  label: { x:13.10, y:-7.05, txt:'ALTILLO 2  +2,55', sub:'6,72 m² con h ≥ 1,50' },
+  furn: [
+    // cama E–O con el cabecero al Oeste, contra la caja del lucernario:
+    // ahí la cumbrera del hastial deja 2,41 m sobre el colchón, y los
+    // pies quedan bajo el alero (1,50)
+    [14.29, -7.35, 16.19, -6.15, 0.50, 'bed'],
+    [14.19, -7.35, 14.29, -6.15, 0.90, 'head'],
+    [14.34, -7.10, 14.74, -6.40, 0.63, 'pillow', 0.50],
+    // almacenaje bajo contra el antepecho del hueco de escalera
+    [12.60, -5.45, 14.40, -4.90, 0.90, 'closet']
+  ]
+};
+const ALTILLOS = [ALTILLO, ALTILLO2];
+
+const inAlt = (A, x, y) => !!A &&
+  A.deck.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);
+const inAltHole = (A, x, y) => { if (!A || !A.hole) return false; const h = A.hole;
   return x > h[0] && x < h[2] && y > h[1] && y < h[3]; };
 
 /* --------------------- posiciones de cámara sugeridas ---------------- */
@@ -1308,7 +1407,8 @@ const VIEWS = [
   { id:'dis',  name:'Distribuidor',   pos:[16.35, -8.75], look:[20.60, -8.60, 2.30] },
   { id:'hab3', name:'Habitación 1 E', pos:[23.70, -8.20], look:[21.10,-10.60, 1.50] },
   { id:'ban2', name:'Baño 2',         pos:[19.79, -8.10], look:[21.20, -6.85, 1.30] },
-  { id:'alt',  name:'Altillo',        pos:[17.10, -8.60], look:[20.60, -7.20, 3.95], alt:true }
+  { id:'alt',  name:'Altillo 1',      pos:[17.10, -8.60], look:[20.60, -7.20, 3.95], alt:1 },
+  { id:'alt2', name:'Altillo 2',      pos:[14.42, -6.95], look:[16.10, -6.75, 3.40], alt:2 }
 ];
 
 </script>
@@ -1770,9 +1870,9 @@ function veluxPane(M, v, lift) {
    botón «Altillo»; mientras está apagado, `patch` tapa el hueco que se
    le ha recortado al faldón para el Velux nuevo.
    --------------------------------------------------------------------- */
-function buildAltillo() {
+function buildAltillo(A) {
   const group = new THREE.Group();
-  const S = THREE.DoubleSide, A = ALTILLO;
+  const S = THREE.DoubleSide;
   const zb = A.z - A.t;                                   // cara inferior
   const Md = new Mesher(), Mr = new Mesher(), Ms = new Mesher(), Mg = new Mesher();
   const bx = (M, x0, y0, x1, y1, z0, z1) => M.box(
@@ -1813,29 +1913,39 @@ function buildAltillo() {
   });
 
   // --- escalera bajo el hueco: peldaños alternos si A.stair.alt
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ta = A.z / K.n, ym = (K.y0 + K.y1) / 2;
+  /* La escalera puede subir en x (dir 'x', por defecto) o en y.  `P(u,v)`
+     pasa de coordenadas «a lo largo / a lo ancho» a x,y del plano.       */
+  const K = A.stair, ta = A.z / K.n, yy = K.dir === 'y';
+  const u0 = yy ? K.y0 : K.x0, u1 = yy ? K.y1 : K.x1;
+  const v0 = yy ? K.x0 : K.y0, v1 = yy ? K.x1 : K.y1;
+  const hu = (u1 - u0) / K.n, vm = (v0 + v1) / 2;
+  const R = (ua, va, ub, vb, z0, z1) => yy
+    ? bx(Ms, Math.min(va,vb), Math.min(ua,ub), Math.max(va,vb), Math.max(ua,ub), z0, z1)
+    : bx(Ms, Math.min(ua,ub), Math.min(va,vb), Math.max(ua,ub), Math.max(va,vb), z0, z1);
   for (let i = 1; i <= K.n; i++) {
-    const xa = K.x0 + (i-1)*hu, xb = xa + hu + 0.02;
-    const ya = K.alt ? (i % 2 ? K.y0 : ym) : K.y0;
-    const yb = K.alt ? (i % 2 ? ym : K.y1) : K.y1;
-    bx(Ms, xa, ya, xb, yb, i*ta - 0.05, i*ta);
+    const ua = u0 + (i-1)*hu, ub = ua + hu + 0.02 * Math.sign(hu);
+    const va = K.alt ? (i % 2 ? v0 : vm) : v0;
+    const vb = K.alt ? (i % 2 ? vm : v1) : v1;
+    R(ua, va, ub, vb, i*ta - 0.05, i*ta);
   }
   /* zancas y pasamanos: prismas inclinados de una pieza (los vértices
      inferiores y superiores de Mesher.box pueden llevar z distinta) */
-  const band = (y, e, z0, z1) => Ms.box(
-    [V(K.x0, y-e, z0), V(K.x1, y-e, A.z+z0), V(K.x1, y+e, A.z+z0), V(K.x0, y+e, z0)],
-    [V(K.x0, y-e, z1), V(K.x1, y-e, A.z+z1), V(K.x1, y+e, A.z+z1), V(K.x0, y+e, z1)]);
-  band(K.y0 + 0.03, 0.03, -0.19, 0.01);                    // zanca Sur
-  band(K.y1 - 0.03, 0.03, -0.19, 0.01);                    // zanca Norte
-  band(K.y0 + 0.02, 0.022, 0.86, 0.92);                    // pasamanos
+  const P = (u, v, z) => yy ? V(v, u, z) : V(u, v, z);
+  const band = (v, e, z0, z1) => Ms.box(
+    [P(u0, v-e, z0), P(u1, v-e, A.z+z0), P(u1, v+e, A.z+z0), P(u0, v+e, z0)],
+    [P(u0, v-e, z1), P(u1, v-e, A.z+z1), P(u1, v+e, A.z+z1), P(u0, v+e, z1)]);
+  const vin = v0 < v1 ? 1 : -1;
+  band(v0 + 0.03*vin, 0.03, -0.19, 0.01);                  // zanca
+  band(v1 - 0.03*vin, 0.03, -0.19, 0.01);                  // zanca
+  band(v0 + 0.02*vin, 0.022, 0.86, 0.92);                  // pasamanos
   for (let i = 1; i < 4; i++) {                            // montantes
-    const u = i / 4, px = K.x0 + (K.x1 - K.x0) * u;
-    bx(Ms, px - 0.022, K.y0, px + 0.022, K.y0 + 0.044, A.z*u - 0.02, A.z*u + 0.92);
+    const u = i / 4, pu = u0 + (u1 - u0) * u, pv = v0 + 0.022*vin;
+    R(pu - 0.022, pv - 0.022, pu + 0.022, pv + 0.022, A.z*u - 0.02, A.z*u + 0.92);
   }
 
-  // --- tabiques del baño 2 recortados a la cota del forjado
+  // --- tabiques del baño 2 recortados a la cota del forjado (altillo 1)
   const Mc = new Mesher();
-  WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
+  if (A.id === 'alt1') WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
 
   // --- mobiliario, apoyado en el tablero.  Ropa de cama aparte, en un tono
   //     claro, para que se vea de un vistazo dónde va la almohada
@@ -1861,9 +1971,9 @@ function buildAltillo() {
     bx(Mu, x0, y0, x1, y1, A.z + 0.02, A.z + hh);
   });
 
-  // --- Velux nuevo sobre el baño 2
-  const v = VELUX.find(k => k.id === A.velux);
-  veluxPane(Mg, v);
+  // --- Velux nuevo (sólo el altillo 1 lo lleva)
+  const v = A.velux ? VELUX.find(k => k.id === A.velux) : null;
+  if (v) veluxPane(Mg, v);
 
   const add = (M, m, sh) => { if (M.empty) return null;
     const o = new THREE.Mesh(M.geometry(), m);
@@ -1878,12 +1988,15 @@ function buildAltillo() {
     transparent: true, opacity: 0.22, depthWrite: false }), false);
 
   // parche del faldón mientras el altillo está apagado
-  const Mp = new Mesher();
-  veluxPane(Mp, v, 0.0);
-  const patch = new THREE.Mesh(Mp.geometry(),
-    new THREE.MeshLambertMaterial({ color: 0xe4d9c4, side: S }));
+  let patch = null;
+  if (v) {
+    const Mp = new Mesher();
+    veluxPane(Mp, v, 0.0);
+    patch = new THREE.Mesh(Mp.geometry(),
+      new THREE.MeshLambertMaterial({ color: 0xe4d9c4, side: S }));
+  }
   group.visible = false;
-  return { group, patch };
+  return { A, group, patch };
 }
 
 /* ------------------- envolvente de cubierta (modo maqueta) ------------
@@ -2125,7 +2238,9 @@ function roundRect(g, x, y, w, h, r) {
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
-let core = null, altillo = null, altilloOn = false, onAltillo = false, soloAlt = false;
+let core = null, altN = 0, onAltillo = false, soloAlt = false;
+let altillos = [];                       // una malla por opción de altillo
+const ALT = () => altN ? altillos[altN - 1].A : null;
 let zoneEdges = null;
 let pladurOn = true;
 let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
@@ -2183,8 +2298,12 @@ function init() {
   scene.add(buildBase());
   core = buildCore();
   scene.add(core.group);
-  altillo = buildAltillo();
-  scene.add(altillo.group); scene.add(altillo.patch);
+  altillos = ALTILLOS.map(A => {
+    const a = buildAltillo(A);
+    scene.add(a.group);
+    if (a.patch) scene.add(a.patch);
+    return a;
+  });
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -2328,8 +2447,8 @@ function bindControls() {
     pladurOn = v; syncZoneVis();
   });
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
-  document.getElementById('t-altillo').onclick = e =>
-    setAltillo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
+  [1, 2].forEach(k => { document.getElementById('t-altillo' + k).onclick = e =>
+    setAltillo(e.currentTarget.getAttribute('aria-pressed') === 'true' ? 0 : k); });
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -2384,7 +2503,7 @@ function toggle(el, fn) {
 function setMode(m) {
   const prev = mode;
   mode = m;
-  if (altillo) applyIso();
+  if (altillos.length) applyIso();
   ['walk','orbit','plan'].forEach(k =>
     document.getElementById('mode-' + k).setAttribute('aria-pressed', m === k));
   ['walk','orbit','plan'].forEach(k =>
@@ -2409,7 +2528,7 @@ function setMode(m) {
   }
   // se venía de mirar el altillo: al andar, se entra en él
   if (m === 'walk' && soloAlt && !onAltillo) {
-    const v = VIEWS.find(k => k.alt); if (v) applyView(v);
+    const v = VIEWS.find(k => k.alt === altN); if (v) applyView(v);
   }
 }
 function buildViewButtons() {
@@ -2460,17 +2579,21 @@ function step(dt) {
 }
 /** sobre el altillo sólo se anda por el tablero */
 function walkOk(x, y) {
-  if (onAltillo) return inAltillo(x, y) && !inAltilloHole(x, y);
+  const A = ALT();
+  if (onAltillo && A) return inAlt(A, x, y) && !inAltHole(A, x, y);
   return allowed(x, y);
 }
 /* --- volumetría aislada: se recorta la escena a una caja alrededor del
        altillo, de modo que sólo queda su volumen con los muros y el faldón
        que lo delimitan, seccionados.  --------------------------------- */
 function altilloBox() {
-  const A = ALTILLO;
+  const A = ALT();
   // desde el pavimento: el recorte y el encuadre incluyen la escalera
   let b = { x0: 1e9, y0: 1e9, z0: 0, x1: -1e9, y1: -1e9, z1: -1e9 };
-  A.deck.forEach(r => {
+  if (!A) return { x0:0, y0:0, z0:0, x1:1, y1:1, z1:1 };
+  const K = A.stair;
+  A.deck.concat([[Math.min(K.x0,K.x1), Math.min(K.y0,K.y1),
+                  Math.max(K.x0,K.x1), Math.max(K.y0,K.y1)]]).forEach(r => {
     b.x0 = Math.min(b.x0, r[0]); b.x1 = Math.max(b.x1, r[2]);
     b.y0 = Math.min(b.y0, r[1]); b.y1 = Math.max(b.y1, r[3]);
     b.z1 = Math.max(b.z1, roofH(r[0], r[1]), roofH(r[2], r[3]),
@@ -2508,20 +2631,23 @@ function frameAltillo() {
 /* El botón «Altillo» sólo levanta la propuesta: en maqueta se ve dentro del
    piso entero.  Para mirarlo aislado está la vista «Altillo» de la barra de
    maqueta, que es donde vive el encuadre.                                  */
-function setAltillo(v) {
-  altilloOn = v;
-  altillo.group.visible = v;
-  altillo.patch.visible = !v;
-  if (apt) apt.cutWalls.visible = !v;
-  if (!v) { onAltillo = false; setSolo(false); }
-  const b = document.getElementById('t-altillo');
-  if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
+/** n = 0 ninguno, 1 = distribuidor + baño 2, 2 = sobre el rellano */
+function setAltillo(n) {
+  altN = n;
+  altillos.forEach((a, i) => {
+    a.group.visible = (i + 1 === n);
+    if (a.patch) a.patch.visible = (i + 1 !== n);
+  });
+  if (apt) apt.cutWalls.visible = (n !== 1);
+  if (!n) { onAltillo = false; setSolo(false); }
+  [1, 2].forEach(k => { const b = document.getElementById('t-altillo' + k);
+    if (b) b.setAttribute('aria-pressed', n === k ? 'true' : 'false'); });
   applyIso();
   plan.dirty = true;
 }
 function setSolo(v) {
   soloAlt = v;
-  if (v && !altilloOn) setAltillo(true);
+  if (v && !altN) setAltillo(1);
   const b = document.querySelector('#orbtools [data-orb="alt"]');
   if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
   applyIso();
@@ -2559,7 +2685,8 @@ function hud(h, eye) {
   const px = mode === 'walk' ? cam.x : orb.tx, py = mode === 'walk' ? cam.y : orb.ty;
   const r = roomAt(px, py);
   document.getElementById('hud-room').textContent = r ? r.name : '—';
-  const ft = plafondAt(px, py);
+  // sobre el tablero de un altillo, el falso techo queda debajo: no cuenta
+  const ft = onAltillo ? null : plafondAt(px, py);
   document.getElementById('hud-h').textContent = h.toFixed(2).replace('.', ',') + ' m' +
     (ft !== null && ft <= ceilAt(px, py) ? '  ·  falso techo' : '');
   const low = document.getElementById('hud-low');
@@ -2636,14 +2763,15 @@ function plafondAt(x, y) {
 function freeH(x, y) {
   const s = ceilAt(x, y), p = plafondAt(x, y);
   let h = p === null ? s : Math.min(s, p);
-  if (altilloOn && inAltillo(x, y) && !inAltilloHole(x, y))
-    h = onAltillo ? s : Math.min(h, ALTILLO.z - ALTILLO.t);
+  const A = ALT();
+  if (A && inAlt(A, x, y) && !inAltHole(A, x, y))
+    h = onAltillo ? s : Math.min(h, A.z - A.t);
   return h;
 }
 /** cota del suelo bajo la cámara: 0, o el tablero del altillo */
 function camBase() {
-  return (altilloOn && onAltillo && inAltillo(cam.x, cam.y) && !inAltilloHole(cam.x, cam.y))
-    ? ALTILLO.z : 0;
+  const A = ALT();
+  return (A && onAltillo && inAlt(A, cam.x, cam.y) && !inAltHole(A, cam.x, cam.y)) ? A.z : 0;
 }
 
 function pickZone(e) {
@@ -3121,11 +3249,12 @@ function drawCore(g) {
 const ALT_COL = [[2.20,'rgba(191,105,12,0.58)'], [1.90,'rgba(206,140,40,0.40)'],
                  [1.50,'rgba(214,175,95,0.26)'], [0.00,'rgba(120,118,112,0.24)']];
 function drawAltillo(g) {
-  const A = ALTILLO, st = 0.08;
+  const A = ALT(), st = 0.08;
+  if (!A) return;
   A.deck.forEach(r => {
     for (let x = r[0]; x < r[2] - 1e-6; x += st) for (let y = r[1]; y < r[3] - 1e-6; y += st) {
       const cx = Math.min(x + st/2, r[2]), cy = Math.min(y + st/2, r[3]);
-      if (inAltilloHole(cx, cy)) continue;
+      if (inAltHole(A, cx, cy)) continue;
       const h = roofH(cx, cy) - A.z;
       g.fillStyle = (ALT_COL.find(b => h >= b[0]) || ALT_COL[3])[1];
       g.fillRect(pX(x), pY(Math.min(y + st, r[3])),
@@ -3133,47 +3262,50 @@ function drawAltillo(g) {
                  (Math.min(y + st, r[3]) - y) * plan.s + 0.6);
     }
   });
-  // curvas de nivel: dónde la altura libre cruza 1,50 / 1,90 / 2,20
-  const ys = [], y0 = -6.3, y1 = -9.6;
-  A.bands.forEach(H => {
-    let prev = roofH(18, y0) - A.z - H;
-    for (let y = y0; y > y1; y -= 0.01) {
-      const cur = roofH(18, y) - A.z - H;
-      if (prev > 0 !== cur > 0) ys.push([y, H]);
-      prev = cur;
-    }
-  });
+  /* curvas de nivel de la altura libre: se marchan por celdas de 4 cm y se
+     pinta el borde entre bandas, así valen para cualquier faldón          */
+  const cs = 0.04;
   g.setLineDash([5, 4]); g.lineWidth = 1.2;
   g.strokeStyle = 'rgba(120,70,10,0.85)';
-  ys.forEach(([y, H]) => {
-    const seg = A.deck.filter(r => y > r[1] && y < r[3]);
-    if (!seg.length) return;
-    g.beginPath();
-    seg.forEach(r => { g.moveTo(pX(r[0]), pY(y)); g.lineTo(pX(r[2]), pY(y)); });
-    g.stroke();
-    if (plan.s > 34) {
-      const r = seg[seg.length - 1];
-      g.fillStyle = 'rgba(120,70,10,0.95)'; g.textAlign = 'right'; g.textBaseline = 'bottom';
-      g.font = '600 9px ui-monospace,SFMono-Regular,Menlo,monospace';
-      g.fillText(n2(H), pX(r[2]) - 4, pY(y) - 2);
+  g.beginPath();
+  A.deck.forEach(r => {
+    for (let x = r[0]; x < r[2]; x += cs) for (let y = r[1]; y < r[3]; y += cs) {
+      const h = roofH(x + cs/2, y + cs/2) - A.z;
+      A.bands.forEach(H => {
+        if (h >= H && roofH(x + cs*1.5, y + cs/2) - A.z < H && x + cs < r[2]) {
+          g.moveTo(pX(x + cs), pY(y)); g.lineTo(pX(x + cs), pY(y + cs));
+        }
+        if (h >= H && roofH(x + cs/2, y + cs*1.5) - A.z < H && y + cs < r[3]) {
+          g.moveTo(pX(x), pY(y + cs)); g.lineTo(pX(x + cs), pY(y + cs));
+        }
+      });
     }
   });
+  g.stroke();
   g.setLineDash([]);
   g.strokeStyle = 'rgba(150,90,10,0.95)'; g.lineWidth = 1.6;
   A.deck.forEach(r => g.strokeRect(pX(r[0]), pY(r[3]),
     (r[2]-r[0]) * plan.s, (r[3]-r[1]) * plan.s));
-  // hueco de escalera
+  // hueco (de escalera en el altillo 1, del cañón de luz en el 2)
   const H = A.hole;
   g.fillStyle = 'rgba(20,20,20,0.10)';
   g.fillRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
   g.strokeStyle = 'rgba(60,60,60,0.9)'; g.lineWidth = 1.3;
   g.strokeRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ym = (K.y0 + K.y1) / 2;
+  // escalera de acceso
+  const K = A.stair, yy = K.dir === 'y';
+  const a0 = yy ? K.y0 : K.x0, a1 = yy ? K.y1 : K.x1;
+  const b0 = yy ? K.x0 : K.y0, b1 = yy ? K.x1 : K.y1;
+  const L = (u, v0_, v1_) => { const p = yy ? [[v0_, u], [v1_, u]] : [[u, v0_], [u, v1_]];
+    g.moveTo(pX(p[0][0]), pY(p[0][1])); g.lineTo(pX(p[1][0]), pY(p[1][1])); };
+  g.strokeRect(pX(Math.min(K.x0,K.x1)), pY(Math.max(K.y0,K.y1)),
+    Math.abs(K.x1-K.x0) * plan.s, Math.abs(K.y1-K.y0) * plan.s);
   g.beginPath();
-  for (let i = 0; i <= K.n; i++) { const x = K.x0 + i * hu;
-    g.moveTo(pX(x), pY(K.y0)); g.lineTo(pX(x), pY(K.y1)); }
-  if (K.alt) {                        // peldaños alternos: media huella cada uno
-    g.moveTo(pX(K.x0), pY(ym)); g.lineTo(pX(K.x1), pY(ym));
+  for (let i = 0; i <= K.n; i++) L(a0 + (a1-a0) * i / K.n, b0, b1);
+  if (K.alt) {                       // peldaños alternos: media huella cada uno
+    const m = (b0 + b1) / 2;
+    if (yy) { g.moveTo(pX(m), pY(a0)); g.lineTo(pX(m), pY(a1)); }
+    else { g.moveTo(pX(a0), pY(m)); g.lineTo(pX(a1), pY(m)); }
   }
   g.stroke();
   // barandilla
@@ -3197,8 +3329,8 @@ function drawAltillo(g) {
       g.fillText(FL[tipo], x + w/2, y + h/2);
     }
   });
-  // Velux propuesto
-  const v = VELUX.find(k => k.id === A.velux);
+  // Velux: el propuesto por el altillo 1, o el del rellano en el altillo 2
+  const v = VELUX.find(k => k.id === (A.velux || 'v-rell'));
   const vx = pX(v.x0), vy = pY(v.y1), vw = (v.x1-v.x0) * plan.s, vh = (v.y1-v.y0) * plan.s;
   g.fillStyle = 'rgba(150,200,230,0.32)'; g.fillRect(vx, vy, vw, vh);
   g.strokeStyle = 'rgba(60,120,170,0.9)'; g.lineWidth = 1.6; g.strokeRect(vx, vy, vw, vh);
@@ -3208,9 +3340,9 @@ function drawAltillo(g) {
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = 'rgba(150,90,10,0.95)';
     g.font = '700 12px ui-sans-serif,system-ui,sans-serif';
-    g.fillText('ALTILLO  +2,45', pX(17.30), pY(-8.36));
+    g.fillText(A.label.txt, pX(A.label.x), pY(A.label.y));
     g.font = '600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
-    g.fillText('9,34 m² con h ≥ 1,50', pX(17.30), pY(-8.56));
+    g.fillText(A.label.sub, pX(A.label.x), pY(A.label.y - 0.20));
     g.fillStyle = 'rgba(40,90,140,0.95)';
     g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.20));
@@ -3260,7 +3392,7 @@ function drawPlan() {
 
   // --- núcleo común (rellano, escalera y ascensor): siempre en gris
   drawCore(g);
-  if (altilloOn) drawAltillo(g);
+  if (altN) drawAltillo(g);
 
   // --- cumbreras y peldaños
   g.setLineDash([9, 6]); g.lineWidth = 1.2; g.strokeStyle = 'rgba(128,128,128,0.75)';
@@ -3531,7 +3663,7 @@ function crossMark(g, p, color, solid) {
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
-  if (v.alt && !altilloOn) setAltillo(true);
+  if (v.alt && altN !== v.alt) setAltillo(v.alt);
   onAltillo = !!v.alt;
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;

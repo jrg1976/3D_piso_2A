@@ -449,6 +449,7 @@ const FURNITURE = [
    sólo quedan distribuidor y baño).
    -------------------------------------------------------------------- */
 const ALTILLO = {
+  id: 'alt1', name: 'Altillo 1 · distribuidor y baño 2',
   z: 2.45,            // cara superior del tablero
   t: 0.20,            // canto del forjado nuevo (viguetas + tablero)
   /* huella: distribuidor + baño 2, pasando por encima del tabique */
@@ -472,6 +473,7 @@ const ALTILLO = {
   stair: { x0: 16.04, x1: 18.45, y0: -8.14, y1: -7.56, n: 11, alt: true },
   velux: 'v-alt',
   bands: [1.20, 1.50, 1.90, 2.20],
+  label: { x:17.30, y:-8.36, txt:'ALTILLO 1  +2,45', sub:'9,34 m² con h ≥ 1,50' },
   /* mobiliario que cabe, colocado según la altura libre de cada franja.
      [x0, y0, x1, y1, alto, tipo, arranque]  ·  cotas desde el tablero    */
   furn: [
@@ -494,9 +496,53 @@ const ALTILLO = {
     [20.95, -8.17, 21.35, -7.82, 0.45, 'shelf']
   ]
 };
-const inAltillo = (x, y) =>
-  ALTILLO.deck.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);
-const inAltilloHole = (x, y) => { const h = ALTILLO.hole;
+
+/* ------------- altillo 2: sobre el falso techo del rellano ------------
+   Segunda opción pedida por la propiedad.  El rellano tiene 9,30 m² y su
+   falso techo está a 2,35, así que por encima queda un volumen libre
+   hasta el faldón.  Dos diferencias de fondo con el altillo 1:
+
+   · La cubierta que manda aquí no es la cumbrera principal sino el
+     HASTIAL NORTE, con la cumbrera N–S en x = 14,60 y faldones al 61 %.
+     La franja alta es por tanto una banda estrecha N–S, y a 1,60 m de
+     ella el faldón ya ha bajado un metro.  De ahí que salgan 3,3 m² de
+     pie frente a los 7,6 del altillo 1.
+   · El rellano es ELEMENTO COMÚN.  El vuelo sobre su falso techo no es
+     de la vivienda: anexionarlo exige acuerdo de la comunidad.
+
+   Además el cañón de luz de la Velux lo atraviesa: hay que dejarle el
+   hueco (0,74 m²), porque es la única luz natural del rellano.
+   -------------------------------------------------------------------- */
+const ALTILLO2 = {
+  id: 'alt2', name: 'Altillo 2 · sobre el rellano',
+  z: 2.55,            // 2,35 libres para el rellano + 0,20 de forjado
+  t: 0.20,
+  deck: CORE.floor,
+  hole: CORE.plafond.hole,          // el cañón de luz sube y lo parte
+  /* único borde libre: el que da al hueco de la escalera comunitaria */
+  rail: [[12.212, -4.868, 14.588, -4.868]],
+  /* acceso desde el estudio, atravesando el muro x = 11,27 por encima
+     del forjado; escalera de peldaños alternos N–S contra ese muro      */
+  stair: { x0: 10.55, x1: 11.17, y0: -7.35, y1: -4.90, n: 11, alt: true, dir: 'y' },
+  door: [11.27, -7.35, 11.27, -6.55],
+  bands: [1.20, 1.50, 1.90, 2.20],
+  label: { x:13.10, y:-7.05, txt:'ALTILLO 2  +2,55', sub:'6,72 m² con h ≥ 1,50' },
+  furn: [
+    // cama E–O con el cabecero al Oeste, contra la caja del lucernario:
+    // ahí la cumbrera del hastial deja 2,41 m sobre el colchón, y los
+    // pies quedan bajo el alero (1,50)
+    [14.29, -7.35, 16.19, -6.15, 0.50, 'bed'],
+    [14.19, -7.35, 14.29, -6.15, 0.90, 'head'],
+    [14.34, -7.10, 14.74, -6.40, 0.63, 'pillow', 0.50],
+    // almacenaje bajo contra el antepecho del hueco de escalera
+    [12.60, -5.45, 14.40, -4.90, 0.90, 'closet']
+  ]
+};
+const ALTILLOS = [ALTILLO, ALTILLO2];
+
+const inAlt = (A, x, y) => !!A &&
+  A.deck.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);
+const inAltHole = (A, x, y) => { if (!A || !A.hole) return false; const h = A.hole;
   return x > h[0] && x < h[2] && y > h[1] && y < h[3]; };
 
 /* --------------------- posiciones de cámara sugeridas ---------------- */
@@ -513,5 +559,6 @@ const VIEWS = [
   { id:'dis',  name:'Distribuidor',   pos:[16.35, -8.75], look:[20.60, -8.60, 2.30] },
   { id:'hab3', name:'Habitación 1 E', pos:[23.70, -8.20], look:[21.10,-10.60, 1.50] },
   { id:'ban2', name:'Baño 2',         pos:[19.79, -8.10], look:[21.20, -6.85, 1.30] },
-  { id:'alt',  name:'Altillo',        pos:[17.10, -8.60], look:[20.60, -7.20, 3.95], alt:true }
+  { id:'alt',  name:'Altillo 1',      pos:[17.10, -8.60], look:[20.60, -7.20, 3.95], alt:1 },
+  { id:'alt2', name:'Altillo 2',      pos:[14.42, -6.95], look:[16.10, -6.75, 3.40], alt:2 }
 ];

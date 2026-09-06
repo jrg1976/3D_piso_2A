@@ -2,7 +2,9 @@
    Visor — cámara, controles, HUD
    ===================================================================== */
 let renderer, scene, camera, apt, shell, labels = [], portals = [];
-let core = null, altillo = null, altilloOn = false, onAltillo = false, soloAlt = false;
+let core = null, altN = 0, onAltillo = false, soloAlt = false;
+let altillos = [];                       // una malla por opción de altillo
+const ALT = () => altN ? altillos[altN - 1].A : null;
 let zoneEdges = null;
 let pladurOn = true;
 let plafonding = false, zones = [], pending = null, zoneGroup = null, selZone = -1;
@@ -60,8 +62,12 @@ function init() {
   scene.add(buildBase());
   core = buildCore();
   scene.add(core.group);
-  altillo = buildAltillo();
-  scene.add(altillo.group); scene.add(altillo.patch);
+  altillos = ALTILLOS.map(A => {
+    const a = buildAltillo(A);
+    scene.add(a.group);
+    if (a.patch) scene.add(a.patch);
+    return a;
+  });
   apt = buildApartment();
   scene.add(apt.group);
   shell = buildShell(); shell.visible = false; scene.add(shell);
@@ -205,8 +211,8 @@ function bindControls() {
     pladurOn = v; syncZoneVis();
   });
   document.getElementById('t-plafond').onclick = e => toggle(e.currentTarget, v => setPlafond(v));
-  document.getElementById('t-altillo').onclick = e =>
-    setAltillo(e.currentTarget.getAttribute('aria-pressed') !== 'true');
+  [1, 2].forEach(k => { document.getElementById('t-altillo' + k).onclick = e =>
+    setAltillo(e.currentTarget.getAttribute('aria-pressed') === 'true' ? 0 : k); });
   document.getElementById('t-labels').addEventListener('click', () => { plan.dirty = true; });
   document.getElementById('p-undo').onclick = () => {
     if (pending) pending = null; else zones.pop();
@@ -261,7 +267,7 @@ function toggle(el, fn) {
 function setMode(m) {
   const prev = mode;
   mode = m;
-  if (altillo) applyIso();
+  if (altillos.length) applyIso();
   ['walk','orbit','plan'].forEach(k =>
     document.getElementById('mode-' + k).setAttribute('aria-pressed', m === k));
   ['walk','orbit','plan'].forEach(k =>
@@ -286,7 +292,7 @@ function setMode(m) {
   }
   // se venía de mirar el altillo: al andar, se entra en él
   if (m === 'walk' && soloAlt && !onAltillo) {
-    const v = VIEWS.find(k => k.alt); if (v) applyView(v);
+    const v = VIEWS.find(k => k.alt === altN); if (v) applyView(v);
   }
 }
 function buildViewButtons() {
@@ -337,17 +343,21 @@ function step(dt) {
 }
 /** sobre el altillo sólo se anda por el tablero */
 function walkOk(x, y) {
-  if (onAltillo) return inAltillo(x, y) && !inAltilloHole(x, y);
+  const A = ALT();
+  if (onAltillo && A) return inAlt(A, x, y) && !inAltHole(A, x, y);
   return allowed(x, y);
 }
 /* --- volumetría aislada: se recorta la escena a una caja alrededor del
        altillo, de modo que sólo queda su volumen con los muros y el faldón
        que lo delimitan, seccionados.  --------------------------------- */
 function altilloBox() {
-  const A = ALTILLO;
+  const A = ALT();
   // desde el pavimento: el recorte y el encuadre incluyen la escalera
   let b = { x0: 1e9, y0: 1e9, z0: 0, x1: -1e9, y1: -1e9, z1: -1e9 };
-  A.deck.forEach(r => {
+  if (!A) return { x0:0, y0:0, z0:0, x1:1, y1:1, z1:1 };
+  const K = A.stair;
+  A.deck.concat([[Math.min(K.x0,K.x1), Math.min(K.y0,K.y1),
+                  Math.max(K.x0,K.x1), Math.max(K.y0,K.y1)]]).forEach(r => {
     b.x0 = Math.min(b.x0, r[0]); b.x1 = Math.max(b.x1, r[2]);
     b.y0 = Math.min(b.y0, r[1]); b.y1 = Math.max(b.y1, r[3]);
     b.z1 = Math.max(b.z1, roofH(r[0], r[1]), roofH(r[2], r[3]),
@@ -385,20 +395,23 @@ function frameAltillo() {
 /* El botón «Altillo» sólo levanta la propuesta: en maqueta se ve dentro del
    piso entero.  Para mirarlo aislado está la vista «Altillo» de la barra de
    maqueta, que es donde vive el encuadre.                                  */
-function setAltillo(v) {
-  altilloOn = v;
-  altillo.group.visible = v;
-  altillo.patch.visible = !v;
-  if (apt) apt.cutWalls.visible = !v;
-  if (!v) { onAltillo = false; setSolo(false); }
-  const b = document.getElementById('t-altillo');
-  if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
+/** n = 0 ninguno, 1 = distribuidor + baño 2, 2 = sobre el rellano */
+function setAltillo(n) {
+  altN = n;
+  altillos.forEach((a, i) => {
+    a.group.visible = (i + 1 === n);
+    if (a.patch) a.patch.visible = (i + 1 !== n);
+  });
+  if (apt) apt.cutWalls.visible = (n !== 1);
+  if (!n) { onAltillo = false; setSolo(false); }
+  [1, 2].forEach(k => { const b = document.getElementById('t-altillo' + k);
+    if (b) b.setAttribute('aria-pressed', n === k ? 'true' : 'false'); });
   applyIso();
   plan.dirty = true;
 }
 function setSolo(v) {
   soloAlt = v;
-  if (v && !altilloOn) setAltillo(true);
+  if (v && !altN) setAltillo(1);
   const b = document.querySelector('#orbtools [data-orb="alt"]');
   if (b) b.setAttribute('aria-pressed', v ? 'true' : 'false');
   applyIso();
@@ -436,7 +449,8 @@ function hud(h, eye) {
   const px = mode === 'walk' ? cam.x : orb.tx, py = mode === 'walk' ? cam.y : orb.ty;
   const r = roomAt(px, py);
   document.getElementById('hud-room').textContent = r ? r.name : '—';
-  const ft = plafondAt(px, py);
+  // sobre el tablero de un altillo, el falso techo queda debajo: no cuenta
+  const ft = onAltillo ? null : plafondAt(px, py);
   document.getElementById('hud-h').textContent = h.toFixed(2).replace('.', ',') + ' m' +
     (ft !== null && ft <= ceilAt(px, py) ? '  ·  falso techo' : '');
   const low = document.getElementById('hud-low');
@@ -513,14 +527,15 @@ function plafondAt(x, y) {
 function freeH(x, y) {
   const s = ceilAt(x, y), p = plafondAt(x, y);
   let h = p === null ? s : Math.min(s, p);
-  if (altilloOn && inAltillo(x, y) && !inAltilloHole(x, y))
-    h = onAltillo ? s : Math.min(h, ALTILLO.z - ALTILLO.t);
+  const A = ALT();
+  if (A && inAlt(A, x, y) && !inAltHole(A, x, y))
+    h = onAltillo ? s : Math.min(h, A.z - A.t);
   return h;
 }
 /** cota del suelo bajo la cámara: 0, o el tablero del altillo */
 function camBase() {
-  return (altilloOn && onAltillo && inAltillo(cam.x, cam.y) && !inAltilloHole(cam.x, cam.y))
-    ? ALTILLO.z : 0;
+  const A = ALT();
+  return (A && onAltillo && inAlt(A, cam.x, cam.y) && !inAltHole(A, cam.x, cam.y)) ? A.z : 0;
 }
 
 function pickZone(e) {
@@ -998,11 +1013,12 @@ function drawCore(g) {
 const ALT_COL = [[2.20,'rgba(191,105,12,0.58)'], [1.90,'rgba(206,140,40,0.40)'],
                  [1.50,'rgba(214,175,95,0.26)'], [0.00,'rgba(120,118,112,0.24)']];
 function drawAltillo(g) {
-  const A = ALTILLO, st = 0.08;
+  const A = ALT(), st = 0.08;
+  if (!A) return;
   A.deck.forEach(r => {
     for (let x = r[0]; x < r[2] - 1e-6; x += st) for (let y = r[1]; y < r[3] - 1e-6; y += st) {
       const cx = Math.min(x + st/2, r[2]), cy = Math.min(y + st/2, r[3]);
-      if (inAltilloHole(cx, cy)) continue;
+      if (inAltHole(A, cx, cy)) continue;
       const h = roofH(cx, cy) - A.z;
       g.fillStyle = (ALT_COL.find(b => h >= b[0]) || ALT_COL[3])[1];
       g.fillRect(pX(x), pY(Math.min(y + st, r[3])),
@@ -1010,47 +1026,50 @@ function drawAltillo(g) {
                  (Math.min(y + st, r[3]) - y) * plan.s + 0.6);
     }
   });
-  // curvas de nivel: dónde la altura libre cruza 1,50 / 1,90 / 2,20
-  const ys = [], y0 = -6.3, y1 = -9.6;
-  A.bands.forEach(H => {
-    let prev = roofH(18, y0) - A.z - H;
-    for (let y = y0; y > y1; y -= 0.01) {
-      const cur = roofH(18, y) - A.z - H;
-      if (prev > 0 !== cur > 0) ys.push([y, H]);
-      prev = cur;
-    }
-  });
+  /* curvas de nivel de la altura libre: se marchan por celdas de 4 cm y se
+     pinta el borde entre bandas, así valen para cualquier faldón          */
+  const cs = 0.04;
   g.setLineDash([5, 4]); g.lineWidth = 1.2;
   g.strokeStyle = 'rgba(120,70,10,0.85)';
-  ys.forEach(([y, H]) => {
-    const seg = A.deck.filter(r => y > r[1] && y < r[3]);
-    if (!seg.length) return;
-    g.beginPath();
-    seg.forEach(r => { g.moveTo(pX(r[0]), pY(y)); g.lineTo(pX(r[2]), pY(y)); });
-    g.stroke();
-    if (plan.s > 34) {
-      const r = seg[seg.length - 1];
-      g.fillStyle = 'rgba(120,70,10,0.95)'; g.textAlign = 'right'; g.textBaseline = 'bottom';
-      g.font = '600 9px ui-monospace,SFMono-Regular,Menlo,monospace';
-      g.fillText(n2(H), pX(r[2]) - 4, pY(y) - 2);
+  g.beginPath();
+  A.deck.forEach(r => {
+    for (let x = r[0]; x < r[2]; x += cs) for (let y = r[1]; y < r[3]; y += cs) {
+      const h = roofH(x + cs/2, y + cs/2) - A.z;
+      A.bands.forEach(H => {
+        if (h >= H && roofH(x + cs*1.5, y + cs/2) - A.z < H && x + cs < r[2]) {
+          g.moveTo(pX(x + cs), pY(y)); g.lineTo(pX(x + cs), pY(y + cs));
+        }
+        if (h >= H && roofH(x + cs/2, y + cs*1.5) - A.z < H && y + cs < r[3]) {
+          g.moveTo(pX(x), pY(y + cs)); g.lineTo(pX(x + cs), pY(y + cs));
+        }
+      });
     }
   });
+  g.stroke();
   g.setLineDash([]);
   g.strokeStyle = 'rgba(150,90,10,0.95)'; g.lineWidth = 1.6;
   A.deck.forEach(r => g.strokeRect(pX(r[0]), pY(r[3]),
     (r[2]-r[0]) * plan.s, (r[3]-r[1]) * plan.s));
-  // hueco de escalera
+  // hueco (de escalera en el altillo 1, del cañón de luz en el 2)
   const H = A.hole;
   g.fillStyle = 'rgba(20,20,20,0.10)';
   g.fillRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
   g.strokeStyle = 'rgba(60,60,60,0.9)'; g.lineWidth = 1.3;
   g.strokeRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
-  const K = A.stair, hu = (K.x1 - K.x0) / K.n, ym = (K.y0 + K.y1) / 2;
+  // escalera de acceso
+  const K = A.stair, yy = K.dir === 'y';
+  const a0 = yy ? K.y0 : K.x0, a1 = yy ? K.y1 : K.x1;
+  const b0 = yy ? K.x0 : K.y0, b1 = yy ? K.x1 : K.y1;
+  const L = (u, v0_, v1_) => { const p = yy ? [[v0_, u], [v1_, u]] : [[u, v0_], [u, v1_]];
+    g.moveTo(pX(p[0][0]), pY(p[0][1])); g.lineTo(pX(p[1][0]), pY(p[1][1])); };
+  g.strokeRect(pX(Math.min(K.x0,K.x1)), pY(Math.max(K.y0,K.y1)),
+    Math.abs(K.x1-K.x0) * plan.s, Math.abs(K.y1-K.y0) * plan.s);
   g.beginPath();
-  for (let i = 0; i <= K.n; i++) { const x = K.x0 + i * hu;
-    g.moveTo(pX(x), pY(K.y0)); g.lineTo(pX(x), pY(K.y1)); }
-  if (K.alt) {                        // peldaños alternos: media huella cada uno
-    g.moveTo(pX(K.x0), pY(ym)); g.lineTo(pX(K.x1), pY(ym));
+  for (let i = 0; i <= K.n; i++) L(a0 + (a1-a0) * i / K.n, b0, b1);
+  if (K.alt) {                       // peldaños alternos: media huella cada uno
+    const m = (b0 + b1) / 2;
+    if (yy) { g.moveTo(pX(m), pY(a0)); g.lineTo(pX(m), pY(a1)); }
+    else { g.moveTo(pX(a0), pY(m)); g.lineTo(pX(a1), pY(m)); }
   }
   g.stroke();
   // barandilla
@@ -1074,8 +1093,8 @@ function drawAltillo(g) {
       g.fillText(FL[tipo], x + w/2, y + h/2);
     }
   });
-  // Velux propuesto
-  const v = VELUX.find(k => k.id === A.velux);
+  // Velux: el propuesto por el altillo 1, o el del rellano en el altillo 2
+  const v = VELUX.find(k => k.id === (A.velux || 'v-rell'));
   const vx = pX(v.x0), vy = pY(v.y1), vw = (v.x1-v.x0) * plan.s, vh = (v.y1-v.y0) * plan.s;
   g.fillStyle = 'rgba(150,200,230,0.32)'; g.fillRect(vx, vy, vw, vh);
   g.strokeStyle = 'rgba(60,120,170,0.9)'; g.lineWidth = 1.6; g.strokeRect(vx, vy, vw, vh);
@@ -1085,9 +1104,9 @@ function drawAltillo(g) {
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = 'rgba(150,90,10,0.95)';
     g.font = '700 12px ui-sans-serif,system-ui,sans-serif';
-    g.fillText('ALTILLO  +2,45', pX(17.30), pY(-8.36));
+    g.fillText(A.label.txt, pX(A.label.x), pY(A.label.y));
     g.font = '600 10px ui-monospace,SFMono-Regular,Menlo,monospace';
-    g.fillText('9,34 m² con h ≥ 1,50', pX(17.30), pY(-8.56));
+    g.fillText(A.label.sub, pX(A.label.x), pY(A.label.y - 0.20));
     g.fillStyle = 'rgba(40,90,140,0.95)';
     g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Velux', pX((v.x0+v.x1)/2), pY(v.y0 - 0.20));
@@ -1137,7 +1156,7 @@ function drawPlan() {
 
   // --- núcleo común (rellano, escalera y ascensor): siempre en gris
   drawCore(g);
-  if (altilloOn) drawAltillo(g);
+  if (altN) drawAltillo(g);
 
   // --- cumbreras y peldaños
   g.setLineDash([9, 6]); g.lineWidth = 1.2; g.strokeStyle = 'rgba(128,128,128,0.75)';
@@ -1408,7 +1427,7 @@ function crossMark(g, p, color, solid) {
 
 /** coloca la cámara en pos mirando a look[x,y,z] */
 function applyView(v) {
-  if (v.alt && !altilloOn) setAltillo(true);
+  if (v.alt && altN !== v.alt) setAltillo(v.alt);
   onAltillo = !!v.alt;
   cam.x = v.pos[0]; cam.y = v.pos[1];
   const dx = v.look[0] - cam.x, dy = v.look[1] - cam.y;

@@ -67,14 +67,15 @@ autocontenido (three.js incluido), sin dependencias externas.
   rellano de la vivienda A. Lleva su falso techo a 2,35 m con el hueco de la
   Velux y su cañón de luz hasta el faldón. Aparece también en la vista
   **Planta**.
-- **Altillo** (propuesta) — estudio de volumetría de un altillo sobre el
-  distribuidor y el baño 2: forjado nuevo a +2,45, hueco de escalera, barandilla,
+- **Altillo 1 / Altillo 2** (propuestas, excluyentes) — dos estudios de
+  volumetría. El 1, sobre el distribuidor y el baño 2: forjado nuevo a +2,45, hueco de escalera, barandilla,
   Velux propuesto, mobiliario y los tabiques que habría que derribar por encima.
   En *Planta* se sombrea por bandas de altura libre; la vista *Altillo* sube la
   cámara al tablero y se anda por él.
-  El botón lo levanta dentro del piso; la vista *Altillo* de la barra de maqueta
-  lo aísla —recorta la escena a su caja y pasa muros y faldón a translúcido— y en
-  Recorrer devuelve todo a opaco y sube la cámara al tablero.
+  El 2, sobre el falso techo del rellano. El botón levanta la propuesta dentro del
+  piso; la vista *Altillo* de la barra de maqueta aísla la activa —recorta la
+  escena a su caja y pasa muros y faldón a translúcido— y en Recorrer devuelve
+  todo a opaco y sube la cámara al tablero.
 - Figuras de escala de 1,75 m y mobiliario esquemático como referencia de tamaño.
 
 ## Cómo se ha obtenido la geometría
@@ -337,7 +338,7 @@ desde fuera; el resto del núcleo va en gris.
 
 No se modela la vivienda A: al Este del rellano sólo está el muro medianero.
 
-## Altillo sobre el distribuidor y el baño 2 (propuesta)
+## Altillo 1 — sobre el distribuidor y el baño 2 (propuesta)
 
 Estudio de volumetría, no estado actual: se enciende con el botón **Altillo**.
 Datos en `ALTILLO` (`model.js`), malla en `buildAltillo()` (`build.js`).
@@ -471,6 +472,64 @@ En la vista **Planta** el altillo sale sombreado por bandas de altura libre
 (≥ 1,20 / 1,50 / 1,90 / 2,20) con sus curvas de nivel. La vista *Altillo* de la
 lista de estancias sube la cámara al tablero: `camBase()` desplaza el ojo a
 `ALTILLO.z` y `walkOk()` limita el paseo al tablero.
+
+## Altillo 2 — sobre el falso techo del rellano (propuesta)
+
+Segunda opción. Datos en `ALTILLO2` (`model.js`); `buildAltillo(A)` está
+parametrizado y `ALTILLOS` recoge las dos. Los botones **Altillo 1** y
+**Altillo 2** son excluyentes (`setAltillo(n)`, con `n` 0/1/2).
+
+El rellano tiene 9,30 m² y su falso techo está a `2,35`, así que por encima queda
+un volumen libre hasta el faldón. Tablero a `2,55` (2,35 + 0,20 de forjado),
+respetando la altura del rellano.
+
+| tablero a 2,55 | |
+|---|---|
+| Suelo pisable (descontado el cañón de luz) | 9,11 m² |
+| h ≥ 1,50 | 6,72 m² |
+| h ≥ 1,90 (de pie) | 3,32 m² |
+| h ≥ 2,20 | 1,56 m² |
+| Altura media / máxima | 1,76 / 2,44 m |
+| Volumen | 16,0 m³ |
+
+**Por qué sale peor.** Aquí no manda la cumbrera principal sino el **hastial
+Norte**, con la cumbrera N–S en `x = 14,60` y faldones al 61 %: la franja alta es
+una banda estrecha Norte–Sur y a 1,60 m de ella el faldón ya ha bajado un metro.
+En el altillo 1 la cumbrera principal (5,00 m) cruza toda la zona de Este a
+Oeste. De ahí que el de pie pase de `7,60` a `3,32 m²`.
+
+**El cañón de luz lo atraviesa.** La Velux del rellano baja por un cañón de
+0,75 × 0,98 y es la única luz natural del rellano: no se puede tapar. Se le deja
+el hueco (0,74 m²) y el altillo queda partido alrededor. A cambio, acristalando
+las paredes del cañón por encima del tablero, el altillo se ilumina con ella.
+
+**Acceso.** Escalera de peldaños alternos de 2,45 m en el estudio, contra su muro
+Este (`dir:'y'` — `buildAltillo` admite escaleras que suben en x o en y), y paso
+por encima del forjado a través del muro `x = 11,27`. Cuesta 1,5 m² del estudio.
+
+**Lo que cabe.** Cama de 1,20 × 1,90 con el cabecero al Oeste contra la caja del
+lucernario: ahí el hastial deja `2,41 m` sobre el colchón —el mejor sitio de los
+dos altillos para incorporarse— y los pies quedan bajo el alero, a 1,50. Más
+almacenaje bajo contra el antepecho. **No cabe escritorio**: donde hay altura para
+sentarse no hay fondo, y donde hay fondo el faldón está a 1,45.
+
+**El problema de fondo: el rellano es elemento común.** El vuelo sobre su falso
+techo no pertenece a la vivienda. Anexionarlo no es obra interior: exige acuerdo
+de la comunidad y, al alterar la superficie privativa, muy probablemente
+modificación del título constitutivo —unanimidad—. El altillo 1 es obra dentro de
+casa; éste no.
+
+| | Altillo 1 | Altillo 2 |
+|---|---|---|
+| Sobre | distribuidor + baño 2 (privativo) | rellano (común) |
+| Tablero / libre debajo | 2,45 / 2,25 | 2,55 / 2,35 |
+| Pisable | **9,57 m²** | 9,11 m² |
+| h ≥ 1,50 | **9,34 m²** | 6,72 m² |
+| h ≥ 1,90 | **7,60 m²** | 3,32 m² |
+| Altura media | **2,12 m** | 1,76 m |
+| Volumen | **20,3 m³** | 16,0 m³ |
+| Mobiliario | cama + armario + escritorio | cama + almacenaje bajo |
+| Permisos | licencia | licencia + acuerdo de la comunidad |
 
 ## Comprobación del modelo
 
