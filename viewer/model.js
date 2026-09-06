@@ -473,13 +473,16 @@ const ALTILLO = {
   velux: 'v-alt',
   bands: [1.20, 1.50, 1.90, 2.20],
   /* mobiliario que cabe, colocado según la altura libre de cada franja.
-     [x0, y0, x1, y1, alto, tipo]  ·  alto medido desde el tablero        */
+     [x0, y0, x1, y1, alto, tipo, arranque]  ·  cotas desde el tablero    */
   furn: [
     // cama de 1,20 × 1,90 tumbada E–O contra el alero Norte, que es la
     // franja baja: bajo el Velux y con 2,26 m en el borde por el que se
     // entra.  N–S no cabe: el brazo sólo tiene 1,72 m de fondo.
-    [19.45, -7.82, 21.35, -6.62, 0.50, 'bed'],
-    [19.45, -6.82, 21.35, -6.62, 0.85, 'head'],
+    // Se duerme a lo largo, así que el cabecero va en el testero CORTO del
+    // Este, contra el muro; por el Oeste se entra a la cama.
+    [19.40, -7.82, 21.30, -6.62, 0.50, 'bed'],
+    [21.30, -7.82, 21.40, -6.62, 0.90, 'head'],
+    [20.85, -7.57, 21.25, -6.87, 0.63, 'pillow', 0.50],
     // armario 1,48 × 0,55 × 1,75 contra el muro Sur del brazo Oeste, al
     // Oeste del pilar para no cerrar el paso (allí el faldón deja 1,85)
     [16.05, -9.35, 17.53, -8.80, 1.75, 'closet'],

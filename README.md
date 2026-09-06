@@ -425,15 +425,20 @@ lo que se usa tumbado o sentado, bajo el alero.
 | Mueble | Altura libre encima |
 |---|---|
 | Cama 1,20 × 1,90 · E–O bajo el alero Norte y bajo la Velux | `1,48 → 2,26 m` |
+| Cabecero al Este, contra el muro · sobre el colchón | `1,37 m` |
 | Armario 1,48 × 0,55 × 1,75 · muro Sur del brazo Oeste | `1,85 → 2,21 m` |
 | Escritorio 1,20 × 0,55 · muro Sur del brazo central | `1,85 → 2,21 m` |
 | Silla · frente al escritorio, sobre la cumbrera | `2,24 → 2,53 m` |
 | Balda 0,40 × 0,35 × 0,45 · a la cabecera de la cama | `2,26 → 2,49 m` |
 
 La cama va **tumbada de Este a Oeste**, no de Norte a Sur: el brazo del baño sólo
-tiene `1,72 m` de fondo y un colchón de 1,90 no cabe sin invadir el paso. Puesta
-así entra entera, con el respaldo contra el alero (1,48 m, suficiente para
-incorporarse) y 2,26 m en el borde por el que se entra. La Velux le cae encima.
+tiene `1,72 m` de fondo y un colchón de 1,90 no cabe sin invadir el paso. Se
+duerme a lo largo, así que **el cabecero va en el testero corto del Este**,
+contra el muro del baño; a la cama se entra por el Oeste (los pies) y por el lado
+Sur, donde quedan `0,44 m` y 2,26 m de altura. Sentado contra el cabecero quedan
+`1,37 m` sobre el colchón. Almohada y cabecero van en un tono claro aparte
+(`Mt` en `buildAltillo`) y rotulados en *Planta*. La Velux cae sobre la mitad de
+los pies.
 
 **Sí cabe armario**, pero de altillo: 1,48 × 0,55 × **1,75** de alto (1,4 m³, casi
 1,50 m de barra), contra el muro Sur del brazo Oeste y **al Oeste del pilar**,

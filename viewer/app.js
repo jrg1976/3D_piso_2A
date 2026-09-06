@@ -1060,10 +1060,12 @@ function drawAltillo(g) {
   g.stroke();
   // mobiliario
   const FL = { bed:'Cama 120×190', closet:'Armario', desk:'Escritorio',
-               chair:'Silla', shelf:'Balda', head:'' };
+               chair:'Silla', shelf:'Balda', head:'', pillow:'Almohada' };
   A.furn.forEach(([x0,y0,x1,y1,hh,tipo]) => {
     const x = pX(x0), y = pY(y1), w = (x1-x0) * plan.s, h = (y1-y0) * plan.s;
-    g.fillStyle = tipo === 'head' ? 'rgba(90,74,52,0.55)' : 'rgba(120,98,68,0.38)';
+    g.fillStyle = tipo === 'head' ? 'rgba(90,74,52,0.75)'
+                : tipo === 'pillow' ? 'rgba(235,225,200,0.85)'
+                : 'rgba(120,98,68,0.38)';
     g.fillRect(x, y, w, h);
     g.strokeStyle = 'rgba(70,55,35,0.85)'; g.lineWidth = 1.2; g.strokeRect(x, y, w, h);
     if (plan.s > 40 && FL[tipo] && w > 40) {

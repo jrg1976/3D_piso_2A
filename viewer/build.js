@@ -522,9 +522,14 @@ function buildAltillo() {
   const Mc = new Mesher();
   WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
 
-  // --- mobiliario, apoyado en el tablero
-  const Mu = new Mesher();
-  A.furn.forEach(([x0, y0, x1, y1, hh, tipo]) => {
+  // --- mobiliario, apoyado en el tablero.  Ropa de cama aparte, en un tono
+  //     claro, para que se vea de un vistazo dónde va la almohada
+  const Mu = new Mesher(), Mt = new Mesher();
+  A.furn.forEach(([x0, y0, x1, y1, hh, tipo, base]) => {
+    if (tipo === 'pillow' || tipo === 'head') {
+      bx(Mt, x0, y0, x1, y1, A.z + (base === undefined ? 0.02 : base), A.z + hh);
+      return;
+    }
     if (tipo === 'chair') {                                 // asiento + respaldo
       bx(Mu, x0, y0, x1, y1, A.z + 0.40, A.z + 0.45);
       bx(Mu, x0, y1 - 0.05, x1, y1, A.z + 0.45, A.z + hh);
@@ -553,6 +558,7 @@ function buildAltillo() {
   add(Mr, new THREE.MeshLambertMaterial({ color: 0x6e6a63, side: S }), true);
   add(Ms, new THREE.MeshLambertMaterial({ color: 0x6f5741, side: S }), true);
   add(Mu, new THREE.MeshLambertMaterial({ color: 0x9c8468, side: S }), true);
+  add(Mt, new THREE.MeshLambertMaterial({ color: 0xe6dcc6, side: S }), true);
   add(Mg, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
     transparent: true, opacity: 0.22, depthWrite: false }), false);
 
