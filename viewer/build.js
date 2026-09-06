@@ -386,6 +386,23 @@ function buildCore() {
   bx(Ml, L.door[0], L.y0,    L.door[1], L.y0 + t, L.head, T);     // dintel
   buildSlab([L.x0 + t, L.y0 + t, L.x1 - t, L.y1 - t], -0.10, Ml, true);   // foso
   buildSlab([L.door[0], L.y0, L.door[1], L.y0 + t], 0.00, Mf, true);      // umbral
+  /* La caja se deja abierta por arriba para ver el recorrido, pero los dos
+     paños que dan a la vivienda A —el Este y el Norte— son medianera y
+     tienen que llegar al faldón: desde el tablero del altillo 2 la vista
+     pasa por encima de la caja, y sin ellos se vería el exterior.        */
+  const upTo = (x0, y0, x1, y1, z0, n) => {
+    const alongX = (x1 - x0) >= (y1 - y0);             // se trocea el lado largo
+    for (let i = 0; i < n; i++) {
+      const a = i / n, b = (i + 1) / n;
+      const ax = alongX ? x0 + (x1-x0)*a : x0, bx = alongX ? x0 + (x1-x0)*b : x1;
+      const ay = alongX ? y0 : y0 + (y1-y0)*a, by = alongX ? y1 : y0 + (y1-y0)*b;
+      Ml.box([V(ax,ay,z0), V(bx,ay,z0), V(bx,by,z0), V(ax,by,z0)],
+             [V(ax,ay,roofH(ax,ay)), V(bx,ay,roofH(bx,ay)),
+              V(bx,by,roofH(bx,by)), V(ax,by,roofH(ax,by))]);
+    }
+  };
+  upTo(L.x1 - t, L.y0, L.x1, L.y1, T, 6);              // medianera Este
+  upTo(L.x0, L.y1 - t, L.x1 - t, L.y1, T, 8);          // medianera Norte
 
   // --- escalera de ida y vuelta
   const K = CORE.stair, R = CORE_RISER, hu = CORE_TREAD;
@@ -404,17 +421,21 @@ function buildCore() {
 
   // --- falso techo del rellano (cota dada por la propiedad) con el hueco
   //     del lucernario, su cañón de luz y el vidrio del Velux
+  /* El cañón de luz va en su propia malla: la propuesta de altillo 2 lo
+     suprime —la Velux pasa a iluminar el altillo— y entonces el falso
+     techo del rellano se cierra entero con `Mn`.                         */
   const P = CORE.plafond, Mp = new Mesher(), Mv = new Mesher();
+  const Mq = new Mesher(), Mn = new Mesher();
   CORE.floor.forEach(r => {
     capHole(Mp, r[0], r[1], r[2], r[3], P.h, P.hole);
     capHole(Mp, r[0], r[1], r[2], r[3], P.h + P.t, P.hole);
   });
   {
     const [a, b, c, d] = P.hole;                       // brocal del hueco
-    Mp.quad(V(a,b,P.h), V(c,b,P.h), V(c,b,P.h+P.t), V(a,b,P.h+P.t));
-    Mp.quad(V(c,d,P.h), V(a,d,P.h), V(a,d,P.h+P.t), V(c,d,P.h+P.t));
-    Mp.quad(V(c,b,P.h), V(c,d,P.h), V(c,d,P.h+P.t), V(c,b,P.h+P.t));
-    Mp.quad(V(a,d,P.h), V(a,b,P.h), V(a,b,P.h+P.t), V(a,d,P.h+P.t));
+    Mq.quad(V(a,b,P.h), V(c,b,P.h), V(c,b,P.h+P.t), V(a,b,P.h+P.t));
+    Mq.quad(V(c,d,P.h), V(a,d,P.h), V(a,d,P.h+P.t), V(c,d,P.h+P.t));
+    Mq.quad(V(c,b,P.h), V(c,d,P.h), V(c,d,P.h+P.t), V(c,b,P.h+P.t));
+    Mq.quad(V(a,d,P.h), V(a,b,P.h), V(a,b,P.h+P.t), V(a,d,P.h+P.t));
     // cañón de luz: del falso techo al faldón, siguiendo su pendiente
     const zt = P.h + P.t;
     const shaft = (x0, y0, x1, y1) => {
@@ -423,11 +444,14 @@ function buildCore() {
         const ua = i / n, ub = (i + 1) / n;
         const pax = x0 + (x1-x0)*ua, pay = y0 + (y1-y0)*ua;
         const pbx = x0 + (x1-x0)*ub, pby = y0 + (y1-y0)*ub;
-        Mp.quad(V(pax,pay,zt), V(pbx,pby,zt),
+        Mq.quad(V(pax,pay,zt), V(pbx,pby,zt),
                 V(pbx,pby,roofH(pbx,pby)), V(pax,pay,roofH(pax,pay)));
       }
     };
     shaft(a, b, c, b); shaft(c, d, a, d); shaft(c, b, c, d); shaft(a, d, a, b);
+    // variante sin cañón: el falso techo se cierra sobre el hueco
+    Mn.quad(V(a,b,P.h), V(c,b,P.h), V(c,d,P.h), V(a,d,P.h));
+    Mn.quad(V(a,d,P.h+P.t), V(c,d,P.h+P.t), V(c,b,P.h+P.t), V(a,b,P.h+P.t));
     // vidrio del Velux, en el plano del faldón
     veluxPane(Mv, VELUX.find(v => v.id === 'v-rell'));
   }
@@ -437,10 +461,16 @@ function buildCore() {
     o.castShadow = o.receiveShadow = !!sh; group.add(o); return o; };
   add(Mw, matW, true); add(Mf, matF, true); add(Ms, matS, true); add(Ml, matL, true);
   add(Mfa, new THREE.MeshLambertMaterial({ color: 0xcfc7b8, side: S }), true);
-  const plafond = add(Mp, new THREE.MeshLambertMaterial({ color: 0xbdb8ae, side: S }), true);
+  const matPl = new THREE.MeshLambertMaterial({ color: 0xbdb8ae, side: S });
+  const plafond = add(Mp, matPl, true);
+  const shaft = add(Mq, matPl, true);
+  const plafondFull = add(Mn, matPl, true);
+  if (plafondFull) plafondFull.visible = false;
   const velux = add(Mv, new THREE.MeshLambertMaterial({ color: 0xcfe4ee, side: S,
     transparent: true, opacity: 0.22, depthWrite: false }), false);
-  return { group, plafond, velux };
+  /* matW y matL son las dos masas verticales del núcleo; la vista aislada
+     del altillo 2 las pasa a translúcido para poder ver el tablero        */
+  return { group, plafond, shaft, plafondFull, velux, mats: [matW, matL] };
 }
 
 /** paño de vidrio de un lucernario, en el plano del faldón */
@@ -469,7 +499,7 @@ function buildAltillo(A) {
     capHole(Md, r[0], r[1], r[2], r[3], A.z, A.hole);
     capHole(Md, r[0], r[1], r[2], r[3], zb,  A.hole);
   });
-  {
+  if (A.hole) {
     const [a, b, c, d] = A.hole;                           // canto del hueco
     Md.quad(V(a,b,zb), V(c,b,zb), V(c,b,A.z), V(a,b,A.z));
     Md.quad(V(c,d,zb), V(a,d,zb), V(a,d,A.z), V(c,d,A.z));
@@ -477,7 +507,7 @@ function buildAltillo(A) {
     Md.quad(V(a,d,zb), V(a,b,zb), V(a,b,A.z), V(a,d,A.z));
   }
   // cantos libres del forjado (los que no mueren contra un muro)
-  [[16.02,-9.35,16.02,-7.54], [18.97,-8.26,19.06,-8.26]].forEach(([x0,y0,x1,y1]) => {
+  (A.edges || []).forEach(([x0,y0,x1,y1]) => {
     Md.quad(V(x0,y0,zb), V(x1,y1,zb), V(x1,y1,A.z), V(x0,y0,A.z));
   });
 
@@ -528,9 +558,15 @@ function buildAltillo(A) {
     R(pu - 0.022, pv - 0.022, pu + 0.022, pv + 0.022, A.z*u - 0.02, A.z*u + 0.92);
   }
 
-  // --- tabiques del baño 2 recortados a la cota del forjado (altillo 1)
+  /* Muros que cambian con la propuesta: el altillo 1 derriba los tabiques
+     del baño 2 por encima del forjado; el 2 abre el paso desde el estudio. */
   const Mc = new Mesher();
-  if (A.id === 'alt1') WALLS.filter(w => w.cut).forEach(w => buildWall(w, Mc, A.z));
+  WALLS.filter(w => w.cut || w.altHole).forEach(w => {
+    if (A.id === 'alt1' && w.cut) buildWall(w, Mc, A.z);
+    else if (A.id === 'alt2' && w.altHole)
+      buildWall(Object.assign({}, w, { holes: (w.holes || []).concat([w.altHole]) }), Mc);
+    else buildWall(w, Mc);
+  });
 
   // --- mobiliario, apoyado en el tablero.  Ropa de cama aparte, en un tono
   //     claro, para que se vea de un vistazo dónde va la almohada

@@ -72,7 +72,8 @@ autocontenido (three.js incluido), sin dependencias externas.
   Velux propuesto, mobiliario y los tabiques que habría que derribar por encima.
   En *Planta* se sombrea por bandas de altura libre; la vista *Altillo* sube la
   cámara al tablero y se anda por él.
-  El 2, sobre el falso techo del rellano. El botón levanta la propuesta dentro del
+  El 2, sobre el falso techo del rellano, suprimiendo el cañón de luz para que la
+  Velux ilumine el altillo. El botón levanta la propuesta dentro del
   piso; la vista *Altillo* de la barra de maqueta aísla la activa —recorta la
   escena a su caja y pasa muros y faldón a translúcido— y en Recorrer devuelve
   todo a opaco y sube la cámara al tablero.
@@ -329,6 +330,15 @@ lucernario (`VELUX`), de modo que el recorte es exacto y no queda dentado por el
 paso de 0,22 m de la retícula. El vidrio va en el plano de cubierta, 4 mm por
 fuera, y se oculta con el botón **Techo**; el falso techo, con **Pladur**.
 
+Éste es el **estado actual**. La propuesta **Altillo 2** suprime el cañón y cierra
+el falso techo entero, y entonces la Velux ilumina el altillo y deja el rellano sin
+luz natural (ver más abajo).
+
+La caja del ascensor se deja **abierta por arriba** para ver el recorrido, pero sus
+dos paños Este y Norte son **medianera con la vivienda A** y suben hasta el faldón
+(`upTo()` en `buildCore()`): desde el tablero del altillo 2, a 2,55, la vista pasa
+por encima de la caja —que corona a 2,90— y sin ellos se veía el exterior.
+
 El ascensor abre **al Sur**, sobre el rellano; delante está trazado el círculo
 de maniobra de `Ø 1,50` y por eso el rellano se prolonga al Este hasta el muro
 de la vivienda A (`x = 16,30`). La caja se deja **abierta por arriba** para poder
@@ -452,8 +462,11 @@ propuesta: en Maqueta se ve dentro del piso entero. El aislado es una **vista de
 la barra de maqueta** (`data-orb="alt"`), junto a Encajar / Cenital / Isométrica:
 pone seis `THREE.Plane` de recorte global en el renderer alrededor de la caja del
 altillo —desde el pavimento del distribuidor hasta el faldón, para que la
-escalera se vea entera— y pasa muros y faldón a translúcido. Cualquier otra vista
-de esa barra lo desactiva.
+escalera se vea entera— y pasa a translúcido los muros, el faldón, **los
+patinillos** y **las dos masas del núcleo** (`core.mats`: fábrica y caja del
+ascensor). Los patinillos entraron en la caja de recorte al incluir en ella la
+escalera de acceso del altillo 2 y, opacos, tapaban el tablero desde cualquier
+ángulo. Cualquier otra vista de esa barra lo desactiva.
 
 `applyIso()` sólo aplica el recorte cuando `mode === 'orbit'`: en *Recorrer* el
 recorte dejaba fuera todo lo que hay por debajo de la caja y no se veía nada, y
@@ -479,39 +492,68 @@ Segunda opción. Datos en `ALTILLO2` (`model.js`); `buildAltillo(A)` está
 parametrizado y `ALTILLOS` recoge las dos. Los botones **Altillo 1** y
 **Altillo 2** son excluyentes (`setAltillo(n)`, con `n` 0/1/2).
 
-El rellano tiene 9,30 m² y su falso techo está a `2,35`, así que por encima queda
-un volumen libre hasta el faldón. Tablero a `2,55` (2,35 + 0,20 de forjado),
-respetando la altura del rellano.
+El rellano tiene 9,89 m² en planta y su falso techo está a `2,35`, así que por
+encima queda un volumen libre hasta el faldón. Tablero a `2,55` (2,35 + 0,20 de
+forjado), respetando la altura del rellano.
 
 | tablero a 2,55 | |
 |---|---|
-| Suelo pisable (descontado el cañón de luz) | 9,11 m² |
-| h ≥ 1,50 | 6,72 m² |
-| h ≥ 1,90 (de pie) | 3,32 m² |
-| h ≥ 2,20 | 1,56 m² |
-| Altura media / máxima | 1,76 / 2,44 m |
-| Volumen | 16,0 m³ |
+| Suelo pisable (descontada la caja del ascensor) | 9,62 m² |
+| h ≥ 1,50 | 7,25 m² |
+| h ≥ 1,90 (de pie) | 3,61 m² |
+| h ≥ 2,20 | 1,41 m² |
+| Altura media / máxima | 1,76 / 2,45 m |
+| Volumen | 17,0 m³ |
 
 **Por qué sale peor.** Aquí no manda la cumbrera principal sino el **hastial
 Norte**, con la cumbrera N–S en `x = 14,60` y faldones al 61 %: la franja alta es
 una banda estrecha Norte–Sur y a 1,60 m de ella el faldón ya ha bajado un metro.
 En el altillo 1 la cumbrera principal (5,00 m) cruza toda la zona de Este a
-Oeste. De ahí que el de pie pase de `7,60` a `3,32 m²`.
+Oeste. De ahí que el de pie pase de `7,60` a `3,61 m²`, y en una banda estrecha
+Norte–Sur de `x = 13,70 a 15,50`.
 
-**El cañón de luz lo atraviesa.** La Velux del rellano baja por un cañón de
-0,75 × 0,98 y es la única luz natural del rellano: no se puede tapar. Se le deja
-el hueco (0,74 m²) y el altillo queda partido alrededor. A cambio, acristalando
-las paredes del cañón por encima del tablero, el altillo se ilumina con ella.
+**Sin cañón de luz: la Velux pasa a ser del altillo.** Se suprime el cañón, el
+falso techo del rellano se cierra entero y el tablero queda continuo —de ahí los
+0,73 m² y los 1,45 m³ que gana respecto a la versión con hueco (9,62 frente a
+8,89 pisables)—. La Velux queda `1,74 → 2,20 m` por encima del tablero, sobre la
+zona alta: ilumina el altillo directamente, sin cañón ni acristalamientos. La
+contrapartida es seria: **era la única luz natural del rellano**, que se queda
+con luz artificial solamente, y eso es lo primero que va a mirar la comunidad.
 
-**Acceso.** Escalera de peldaños alternos de 2,45 m en el estudio, contra su muro
-Este (`dir:'y'` — `buildAltillo` admite escaleras que suben en x o en y), y paso
-por encima del forjado a través del muro `x = 11,27`. Cuesta 1,5 m² del estudio.
+En el modelo esto se resuelve con tres mallas en `buildCore()`: `plafond` (la losa
+con el hueco), `shaft` (brocal + cañón) y `plafondFull` (la tapa del hueco).
+`setAltillo(n)` apaga `shaft` y enciende `plafondFull` cuando `n === 2`;
+`plafondAt` cierra el cañón en el mismo caso, para que el recorrido ande sobre el
+falso techo continuo.
 
-**Lo que cabe.** Cama de 1,20 × 1,90 con el cabecero al Oeste contra la caja del
-lucernario: ahí el hastial deja `2,41 m` sobre el colchón —el mejor sitio de los
-dos altillos para incorporarse— y los pies quedan bajo el alero, a 1,50. Más
-almacenaje bajo contra el antepecho. **No cabe escritorio**: donde hay altura para
-sentarse no hay fondo, y donde hay fondo el faldón está a 1,45.
+**Acceso.** Escalera de peldaños alternos de 2,45 m de desarrollo en el estudio,
+en `x = 10,48–11,08` (`dir:'y'` — `buildAltillo` admite escaleras que suben en x o
+en y), y paso por encima del forjado a través del muro `x = 11,27` (`altHole`, que
+sólo se abre con el altillo 2 encendido). Tabica 0,23 · huella 0,22 · 2C+H = 0,69,
+dentro de la escalera de uso restringido del DB-SUA 1. Dos correcciones sobre el
+primer trazado:
+
+- **Chocaba con un patinillo.** Pegada al muro se metía en el de ventilación del
+  cuarto de basuras (`10,40–11,40 / −7,25…−7,86`), que sube hasta cubierta y no se
+  toca. Ahora va entre ése y el de ventilación del garaje
+  (`11,17–11,95 / −4,88…−5,97`), sin tocar ninguno.
+- **Subía al revés.** El faldón principal baja hacia el Norte, así que subiendo de
+  Sur a Norte el último peldaño quedaba a `0,19 m` del techo. Sube de Norte a Sur
+  (`y0 = −4,75` arranque, `y1 = −7,20` llegada) y en *Planta* lleva flecha de
+  `SUBE`.
+
+Llega a la esquina Suroeste del tablero. La altura libre **sobre el último peldaño
+es de 1,62 m** —el punto flojo de esta opción—; ya sobre el tablero son
+`1,73–1,85 m`, y 2,05 medio metro más al Sur. Bajar el arranque no ayuda: al Sur de
+`y = −7,20` está el patinillo. Cuesta 1,5 m² del estudio.
+
+**Lo que cabe.** Cama de 1,20 × 1,90 tumbada de Este a Oeste con el cabecero al
+Oeste, bajo la cumbrera del hastial (`x = 14,60`): ahí quedan `1,95 m` sobre el
+colchón —el mejor sitio de los dos altillos para incorporarse— y los pies quedan
+bajo el alero, con 0,98 m sobre el colchón. Más almacenaje bajo de
+1,80 × 0,55 × 0,90 contra el antepecho del hueco de escalera, que hace de
+barandilla. **No cabe escritorio**: donde hay altura para sentarse no hay fondo, y
+donde hay fondo el faldón está a 1,45.
 
 **El problema de fondo: el rellano es elemento común.** El vuelo sobre su falso
 techo no pertenece a la vivienda. Anexionarlo no es obra interior: exige acuerdo
@@ -523,12 +565,14 @@ casa; éste no.
 |---|---|---|
 | Sobre | distribuidor + baño 2 (privativo) | rellano (común) |
 | Tablero / libre debajo | 2,45 / 2,25 | 2,55 / 2,35 |
-| Pisable | **9,57 m²** | 9,11 m² |
-| h ≥ 1,50 | **9,34 m²** | 6,72 m² |
-| h ≥ 1,90 | **7,60 m²** | 3,32 m² |
+| Pisable | 9,57 m² | **9,62 m²** |
+| h ≥ 1,50 | **9,34 m²** | 7,25 m² |
+| h ≥ 1,90 | **7,60 m²** | 3,61 m² |
 | Altura media | **2,12 m** | 1,76 m |
-| Volumen | **20,3 m³** | 16,0 m³ |
+| Volumen | **20,3 m³** | 17,0 m³ |
 | Mobiliario | cama + armario + escritorio | cama + almacenaje bajo |
+| Altura libre en la llegada | **2,09 m** | 1,62 m |
+| Luz natural | Velux nueva propia | la Velux del rellano, que se queda a oscuras |
 | Permisos | licencia | licencia + acuerdo de la comunidad |
 
 ## Comprobación del modelo

@@ -139,7 +139,8 @@ const WALLS = [
   // ---- estudio y balcón norte ----
   { a:[9.39,-1.425], b:[12.075,-1.425], t:W_EXT, holes:[[1.40,2.35,0.00,2.10,'door']] },
   { a:[12.075,-1.425], b:[12.075,-4.88], t:0.25 },
-  { a:[11.27,-5.97], b:[11.27,-7.45], t:0.20 },
+  { a:[11.27,-5.97], b:[11.27,-7.45], t:0.20,
+    altHole:[0.58, 1.23, 2.55, 3.55] },                            // paso al altillo 2
 
   // ---- recibidor / salón ----
   { a:[11.37,-7.756], b:[12.46,-7.756], t:0.18, holes:[[0.19,0.93,0.00,2.10,'entry']] },  // puerta de entrada
@@ -465,7 +466,8 @@ const ALTILLO = {
      Una escalera de uso restringido del CTE (ancho 0,80, tabica ≤ 0,20,
      huella ≥ 0,22) pediría 2,64 m y 2,11 m² de hueco.                     */
   hole: [16.02, -8.16, 18.47, -7.54],
-  /* barandilla: sólo los bordes libres (el resto son muros) */
+  /* cantos vistos del forjado y barandilla en los bordes libres */
+  edges: [[16.02,-9.35,16.02,-7.54], [18.97,-8.26,19.06,-8.26]],
   rail: [[16.02, -9.35, 16.02, -8.16],
          [16.02, -8.16, 18.47, -8.16],
          [18.47, -8.16, 18.47, -7.54]],
@@ -518,19 +520,28 @@ const ALTILLO2 = {
   z: 2.55,            // 2,35 libres para el rellano + 0,20 de forjado
   t: 0.20,
   deck: CORE.floor,
-  hole: CORE.plafond.hole,          // el cañón de luz sube y lo parte
-  /* único borde libre: el que da al hueco de la escalera comunitaria */
+  /* Sin hueco: se suprime el cañón de luz y la Velux pasa a iluminar el
+     altillo, que queda 1,74–2,20 m por debajo de ella.  El rellano se
+     queda entonces sin luz natural —a valorar con la comunidad, porque
+     es su único hueco—.  El falso techo del rellano se cierra entero.   */
   rail: [[12.212, -4.868, 14.588, -4.868]],
-  /* acceso desde el estudio, atravesando el muro x = 11,27 por encima
-     del forjado; escalera de peldaños alternos N–S contra ese muro      */
-  stair: { x0: 10.55, x1: 11.17, y0: -7.35, y1: -4.90, n: 11, alt: true, dir: 'y' },
-  door: [11.27, -7.35, 11.27, -6.55],
+  /* Acceso desde el estudio, atravesando el muro x = 11,27 por encima
+     del forjado.  Sube de Norte a Sur —y0 es el arranque, y1 la llegada—,
+     que es el único sentido posible: el faldón principal baja hacia el
+     Norte, así que subiendo al revés el último peldaño quedaría a 0,19 m
+     del techo.  Va a x ≤ 11,08 y no pasa de y = −7,20 para librar los dos
+     patinillos del estudio —el de ventilación del garaje
+     (11,17–11,95 × −4,88…−5,97) y el del cuarto de basuras
+     (10,40–11,40 × −7,25…−7,86)— y la estantería.  Aun así la llegada es
+     lo justo: 1,62 m sobre el último peldaño.                            */
+  stair: { x0: 10.48, x1: 11.08, y0: -4.75, y1: -7.20, n: 11, alt: true, dir: 'y' },
+  door: [11.27, -7.20, 11.27, -6.55],
   bands: [1.20, 1.50, 1.90, 2.20],
-  label: { x:13.10, y:-7.05, txt:'ALTILLO 2  +2,55', sub:'6,72 m² con h ≥ 1,50' },
+  label: { x:13.05, y:-6.98, txt:'ALTILLO 2  +2,55', sub:'7,25 m² con h ≥ 1,50' },
   furn: [
-    // cama E–O con el cabecero al Oeste, contra la caja del lucernario:
-    // ahí la cumbrera del hastial deja 2,41 m sobre el colchón, y los
-    // pies quedan bajo el alero (1,50)
+    // cama E–O con el cabecero al Oeste, bajo la cumbrera del hastial
+    // (x = 14,60): ahí quedan 1,95 m sobre el colchón para incorporarse,
+    // y los pies quedan bajo el alero, con 0,98 m sobre el colchón
     [14.29, -7.35, 16.19, -6.15, 0.50, 'bed'],
     [14.19, -7.35, 14.29, -6.15, 0.90, 'head'],
     [14.34, -7.10, 14.74, -6.40, 0.63, 'pillow', 0.50],
@@ -560,5 +571,5 @@ const VIEWS = [
   { id:'hab3', name:'Habitación 1 E', pos:[23.70, -8.20], look:[21.10,-10.60, 1.50] },
   { id:'ban2', name:'Baño 2',         pos:[19.79, -8.10], look:[21.20, -6.85, 1.30] },
   { id:'alt',  name:'Altillo 1',      pos:[17.10, -8.60], look:[20.60, -7.20, 3.95], alt:1 },
-  { id:'alt2', name:'Altillo 2',      pos:[14.42, -6.95], look:[16.10, -6.75, 3.40], alt:2 }
+  { id:'alt2', name:'Altillo 2',      pos:[13.85, -5.55], look:[15.60, -6.95, 3.75], alt:2 }
 ];

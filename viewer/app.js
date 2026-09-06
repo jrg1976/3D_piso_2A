@@ -383,7 +383,10 @@ function applyIso() {
   const on = soloAlt && mode === 'orbit';
   renderer.clippingPlanes = on ? altClip() : [];
   scene.background = new THREE.Color(on ? 0xcdd2d6 : 0x8fb6d6);
-  [apt.walls.material, apt.ceil.material].forEach(m => {
+  /* los patinillos entran en la caja de recorte y, opacos, tapan el altillo
+     desde cualquier ángulo; se fantasman igual que los muros y el faldón   */
+  [apt.walls.material, apt.ceil.material, apt.shafts && apt.shafts.material]
+    .concat(core && core.mats || []).filter(Boolean).forEach(m => {
     m.transparent = on; m.opacity = on ? 0.26 : 1; m.depthWrite = !on; m.needsUpdate = true;
   });
 }
@@ -402,7 +405,9 @@ function setAltillo(n) {
     a.group.visible = (i + 1 === n);
     if (a.patch) a.patch.visible = (i + 1 !== n);
   });
-  if (apt) apt.cutWalls.visible = (n !== 1);
+  if (apt) apt.cutWalls.visible = !n;
+  if (core.shaft) core.shaft.visible = (n !== 2);
+  if (core.plafondFull) core.plafondFull.visible = (n === 2);
   if (!n) { onAltillo = false; setSolo(false); }
   [1, 2].forEach(k => { const b = document.getElementById('t-altillo' + k);
     if (b) b.setAttribute('aria-pressed', n === k ? 'true' : 'false'); });
@@ -518,7 +523,8 @@ function plafondAt(x, y) {
   for (const z of zones)
     if (x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1)
       h = h === null ? z.h : Math.min(h, z.h);
-  if (h === null && !veluxAt(x, y))            // falso techo fijo del rellano
+  // con el altillo 2 se suprime el cañón: el falso techo del rellano se cierra
+  if (h === null && !(altN !== 2 && veluxAt(x, y)))
     for (const r of CORE.floor)
       if (x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]) { h = CORE.plafond.h; break; }
   return h;
@@ -997,10 +1003,12 @@ function drawCore(g) {
     g.font = '600 11px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Ascensor', pX((L2.x0+L2.x1)/2), pY((L2.y0+L2.y1)/2));
     g.fillText('Escalera', pX((K.x0+K.x1)/2), pY(K.y1 - 0.55));
-    g.fillText('Rellano', pX(12.9), pY(-6.9));
-    g.font = '700 11px ui-monospace,SFMono-Regular,Menlo,monospace';
-    g.fillStyle = 'rgba(190,120,20,0.95)';
-    g.fillText(n2(P.h) + ' m', pX(12.9), pY(-7.15));
+    if (altN !== 2) {          // con el altillo 2 encima, el rótulo es el suyo
+      g.fillText('Rellano', pX(12.9), pY(-6.9));
+      g.font = '700 11px ui-monospace,SFMono-Regular,Menlo,monospace';
+      g.fillStyle = 'rgba(190,120,20,0.95)';
+      g.fillText(n2(P.h) + ' m', pX(12.9), pY(-7.15));
+    }
     if (plan.s > 40) {
       g.fillStyle = 'rgba(40,90,140,0.95)';
       g.font = '600 10px ui-sans-serif,system-ui,sans-serif';
@@ -1050,12 +1058,20 @@ function drawAltillo(g) {
   g.strokeStyle = 'rgba(150,90,10,0.95)'; g.lineWidth = 1.6;
   A.deck.forEach(r => g.strokeRect(pX(r[0]), pY(r[3]),
     (r[2]-r[0]) * plan.s, (r[3]-r[1]) * plan.s));
-  // hueco (de escalera en el altillo 1, del cañón de luz en el 2)
-  const H = A.hole;
-  g.fillStyle = 'rgba(20,20,20,0.10)';
-  g.fillRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
+  // hueco de escalera (el altillo 2 no tiene: su escalera está en el estudio)
   g.strokeStyle = 'rgba(60,60,60,0.9)'; g.lineWidth = 1.3;
-  g.strokeRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
+  if (A.hole) {
+    const H = A.hole;
+    g.fillStyle = 'rgba(20,20,20,0.10)';
+    g.fillRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
+    g.strokeRect(pX(H[0]), pY(H[3]), (H[2]-H[0]) * plan.s, (H[3]-H[1]) * plan.s);
+  }
+  if (A.door) {                       // paso abierto por encima del forjado
+    const D = A.door;
+    g.save(); g.setLineDash([3, 3]); g.strokeStyle = 'rgba(150,90,10,0.95)';
+    g.lineWidth = 3; g.beginPath();
+    g.moveTo(pX(D[0]), pY(D[1])); g.lineTo(pX(D[2]), pY(D[3])); g.stroke(); g.restore();
+  }
   // escalera de acceso
   const K = A.stair, yy = K.dir === 'y';
   const a0 = yy ? K.y0 : K.x0, a1 = yy ? K.y1 : K.x1;
@@ -1072,6 +1088,22 @@ function drawAltillo(g) {
     else { g.moveTo(pX(a0), pY(m)); g.lineTo(pX(a1), pY(m)); }
   }
   g.stroke();
+  /* flecha de subida: sin ella no se distingue por qué extremo se llega,
+     y en esta escalera el sentido es lo único que la hace practicable   */
+  {
+    const bm = (b0 + b1) / 2, sgn = a1 > a0 ? 1 : -1;
+    const ua = a0 + (a1 - a0) * 0.18, ub = a1 - sgn * 0.10;
+    const pt = (u, v) => yy ? [pX(v), pY(u)] : [pX(u), pY(v)];
+    const [x1a, y1a] = pt(ua, bm), [x2a, y2a] = pt(ub, bm);
+    g.save(); g.strokeStyle = 'rgba(150,90,10,0.95)'; g.fillStyle = 'rgba(150,90,10,0.95)';
+    g.lineWidth = 2; g.beginPath(); g.moveTo(x1a, y1a); g.lineTo(x2a, y2a); g.stroke();
+    const [xh, yh] = pt(ub - sgn * 0.22, bm - 0.11), [xk, yk] = pt(ub - sgn * 0.22, bm + 0.11);
+    g.beginPath(); g.moveTo(x2a, y2a); g.lineTo(xh, yh); g.lineTo(xk, yk);
+    g.closePath(); g.fill();
+    g.font = '600 9px ui-monospace,monospace'; g.textAlign = 'center';
+    const [xt, yt] = pt(a0 + (a1 - a0) * 0.08, bm);
+    g.fillText('SUBE', xt, yt); g.restore();
+  }
   // barandilla
   g.strokeStyle = 'rgba(40,40,40,0.95)'; g.lineWidth = 3;
   g.beginPath();
