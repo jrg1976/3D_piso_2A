@@ -202,7 +202,11 @@ function buildApartment() {
 
   // --- muros
   const Mw = new Mesher(), Mcut = new Mesher();
-  WALLS.forEach(w => buildWall(w, w.cut ? Mcut : Mw));
+  /* Los muros que alguna propuesta modifica —los que el altillo 1 derriba
+     por encima del forjado y el que el 2 perfora para la puerta— van en su
+     propia malla: `setAltillo()` la apaga y el parche del altillo levanta
+     su versión.  Si se quedaran en Mw, el paño macizo taparía el hueco.   */
+  WALLS.forEach(w => buildWall(w, (w.cut || w.altHole) ? Mcut : Mw));
   const walls = new THREE.Mesh(Mw.geometry(), matWall);
   walls.castShadow = walls.receiveShadow = true;
   group.add(walls);
@@ -376,6 +380,14 @@ function buildCore() {
   bx(Mw, CORE.serv[0], CORE.serv[1], CORE.serv[2], CORE.serv[3], 0, 2.20);
   bx(Mw, CORE.rits[0], CORE.rits[1], CORE.rits[2], CORE.rits[3], 0, 2.30);
 
+  // --- pilar de madera: pie derecho bajo la cumbrera del hastial Norte
+  const Mpo = new Mesher(), Q = CORE.post;
+  {
+    const zt = Math.max(ceilAt(Q.x0, Q.y0), ceilAt(Q.x1, Q.y1),
+                        ceilAt(Q.x0, Q.y1), ceilAt(Q.x1, Q.y0));
+    bx(Mpo, Q.x0, Q.y0, Q.x1, Q.y1, 0, zt);
+  }
+
   // --- hueco de ascensor: caja abierta por arriba, con la puerta al Sur
   const L = CORE.lift, t = L.t, T = L.top;
   bx(Ml, L.x0,     L.y1 - t, L.x1,     L.y1,     0, T);           // Norte
@@ -470,7 +482,11 @@ function buildCore() {
     transparent: true, opacity: 0.22, depthWrite: false }), false);
   /* matW y matL son las dos masas verticales del núcleo; la vista aislada
      del altillo 2 las pasa a translúcido para poder ver el tablero        */
-  return { group, plafond, shaft, plafondFull, velux, mats: [matW, matL] };
+  const post = new THREE.Mesh(Mpo.geometry(),
+    new THREE.MeshLambertMaterial({ color: 0x8a6134, side: S }));
+  post.castShadow = post.receiveShadow = true; group.add(post);
+
+  return { group, plafond, shaft, plafondFull, velux, post, mats: [matW, matL] };
 }
 
 /** paño de vidrio de un lucernario, en el plano del faldón */

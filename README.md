@@ -334,6 +334,16 @@ fuera, y se oculta con el botón **Techo**; el falso techo, con **Pladur**.
 el falso techo entero, y entonces la Velux ilumina el altillo y deja el rellano sin
 luz natural (ver más abajo).
 
+**Pie derecho de madera.** En el borde Sur del rellano, sobre el eje `x = 14,588`,
+a04 dibuja un cuadrado de 0,14 con la cruz de ejes estructurales
+(`14,52–14,66 / −7,35…−7,50`). Ese eje es la **cumbrera del hastial Norte**
+(`ROOF.gableNx = 14,60`) y es también el que escalona el pavimento del rellano, así
+que el pilar sube hasta ella: es el pie derecho que recibe la cumbrera. Va embebido
+en el tabique de 0,15 que separa el rellano del recibidor; se modela 2 cm más ancho
+(`CORE.post`) para que asome por las dos caras y se vea, en madera, en lugar de
+quedar escondido. Atraviesa el altillo 2 por su esquina Sureste —y le sirve de
+apoyo—; la cama se ha separado 3 cm del muro para dejarlo libre.
+
 La caja del ascensor se deja **abierta por arriba** para ver el recorrido, pero sus
 dos paños Este y Norte son **medianera con la vivienda A** y suben hasta el faldón
 (`upTo()` en `buildCore()`): desde el tablero del altillo 2, a 2,55, la vista pasa
@@ -529,7 +539,13 @@ falso techo continuo.
 **Acceso.** Escalera de peldaños alternos de 2,45 m de desarrollo en el estudio,
 en `x = 10,48–11,08` (`dir:'y'` — `buildAltillo` admite escaleras que suben en x o
 en y), y paso por encima del forjado a través del muro `x = 11,27` (`altHole`, que
-sólo se abre con el altillo 2 encendido). Tabica 0,23 · huella 0,22 · 2C+H = 0,69,
+sólo se abre con el altillo 2 encendido: el muro va en la malla `cutWalls`, que
+`setAltillo()` apaga, y el parche del altillo levanta su versión perforada — si se
+quedara en la malla general, el paño macizo taparía el hueco). La **puerta** mide
+0,75 de ancho entre `y = −6,52` y `−7,27`, enfrente del último peldaño, y va **sin
+dintel**, del tablero al faldón: la altura libre ahí es 1,73, así que un dintel a
+la altura de una puerta normal quedaría por debajo del techo.
+Tabica 0,23 · huella 0,22 · 2C+H = 0,69,
 dentro de la escalera de uso restringido del DB-SUA 1. Dos correcciones sobre el
 primer trazado:
 
@@ -552,25 +568,32 @@ Oeste, bajo la cumbrera del hastial (`x = 14,60`): ahí quedan `1,95 m` sobre el
 colchón —el mejor sitio de los dos altillos para incorporarse— y los pies quedan
 bajo el alero, con 0,98 m sobre el colchón. Más almacenaje bajo de
 1,80 × 0,55 × 0,90 contra el antepecho del hueco de escalera, que hace de
-barandilla. **No cabe escritorio**: donde hay altura para sentarse no hay fondo, y
-donde hay fondo el faldón está a 1,45.
+barandilla.
 
-**El problema de fondo: el rellano es elemento común.** El vuelo sobre su falso
-techo no pertenece a la vivienda. Anexionarlo no es obra interior: exige acuerdo
-de la comunidad y, al alterar la superficie privativa, muy probablemente
-modificación del título constitutivo —unanimidad—. El altillo 1 es obra dentro de
-casa; éste no.
+**Y sí cabe mesa de estudio**, precisamente porque se ha quitado el cañón de luz:
+ocupaba `13,44–14,19 / −6,48…−5,50`, que es el mejor sitio del altillo. Mesa de
+0,80 × 0,55 contra el muro Sur (`13,30–14,10`), con `1,69 → 2,18 m` libres sobre el
+tablero —0,94 m sobre el tablero de la mesa— y la silla justo **debajo de la
+Velux**, con `1,39 → 1,66 m` sobre el asiento.
+
+**La propiedad del rellano no es un obstáculo:** el edificio entero es de la
+propiedad, así que el acuerdo de comunidad y la unanimidad que exigiría anexionar
+el vuelo sobre un elemento común los da ella misma. Queda el papeleo —modificar la
+división horizontal para pasar esos metros a la vivienda, y la licencia— y tres
+condiciones técnicas, que sí siguen en pie: mantener los `2,35 m` libres del
+rellano, no estorbar el recorrido de evacuación hasta la escalera, y resolver que
+el rellano se queda sin luz natural al quitarle la Velux.
 
 | | Altillo 1 | Altillo 2 |
 |---|---|---|
-| Sobre | distribuidor + baño 2 (privativo) | rellano (común) |
+| Sobre | distribuidor + baño 2 (privativo) | rellano (común, mismo dueño) |
 | Tablero / libre debajo | 2,45 / 2,25 | 2,55 / 2,35 |
 | Pisable | 9,57 m² | **9,62 m²** |
 | h ≥ 1,50 | **9,34 m²** | 7,25 m² |
 | h ≥ 1,90 | **7,60 m²** | 3,61 m² |
 | Altura media | **2,12 m** | 1,76 m |
 | Volumen | **20,3 m³** | 17,0 m³ |
-| Mobiliario | cama + armario + escritorio | cama + almacenaje bajo |
+| Mobiliario | cama + armario + escritorio | cama + almacenaje + escritorio |
 | Altura libre en la llegada | **2,09 m** | 1,62 m |
 | Luz natural | Velux nueva propia | la Velux del rellano, que se queda a oscuras |
 | Permisos | licencia | licencia + acuerdo de la comunidad |

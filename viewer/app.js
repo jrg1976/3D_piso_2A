@@ -1002,6 +1002,11 @@ function drawCore(g) {
     g.fillStyle = 'rgba(90,88,84,0.9)'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.font = '600 11px ui-sans-serif,system-ui,sans-serif';
     g.fillText('Ascensor', pX((L2.x0+L2.x1)/2), pY((L2.y0+L2.y1)/2));
+    if (plan.s > 40) {
+      g.save(); g.fillStyle = '#8a6134'; g.font = '600 9px ui-sans-serif,system-ui,sans-serif';
+      g.fillText('pie derecho', pX(CORE.post.x1 + 0.55), pY(CORE.post.y0 - 0.12));
+      g.restore();
+    }
     g.fillText('Escalera', pX((K.x0+K.x1)/2), pY(K.y1 - 0.55));
     if (altN !== 2) {          // con el altillo 2 encima, el rótulo es el suyo
       g.fillText('Rellano', pX(12.9), pY(-6.9));
@@ -1213,6 +1218,14 @@ function drawPlan() {
   });
   g.fillStyle = '#8c6a3a';
   PILLARS.forEach(p => g.fillRect(pX(p.x - p.w/2), pY(p.y + p.d/2), p.w * plan.s, p.d * plan.s));
+  // pie derecho de madera del rellano: va después de los muros, si no lo tapan
+  {
+    const Q = CORE.post;
+    g.fillStyle = '#8a6134';
+    g.fillRect(pX(Q.x0), pY(Q.y1), (Q.x1-Q.x0) * plan.s, (Q.y1-Q.y0) * plan.s);
+    g.strokeStyle = 'rgba(40,30,15,0.95)'; g.lineWidth = 1.2;
+    g.strokeRect(pX(Q.x0), pY(Q.y1), (Q.x1-Q.x0) * plan.s, (Q.y1-Q.y0) * plan.s);
+  }
   g.fillStyle = 'rgba(140,106,58,0.55)';
   SHAFTS.forEach(s => g.fillRect(pX(s.x0), pY(s.y1), (s.x1-s.x0) * plan.s, (s.y1-s.y0) * plan.s));
 

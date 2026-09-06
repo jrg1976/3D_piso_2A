@@ -139,8 +139,13 @@ const WALLS = [
   // ---- estudio y balcón norte ----
   { a:[9.39,-1.425], b:[12.075,-1.425], t:W_EXT, holes:[[1.40,2.35,0.00,2.10,'door']] },
   { a:[12.075,-1.425], b:[12.075,-4.88], t:0.25 },
+  /* Puerta del altillo 2: el hueco arranca en el tablero (2,55) y sube
+     hasta el faldón, sin dintel —la altura libre ahí es 1,73, así que un
+     dintel a 2,10 sobre el tablero es imposible—.  0,75 de ancho, entre
+     y = −6,52 y −7,27, justo enfrente del último peldaño.  Sólo se abre
+     con el altillo 2 encendido: en estado actual el tabique es corrido.  */
   { a:[11.27,-5.97], b:[11.27,-7.45], t:0.20,
-    altHole:[0.58, 1.23, 2.55, 3.55] },                            // paso al altillo 2
+    altHole:[0.55, 1.30, 2.55, 4.40] },                            // puerta del altillo 2
 
   // ---- recibidor / salón ----
   { a:[11.37,-7.756], b:[12.46,-7.756], t:0.18, holes:[[0.19,0.93,0.00,2.10,'entry']] },  // puerta de entrada
@@ -285,6 +290,15 @@ const CORE = {
   /* falso techo del rellano, con el hueco del lucernario.  Cota dada por
      la propiedad; el hueco sale del rectángulo proyectado en a04.       */
   plafond: { h: 2.35, t: 0.05, hole: [13.44, -6.48, 14.19, -5.50] },
+  /* Pilar de madera del rellano.  a04 dibuja un cuadrado de 0,14 con la
+     cruz de ejes en 14,52–14,66 × −7,35…−7,50, sobre el eje estructural
+     N–S de x = 14,588 —el mismo que escalona el pavimento del rellano—.
+     Ese eje es la cumbrera del hastial Norte (ROOF.gableNx = 14,60), de
+     modo que el pilar sube hasta ella: es el pie derecho que recibe la
+     cumbrera.  Va embebido en el tabique de 0,15 que separa el rellano
+     del recibidor, así que se modela 2 cm más ancho para que asome por
+     las dos caras y se vea, en lugar de quedar oculto dentro del tabique. */
+  post: { x0: 14.518, y0: -7.520, x1: 14.658, y1: -7.330 },
   /* macizo de armarios de contadores (A.F.S. y A.C.S.) al Oeste */
   serv: [11.156, -6.050, 12.212, -4.868],
   /* R.I.T.S. (telecomunicaciones), bajo el arranque del tramo Este */
@@ -535,18 +549,24 @@ const ALTILLO2 = {
      (10,40–11,40 × −7,25…−7,86)— y la estantería.  Aun así la llegada es
      lo justo: 1,62 m sobre el último peldaño.                            */
   stair: { x0: 10.48, x1: 11.08, y0: -4.75, y1: -7.20, n: 11, alt: true, dir: 'y' },
-  door: [11.27, -7.20, 11.27, -6.55],
+  door: [11.27, -7.27, 11.27, -6.52],
   bands: [1.20, 1.50, 1.90, 2.20],
-  label: { x:13.05, y:-6.98, txt:'ALTILLO 2  +2,55', sub:'7,25 m² con h ≥ 1,50' },
+  label: { x:12.58, y:-7.02, txt:'ALTILLO 2  +2,55', sub:'7,25 m² con h ≥ 1,50' },
   furn: [
     // cama E–O con el cabecero al Oeste, bajo la cumbrera del hastial
     // (x = 14,60): ahí quedan 1,95 m sobre el colchón para incorporarse,
     // y los pies quedan bajo el alero, con 0,98 m sobre el colchón
-    [14.29, -7.35, 16.19, -6.15, 0.50, 'bed'],
-    [14.19, -7.35, 14.29, -6.15, 0.90, 'head'],
-    [14.34, -7.10, 14.74, -6.40, 0.63, 'pillow', 0.50],
+    /* separada 3 cm del muro Sur: ahí asoma el pie derecho de madera */
+    [14.29, -7.32, 16.19, -6.12, 0.50, 'bed'],
+    [14.19, -7.32, 14.29, -6.12, 0.90, 'head'],
+    [14.34, -7.07, 14.74, -6.37, 0.63, 'pillow', 0.50],
     // almacenaje bajo contra el antepecho del hueco de escalera
-    [12.60, -5.45, 14.40, -4.90, 0.90, 'closet']
+    [12.60, -5.45, 14.40, -4.90, 0.90, 'closet'],
+    /* mesa de estudio contra el muro Sur, bajo la banda alta del hastial,
+       y silla justo debajo de la Velux: el sitio lo libera precisamente
+       la supresión del cañón de luz, que ocupaba 13,44–14,19 × −6,48…−5,50 */
+    [13.30, -7.33, 14.10, -6.78, 0.75, 'desk'],
+    [13.55, -6.74, 14.00, -6.29, 0.88, 'chair']
   ]
 };
 const ALTILLOS = [ALTILLO, ALTILLO2];
